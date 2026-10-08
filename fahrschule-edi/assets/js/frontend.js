@@ -58,11 +58,46 @@
 
 		// Wechsel auf Desktop-Breite: Drawer sauber zurücksetzen.
 		if ( window.matchMedia ) {
-			var mq = window.matchMedia( '(min-width: 1180px)' );
+			var mq = window.matchMedia( '(min-width: 1240px)' );
 			var onChange = function ( ev ) { if ( ev.matches ) { toggleDrawer( false ); } };
 			if ( mq.addEventListener ) { mq.addEventListener( 'change', onChange ); }
 			else if ( mq.addListener ) { mq.addListener( onChange ); }
 		}
+
+		/* ---------- Desktop-Dropdowns ----------
+		 * Sichtbar werden die Flyouts per CSS (:hover/:focus-within). Die
+		 * zugehörigen Buttons meldeten dabei dauerhaft aria-expanded="false" –
+		 * Screenreader bekamen den geöffneten Zustand also nie mit (SC 4.1.2).
+		 * Hier wird der Zustand nachgeführt und zusätzlich Klick/Escape
+		 * bedienbar gemacht, damit der Button kein reines No-op bleibt. */
+		document.querySelectorAll( '.fs-nav__drop' ).forEach( function ( drop ) {
+			var toggle = drop.querySelector( 'button.fs-nav__toplink' );
+			var menu   = drop.querySelector( '.fs-nav__menu' );
+			if ( ! menu ) { return; }
+			var setState = function ( open ) {
+				drop.classList.toggle( 'is-open', open );
+				if ( toggle ) { toggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' ); }
+			};
+			// Zeiger und Tastaturfokus spiegeln, was das CSS ohnehin schon zeigt.
+			on( drop, 'mouseenter', function () { setState( true ); } );
+			on( drop, 'mouseleave', function () { setState( false ); } );
+			on( drop, 'focusin', function () { setState( true ); } );
+			on( drop, 'focusout', function () {
+				if ( ! drop.contains( document.activeElement ) ) { setState( false ); }
+			} );
+			if ( toggle ) {
+				on( toggle, 'click', function ( e ) {
+					e.preventDefault();
+					setState( 'true' !== toggle.getAttribute( 'aria-expanded' ) );
+				} );
+			}
+			on( drop, 'keydown', function ( e ) {
+				if ( 'Escape' === e.key && drop.classList.contains( 'is-open' ) ) {
+					setState( false );
+					if ( toggle ) { toggle.focus(); }
+				}
+			} );
+		} );
 
 		/* ---------- FAQ-Akkordeon ---------- */
 		document.querySelectorAll( '[data-fs-faq] .fs-faq__item' ).forEach( function ( item ) {
@@ -176,14 +211,7 @@
 				cap.className = 'fs-ig__cap';
 				var txt = document.createElement( 'p' );
 				txt.textContent = p[1];
-				var meta = document.createElement( 'div' );
-				meta.className = 'fs-ig__meta';
-				var likes = document.createElement( 'span' );
-				likes.textContent = p[2] + ' Likes';
-				var comments = document.createElement( 'span' );
-				comments.textContent = p[3] + ' Kommentare';
-				meta.appendChild( likes ); meta.appendChild( comments );
-				cap.appendChild( txt ); cap.appendChild( meta );
+				cap.appendChild( txt );
 
 				fig.appendChild( badge ); fig.appendChild( img ); fig.appendChild( cap );
 				return fig;

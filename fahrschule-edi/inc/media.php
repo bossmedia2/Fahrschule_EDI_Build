@@ -2,13 +2,17 @@
 /**
  * Fahrschule edi – Zentrale Medien-Registry
  *
- * Ein Teil der Medien liegt inzwischen lokal im Theme
- * (assets/images/ - echte Fotos/Logos aus der Bestandsaufnahme der alten
- * Seite, siehe SYSTEM-REPORT.md). Was noch fehlt (Videos, Duisburg-Foto,
- * Team-Fotos, Instagram), steht weiterhin extern bzw. leer - siehe die
- * einzelnen Kommentare unten und die Übersicht in SYSTEM-REPORT.md.
+ * Alle hinterlegten Medien liegen lokal im Theme (assets/images/ - echte
+ * Fotos/Logos aus der Bestandsaufnahme der alten Seite, siehe
+ * docs/SYSTEM-REPORT.md). Was noch fehlt (Videos, Duisburg-Foto, Team-Fotos,
+ * Absolventen, Instagram), steht bewusst LEER statt auf einem fremden Server.
  *
- * Vorgehen für die verbliebenen externen/leeren Einträge:
+ * Frühere Fassungen verwiesen hier auf einen Vercel-Prototyp-Speicher und auf
+ * Unsplash. Beides sind Abrufe bei Dritten ohne Einwilligung (DSGVO) und sie
+ * brechen, sobald der Prototyp abgeschaltet wird. Blöcke ohne Medium blenden
+ * sich über fs_has_media() sauber aus - das ist der bessere Zustand.
+ *
+ * Vorgehen für die leeren Einträge:
  *   1. Datei in die WordPress-Mediathek hochladen.
  *   2. Unten je Schlüssel die neue URL eintragen ODER – besser – die
  *      Attachment-ID hinterlegen: 'logo' => 42
@@ -25,7 +29,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /** Zentrale Liste aller Medien. Werte: URL (string) oder Attachment-ID (int). */
 function fahrschule_media_map() {
-	$blob  = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/';
 	$local = get_template_directory_uri() . '/assets/images/';
 
 	return apply_filters( 'fahrschule_media', array(
@@ -39,9 +42,9 @@ function fahrschule_media_map() {
 		// SYSTEM-REPORT.md.
 		'logo_schalke'  => $local . 'logo-schalke.svg',
 
-		/* --- Videos: keine echten Dateien vorhanden, weiterhin extern --- */
-		'video_hero'    => $blob . 'edi-kurz-small-SLaSoq6tEW9JYNFnWtDQe2X8FtONmx.mp4',
-		'video_team'    => $blob . 'Crowd_Edi-NvbxpPojXyhtrf61GkyqLMemg2CrVT.mp4',
+		/* --- Videos: noch keine eigenen Dateien vorhanden --- */
+		'video_hero'    => '',
+		'video_team'    => '',
 
 		/* --- Standorte ---
 		 * Essen und Gelsenkirchen sind über die alte Seite eindeutig
@@ -50,7 +53,7 @@ function fahrschule_media_map() {
 		 * lag in der Bestandsaufnahme kein Originalfoto vor (die alte
 		 * Seite nutzte dort einen Elementor-Bildschnitt ohne
 		 * wiederverwendbaren Dateinamen) - bleibt extern. */
-		'loc_duisburg'      => $blob . 'Edi_Duisburg-ATnPCdmjJuowLN0cPpb271DTMePQym.png',
+		'loc_duisburg'      => '',
 		'loc_essen'         => $local . 'loc-essen.jpg',
 		'loc_gelsenkirchen' => $local . 'loc-gelsenkirchen.jpg',
 
@@ -65,10 +68,10 @@ function fahrschule_media_map() {
 		'fac_empfang'     => $local . 'fac-empfang.jpg',
 		'fac_buero'       => $local . 'fac-buero.jpg',
 
-		/* --- Absolventen: keine echten Dateien vorhanden, weiterhin extern --- */
-		'grad_auto'     => $blob . 'absolventmitAuto-832dQfDX2zIz0OntredMyEETCkLi4C.jpg',
-		'grad_jung'     => $blob . 'jungerAbsolvent-FQTh1T6pWLGlwvOa02qhYvx7ra3mMV.jpg',
-		'grad_motorrad' => $blob . 'absolventMotorrad-bxWRUbSOCozui7jIyKUaVZFywOJEMu.jpg',
+		/* --- Absolventen: noch keine eigenen Fotos vorhanden --- */
+		'grad_auto'     => '',
+		'grad_jung'     => '',
+		'grad_motorrad' => '',
 
 		/* --- Team: noch keine Fotos vorhanden ---------------------------------
 		 * Das PDF (Abschnitt F9) sieht je Gruppe Fotos vor: Büro &
@@ -81,13 +84,15 @@ function fahrschule_media_map() {
 		'team_geschaeftsleitung' => '',
 		'team_dozenten'          => '',
 
-		/* --- Instagram-Beiträge (aktuell Stockfotos von Unsplash) ---------- */
-		'ig_1' => 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop',
-		'ig_2' => 'https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=500&h=500&fit=crop',
-		'ig_3' => 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500&h=500&fit=crop',
-		'ig_4' => 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=500&h=500&fit=crop',
-		'ig_5' => 'https://images.unsplash.com/photo-1553882900-f2b06423ff1d?w=500&h=500&fit=crop',
-		'ig_6' => 'https://images.unsplash.com/photo-1552821206-7cb5e8e6b5d5?w=500&h=500&fit=crop',
+		/* --- Instagram-Beiträge: bewusst leer -----------------------------
+		 * Hier standen sechs Unsplash-Stockfotos ohne Bezug zur Fahrschule.
+		 * Der Instagram-Block blendet sich aus, solange nichts hinterlegt ist. */
+		'ig_1' => '',
+		'ig_2' => '',
+		'ig_3' => '',
+		'ig_4' => '',
+		'ig_5' => '',
+		'ig_6' => '',
 	) );
 }
 
@@ -122,15 +127,16 @@ function fs_has_media( $key ) {
  */
 function fahrschule_media_notice() {
 	if ( ! current_user_can( 'manage_options' ) ) { return; }
+	$home     = wp_parse_url( home_url(), PHP_URL_HOST );
 	$external = 0;
 	foreach ( fahrschule_media_map() as $value ) {
-		if ( is_string( $value ) && ( false !== strpos( $value, 'vercel-storage.com' ) || false !== strpos( $value, 'unsplash.com' ) ) ) {
-			$external++;
-		}
+		if ( ! is_string( $value ) || 0 !== strpos( $value, 'http' ) ) { continue; }
+		$host = wp_parse_url( $value, PHP_URL_HOST );
+		if ( $host && $host !== $home ) { $external++; }
 	}
 	if ( ! $external ) { return; }
 	printf(
-		'<div class="notice notice-warning"><p><strong>Fahrschule edi:</strong> %d Medien liegen noch auf externen Prototyp-Servern (Vercel/Unsplash). Bitte vor dem Livegang in die Mediathek übernehmen – siehe <code>inc/media.php</code>.</p></div>',
+		'<div class="notice notice-warning"><p><strong>Fahrschule edi:</strong> %d Medien werden von fremden Servern geladen. Das sind Drittabrufe ohne Einwilligung (DSGVO). Bitte in die Mediathek übernehmen – siehe <code>inc/media.php</code>.</p></div>',
 		(int) $external
 	);
 }

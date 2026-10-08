@@ -2,7 +2,7 @@
 /**
  * edi-integrationen – Einstellungsseite (Einstellungen → edi-integrationen).
  *
- * Das Fahrschule-edi-Theme hat (anders als das Schwesterprojekt KAZ) noch
+ * Das Fahrschule-edi-Theme hat noch
  * keine eigene Einstellungsseite mit einem Erweiterungspunkt für Plugins -
  * eine eigene Seite ist hier deshalb einfacher als ein Hook, den es im
  * Theme noch gar nicht gibt. Das Theme bleibt trotzdem unabhängig: siehe

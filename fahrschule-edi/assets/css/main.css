@@ -14,11 +14,19 @@
 
   --fs-on-light:       #3a3a44;
 
-  --fs-scrim: rgba(0,0,0,.55); /* einheitlicher Abdunkler über Fotos - neutral Schwarz statt Navy */
+  --fs-scrim: rgba(0,0,0,.55); /* einheitlicher Abdunkler über Fotos */
 
   /* ------------------------------------------------------------------
      KONTEXT-VARIABLEN — werden je Fläche neu belegt (siehe „FLÄCHEN").
      Komponenten benutzen ausschließlich diese, nie die Basis-Palette.
+
+     ACHTUNG — die Regel, an der sich dieses System brechen lässt:
+     Wer an einer Komponente ein eigenes `background:` setzt, MUSS die
+     Kontextvariablen gleich mit neu belegen. Sonst behält die Komponente
+     die Textfarben der UMGEBENDEN Fläche und wird unlesbar. Die Werte
+     unten gelten für die pinke Standardfläche, sind also hell — eine
+     Komponente mit hellem eigenem Hintergrund wird ohne Neubelegung
+     weiß auf weiß. Fertige Sätze dafür: `.fs-ctx-light` / `.fs-ctx-deep`.
      ------------------------------------------------------------------ */
   --c-bg:            var(--fs-brand);
   --c-text:          #ffffff;
@@ -68,6 +76,36 @@
   --c-card-border: rgba(138,18,69,.18);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
   color: var(--fs-on-light);
+}
+
+/* --------------------------------------------------------------------------
+   KONTEXT-SÄTZE FÜR KOMPONENTEN AUSSERHALB EINER FLÄCHE
+   Navigation, Cookie-Banner & Co. hängen direkt am <body> und damit im
+   :root-Kontext (= Textfarben für die pinke Fläche, also hell). Sobald so
+   eine Komponente einen eigenen hellen bzw. dunklen Hintergrund bekommt,
+   bindet sie hier den passenden Satz ein, statt Einzelfarben zu überschreiben.
+   Die Werte sind deckungsgleich mit .fs-surface-light bzw. der dunklen Stufe.
+   -------------------------------------------------------------------------- */
+.fs-ctx-light,
+.fs-nav.is-scrolled,
+.fs-cookiebanner {
+  --c-bg: var(--fs-light);
+  --c-text: var(--fs-on-light); --c-heading: var(--fs-heading); --c-accent: var(--fs-brand-strong);
+  --c-border: rgba(109,13,69,.25);
+  --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
+  --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
+  --c-card-border: rgba(138,18,69,.18);
+  --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
+}
+.fs-ctx-deep,
+.fs-drawer {
+  --c-bg: var(--fs-brand-deep);
+  --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
+  --c-border: rgba(255,255,255,.35);
+  --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
+  --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
+  --c-card-border: rgba(109,13,69,.25);
+  --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
 }
 /* Karten schalten den Kontext erneut um (heller Block auf farbiger Fläche). */
 .fs-card, .fs-value, .fs-philo, .fs-teaser, .fs-faq__item, .fs-calc, .fs-stat,
@@ -147,9 +185,11 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-btn--block { width: 100%; }
 
 /* Primär: volle Fläche – Farbwerte liefert die umgebende Fläche */
+/* Rand bewusst in der Textfarbe statt in der Füllfarbe: sonst ist die
+   Buttonkontur gegenüber gleichfarbigem Untergrund 1:1 (SC 1.4.11). */
 .fs-btn--primary,
 .fs-btn--primary-white {
-  background: var(--c-btn-bg); color: var(--c-btn-text); border-color: var(--c-btn-bg);
+  background: var(--c-btn-bg); color: var(--c-btn-text); border-color: var(--c-btn-text);
 }
 .fs-btn--primary:hover, .fs-btn--primary-white:hover,
 .fs-btn--primary:focus-visible, .fs-btn--primary-white:focus-visible {
@@ -191,20 +231,24 @@ ul { margin: 0; padding: 0; list-style: none; }
    NAVIGATION / HEADER
    ========================================================================== */
 .fs-nav { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: all .3s ease; }
-.fs-nav.is-scrolled { background: rgba(255,255,255,.95); box-shadow: 0 8px 24px -12px rgba(109,13,69,.25); }
+.fs-nav.is-scrolled { box-shadow: 0 8px 24px -12px rgba(109,13,69,.25); }
 .fs-nav__inner { display: flex; align-items: center; justify-content: space-between; height: 5rem; }
 .fs-nav__logo { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
-.fs-nav__logo img { height: 2.5rem; width: auto; }
-.fs-nav__links { display: none; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
+.fs-nav__logo img { height: 2.5rem; width: auto; max-width: 10rem; object-fit: contain; }
+/* nowrap statt wrap: bricht die Leiste nicht mehr lautlos in mehrere Zeilen
+   um (gemessen 3 Zeilen ab 1180px, 13px Überlauf, „Kontakt" über dem Logo).
+   Reicht der Platz nicht, soll es am Breakpoint auffallen, nicht umbrechen. */
+.fs-nav__links { display: none; align-items: center; gap: 1rem; flex-wrap: nowrap; min-width: 0; }
 .fs-nav__toplink {
   color: var(--c-text); background: none; border: 0; padding: .25rem 0;
   transition: color .2s; display: inline-flex; align-items: center; gap: .35rem;
-  font-size: .98rem; font-family: inherit; cursor: pointer; white-space: nowrap;
+  font-size: .94rem; font-family: inherit; cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent;
 }
 .fs-nav__toplink:hover, .fs-nav__toplink:focus-visible { color: var(--c-heading); }
 .fs-nav__toplink.is-active { color: var(--c-heading); border-bottom-color: var(--c-accent); }
-.fs-nav__drop:hover .fs-nav__toplink svg, .fs-nav__drop:focus-within .fs-nav__toplink svg { transform: rotate(180deg); }
+.fs-nav__drop:hover .fs-nav__toplink svg, .fs-nav__drop:focus-within .fs-nav__toplink svg,
+.fs-nav__drop.is-open .fs-nav__toplink svg { transform: rotate(180deg); }
 .fs-nav__toplink svg { transition: transform .3s; }
 .fs-nav__drop { position: relative; }
 .fs-nav__menu {
@@ -213,7 +257,8 @@ ul { margin: 0; padding: 0; list-style: none; }
   box-shadow: 0 20px 40px -16px rgba(109,13,69,.25);
   opacity: 0; visibility: hidden; transform: translateY(.5rem); transition: all .3s ease;
 }
-.fs-nav__drop:hover .fs-nav__menu, .fs-nav__drop:focus-within .fs-nav__menu { opacity: 1; visibility: visible; transform: none; }
+.fs-nav__drop:hover .fs-nav__menu, .fs-nav__drop:focus-within .fs-nav__menu,
+.fs-nav__drop.is-open .fs-nav__menu { opacity: 1; visibility: visible; transform: none; }
 /* Rechtestes Dropdown ("Über uns"): öffnet nach innen/links, statt das
    Flyout weiter nach rechts über FAQ/Kontakt zu legen. */
 .fs-nav__drop:last-of-type .fs-nav__menu { left: auto; right: 0; }
@@ -225,11 +270,11 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-nav__actions { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
 .fs-nav__cta { display: none; }
 .fs-nav__burger { background: none; border: 0; color: var(--c-heading); padding: .5rem; border-radius: var(--fs-radius); transition: background .2s; }
-.fs-nav__burger:hover { background: var(--fs-brand-strong); }
-/* Breakpoint bewusst auf 1180px (statt 1080px) angehoben: bei 4 Dropdowns +
-   FAQ + Kontakt reichte der Platz zwischen 1080-1180px nicht aus, um
-   Logo/Links/CTA-Buttons überlappungsfrei nebeneinander darzustellen. */
-@media (min-width: 1180px) { .fs-nav__links { display: flex; } .fs-nav__burger { display: none; } }
+.fs-nav__burger:hover, .fs-nav__burger:focus-visible { background: var(--fs-brand-strong); color: var(--fs-light); }
+/* Breakpoint auf 1240px: bei 4 Dropdowns + FAQ + Kontakt braucht die
+   Linkzeile rund 600px. Bei 1180px blieben davon nur 597px übrig — 9px zu
+   wenig, weshalb die Leiste dort umbrach. Unterhalb übernimmt der Drawer. */
+@media (min-width: 1240px) { .fs-nav__links { display: flex; } .fs-nav__burger { display: none; } }
 @media (min-width: 640px) { .fs-nav__cta { display: inline-flex; } }
 
 /* Mobile drawer */
@@ -253,7 +298,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-drawer a:hover { color: var(--c-heading); }
 .fs-drawer__sub { margin-top: .75rem; padding-left: 1rem; border-left: 2px solid var(--fs-brand-accent); display: none; flex-direction: column; gap: .5rem; }
 .fs-drawer__sub.is-open { display: flex; }
-@media (min-width: 1180px) { .fs-drawer, .fs-drawer-overlay { display: none !important; } }
+@media (min-width: 1240px) { .fs-drawer, .fs-drawer-overlay { display: none !important; } }
 
 /* ==========================================================================
    VIDEO HERO
@@ -363,7 +408,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-stack { display: flex; flex-direction: column; gap: 2rem; }
 
 /* ==========================================================================
-   FLOTTE & EINRICHTUNGEN  (dunkler Navy-Hintergrund)
+   FLOTTE & EINRICHTUNGEN
    ========================================================================== */
 .fs-tile { position: relative; overflow: hidden; border-radius: var(--fs-radius); border: 1px solid var(--c-border); transition: border-color .3s; }
 .fs-tile:hover { border-color: var(--c-accent); }
@@ -375,7 +420,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-tile__cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.5rem; }
 .fs-tile__cap h3 { color: var(--c-heading); font-weight: 800; font-size: 1.25rem; }
 .fs-tile__cap p { color: var(--c-text); font-size: .9rem; }
-.fs-cta-band { margin-top: 5rem; background: var(--fs-brand-strong); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; text-align: center; }
+/* Kräftig pinkes Band auf heller Fläche: H3 stand mit --c-heading (Bordeaux)
+   bei 1,50:1 auf dem Band. Kontext auf „dunkel" stellen. */
+.fs-cta-band { --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
+  margin-top: 5rem; background: var(--fs-brand-strong); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; text-align: center; }
 .fs-cta-band h3 { font-size: 1.875rem; font-weight: 800; color: var(--c-heading); margin-bottom: 1rem; }
 .fs-cta-band p { color: var(--c-text); font-size: 1.125rem; margin-bottom: 2rem; }
 
@@ -399,7 +447,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-ig__post:hover { border-color: var(--c-accent); transform: scale(1.03); }
 .fs-ig__post img { width: 100%; height: 20rem; object-fit: cover; transition: transform .3s; }
 .fs-ig__post:hover img { transform: scale(1.08); }
-.fs-ig__badge { position: absolute; top: .75rem; left: .75rem; background: var(--fs-brand-strong); color: var(--c-heading); font-size: .72rem; font-weight: 600; padding: .25rem .75rem; border-radius: 9999px; }
+.fs-ig__badge { position: absolute; top: .75rem; left: .75rem; background: var(--fs-brand-strong); color: var(--fs-light); font-size: .72rem; font-weight: 600; padding: .25rem .75rem; border-radius: 9999px; }
 .fs-ig__nav { display: flex; align-items: center; justify-content: center; gap: 1rem; }
 .fs-ig__arrow { padding: .75rem; border-radius: 9999px; background: var(--fs-brand); border: 1px solid var(--c-border); color: var(--c-accent); transition: all .3s; display: inline-flex; }
 .fs-ig__arrow:hover { border-color: var(--c-accent); }
@@ -470,6 +518,9 @@ ul { margin: 0; padding: 0; list-style: none; }
 body.fs-cookie-open .fs-tiktok { display: none; }
 
 /* ---------- Cookie-Banner ---------- */
+/* Hängt am <body>, nicht an einer Fläche: heller Kontext muss gesetzt werden,
+   sonst erbt „Nur notwendige" (.fs-btn--outline) die weiße Schrift der pinken
+   Standardfläche und steht weiß auf weiß — der Ablehnen-Button verschwindet. */
 .fs-cookiebanner {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 55;
   background: var(--fs-light); border-top: 2px solid var(--fs-brand-accent);
@@ -482,8 +533,9 @@ body.fs-cookie-open .fs-tiktok { display: none; }
   max-width: var(--fs-container); margin-inline: auto;
   display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
 }
-.fs-cookiebanner__text { color: var(--fs-on-light); font-size: .9rem; flex: 1 1 20rem; margin: 0; }
+.fs-cookiebanner__text { font-size: .9rem; flex: 1 1 20rem; margin: 0; }
 .fs-cookiebanner__text a { color: var(--fs-brand-strong); text-decoration: underline; }
+.fs-cookiebanner__text { color: var(--c-text); }
 .fs-cookiebanner__actions { display: flex; gap: .75rem; flex-wrap: wrap; flex: 0 0 auto; }
 
 /* ==========================================================================
@@ -563,7 +615,10 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-range { width: 100%; height: .5rem; border-radius: 9999px; appearance: none; -webkit-appearance: none; background: var(--fs-brand-deep); cursor: pointer; accent-color: var(--c-accent); }
 .fs-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1.25rem; height: 1.25rem; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
 .fs-range::-moz-range-thumb { width: 1.25rem; height: 1.25rem; border: 0; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
-.fs-distance__out { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
+/* Dunkler Einsatz in einer hellen Karte: ohne eigenen Kontext blieben Text
+   (#3a3a44 auf #6d0d45 = 1,04:1) und Zahl (1,88:1) praktisch unlesbar. */
+.fs-distance__out { --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
+  background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
 .fs-distance__out .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
 .fs-distance__out p { color: var(--c-text); }
 
@@ -576,8 +631,9 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-loccalc label { display: block; color: var(--fs-light); font-weight: 600; margin-bottom: 1rem; }
 .fs-loccalc .fs-pill { background: var(--fs-brand-strong); color: var(--c-text); }
 .fs-loccalc .fs-pill:hover { background: var(--fs-brand-strong); }
-.fs-loccalc .fs-pill.is-active { background: var(--fs-brand-accent); color: var(--fs-light); box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
-.fs-loccalc__total { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
+.fs-loccalc .fs-pill.is-active { background: var(--fs-brand-strong); color: var(--fs-light); box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
+.fs-loccalc__total { --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
+  background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
 .fs-loccalc__total .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
 
 /* ==========================================================================
@@ -626,7 +682,8 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-pagetop { padding-top: 5rem; }
 
 /* Instagram: serverseitig gerenderte Beitragstexte */
-.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-deep); margin: 0; }
+.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-deep); margin: 0;
+  --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint); }
 .fs-ig__cap { padding: 1rem; }
 .fs-ig__cap p { color: var(--c-text); font-size: .85rem; margin-bottom: .5rem; }
 .fs-ig__meta { display: flex; gap: 1.5rem; color: var(--c-accent); font-weight: 600; font-size: .85rem; }
@@ -634,11 +691,28 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* Skip-Link (Barrierefreiheit) */
 .fs-skip {
   position: absolute; left: -9999px; top: 0; z-index: 100;
-  background: var(--fs-brand-accent); color: var(--fs-light); padding: .75rem 1.25rem;
+  background: var(--fs-brand-strong); color: var(--fs-light); padding: .75rem 1.25rem;
   border-radius: 0 0 var(--fs-radius) 0; font-weight: 600;
 }
 .fs-skip:focus { left: 0; }
-:focus-visible { outline: 3px solid var(--fs-brand-accent); outline-offset: 2px; }
+/* Fokusring flächenunabhängig: --fs-brand-accent (#e62775) erreichte auf der
+   pinken Hauptfläche nur 1,14:1 und scheiterte damit an SC 1.4.11 (3:1) auf
+   drei von fünf Flächen. Der Doppelring aus hellem Kern und dunklem Saum ist
+   auf Pink wie auf Weiß sichtbar — mindestens einer der beiden Ringe steht
+   immer im Kontrast zum Untergrund. */
+:focus-visible {
+  outline: 3px solid var(--fs-light);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--fs-brand-deep);
+  border-radius: 2px;
+}
+/* Auf hellen Flächen die Rollen tauschen: dunkler Kern, heller Saum. */
+.fs-surface-light :focus-visible, .fs-ctx-light :focus-visible,
+.fs-nav.is-scrolled :focus-visible, .fs-cookiebanner :focus-visible,
+.fs-card :focus-visible, .fs-footer :focus-visible {
+  outline-color: var(--fs-brand-deep);
+  box-shadow: 0 0 0 6px var(--fs-light);
+}
 
 /* ==========================================================================
    UNTERSEITEN: Seitenkopf, Breadcrumbs, Themen-Teaser
@@ -727,18 +801,19 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-pill:hover { border-color: var(--fs-brand-accent); }
 .fs-pill.is-active { background: var(--fs-brand-strong); color: var(--fs-light); border-color: var(--fs-brand-strong); }
 
-/* Navigation folgt der hellen Fläche, sobald sie hinterlegt ist */
+/* Navigation folgt der hellen Fläche, sobald sie hinterlegt ist.
+   Es reicht, den Kontext umzuschalten: Menüpunkte, Burger und beide
+   CTA-Buttons lesen ihre Farben ohnehin aus --c-*. Vorher wurde nur
+   .fs-nav__toplink umgefärbt — Burger und Telefon-CTA blieben weiß und
+   verschwanden auf der weißen Leiste (Kontrast 1:1, Mobilmenü unerreichbar). */
 .fs-nav.is-scrolled { background: var(--fs-light); }
-.fs-nav.is-scrolled .fs-nav__toplink { color: var(--fs-on-light); }
-.fs-nav.is-scrolled .fs-nav__toplink:hover,
-.fs-nav.is-scrolled .fs-nav__toplink.is-active { color: var(--fs-heading); }
-.fs-nav__toplink { color: var(--fs-light); }
+.fs-nav__toplink { color: var(--c-text); }
+/* Das Flyout ist immer hell, unabhängig vom Zustand der Leiste. */
 .fs-nav__menu { background: var(--fs-light); border: 1px solid rgba(109,13,69,.15); }
-.fs-nav__menu a { color: var(--fs-on-light); }
+.fs-nav__menu a { color: var(--c-text); }
 .fs-drawer { background: var(--fs-brand-deep); color: var(--fs-light); }
 .fs-drawer a, .fs-drawer button { color: var(--fs-light); }
 .fs-drawer a:hover, .fs-drawer button:hover { color: var(--fs-tint); }
-.fs-drawer { --c-text: var(--fs-light); --c-bg: var(--fs-brand-deep); --c-btn-bg: var(--fs-tint); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint); }
 
 /* Breadcrumbs */
 .fs-crumbs { background: var(--fs-brand-deep); color: var(--fs-light); }

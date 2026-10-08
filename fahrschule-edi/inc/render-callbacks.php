@@ -73,7 +73,7 @@ function fs_render_navigation( $a ) {
 				</div>
 
 				<div class="fs-nav__actions">
-					<a class="fs-btn fs-btn--outline fs-nav__cta" href="tel:+492035785703"><?php echo fs_icon( 'phone', 16 ); ?> <span>0203 5785703</span></a>
+					<a class="fs-btn fs-btn--outline fs-nav__cta" href="<?php echo esc_url( fahrschule_phone( 'link' ) ); ?>"><?php echo fs_icon( 'phone', 16 ); ?> <span><?php echo esc_html( fahrschule_phone() ); ?></span></a>
 					<a class="fs-btn fs-btn--primary fs-nav__cta" href="<?php echo esc_url( fs_url( 'anmeldung' ) ); ?>">Jetzt anmelden</a>
 					<button type="button" class="fs-nav__burger" data-fs-burger aria-label="Menü öffnen" aria-expanded="false" aria-controls="fs-drawer">
 						<?php echo fs_icon( 'menu', 24 ); ?>
@@ -108,7 +108,7 @@ function fs_render_navigation( $a ) {
 		<?php endforeach; ?>
 
 		<div class="fs-drawer__actions">
-			<a class="fs-btn fs-btn--outline fs-btn--block" href="tel:+492035785703"><?php echo fs_icon( 'phone', 16 ); ?> Anrufen</a>
+			<a class="fs-btn fs-btn--outline fs-btn--block" href="<?php echo esc_url( fahrschule_phone( 'link' ) ); ?>"><?php echo fs_icon( 'phone', 16 ); ?> Anrufen</a>
 			<a class="fs-btn fs-btn--primary fs-btn--block" href="<?php echo esc_url( fs_url( 'anmeldung' ) ); ?>">Jetzt anmelden</a>
 		</div>
 	</div>
@@ -459,6 +459,7 @@ function fs_render_testimonials( $a ) {
 		'eyebrow'  => 'Was unsere Schüler sagen',
 		'heading'  => 'Kundenbewertungen',
 		'subtitle' => 'Lesen Sie, was unsere zufriedenen Fahrschüler über uns berichten',
+		'reviews_url' => 'https://www.google.com/search?q=Fahrschule+edi+Duisburg+Bewertungen',
 	) );
 	/*
 	 * Bewusst leer: Hier standen zuvor vier weitere erfundene Namen und
@@ -470,7 +471,7 @@ function fs_render_testimonials( $a ) {
 	 * vorliegen, hier eintragen: array( 'Vorname N.', 'Stadt', 'Zitat' ).
 	 */
 	$t = array();
-	if ( ! $t ) { return ''; }
+
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
@@ -479,6 +480,16 @@ function fs_render_testimonials( $a ) {
 				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
 				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
 			</div>
+			<?php if ( ! $t ) : ?>
+			<?php /* Solange keine freigegebenen Zitate vorliegen, verweist der
+			         Abschnitt auf die echten Google-Bewertungen, statt die
+			         Startseite ohne Social Proof zu lassen. */ ?>
+			<div class="fs-cta-band">
+				<h3>Was unsere Fahrschüler sagen</h3>
+				<p>Über 30 Jahre Fahrschule edi – lesen Sie die Bewertungen unserer Fahrschülerinnen und Fahrschüler direkt bei Google.</p>
+				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $d['reviews_url'] ); ?>" target="_blank" rel="noopener noreferrer">Bewertungen auf Google ansehen <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
+			</div>
+			<?php else : ?>
 			<div class="fs-grid fs-grid--2" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $t as $item ) : ?>
 				<article class="fs-card fs-card--glass fs-fade-up"><div class="fs-card__body">
@@ -489,6 +500,7 @@ function fs_render_testimonials( $a ) {
 				</div></article>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php
@@ -504,16 +516,45 @@ function fs_render_instagram_slider( $a ) {
 		'highlight'=> 'Instagram',
 		'subtitle' => 'Erleben Sie die beste Fahrschule im Ruhrgebiet direkt in Ihrem Feed. Tipps, Erfolgsgeschichten und Behind-the-Scenes.',
 		'url'      => 'https://www.instagram.com/fahrschuleedi/',
+		'cap_1'    => 'Endlich bestanden! Herzlichen Glückwunsch an alle neuen Fahrerinnen und Fahrer.',
+		'cap_2'    => 'Moderne Fahrzeuge, moderne Ausbildung.',
+		'cap_3'    => 'Team edi – Ihre Ansprechpartner im Ruhrgebiet.',
+		'cap_4'    => 'Motorradtraining – Sicherheit an erster Stelle.',
+		'cap_5'    => 'Klasse C erfolgreich bestanden.',
+		'cap_6'    => 'Bei uns lernen Sie nicht nur fahren.',
 	) );
-	$posts = array(
-		array( fs_media( 'ig_1' ), '🚗 Endlich bestanden! Herzlichen Glückwunsch an alle neuen Fahrer!', 234, 18 ),
-		array( fs_media( 'ig_2' ), 'Moderne Fahrzeuge, moderne Ausbildung 🏎️', 456, 32 ),
-		array( fs_media( 'ig_3' ), 'Team edi - Ihre Experten im Ruhrgebiet 👨‍🏫', 189, 14 ),
-		array( fs_media( 'ig_4' ), 'Motorrad Training - Sicherheit an erster Stelle 🏍️', 312, 25 ),
-		array( fs_media( 'ig_5' ), 'Klasse C erfolgreich bestanden! 🎉', 567, 41 ),
-		array( fs_media( 'ig_6' ), 'Bei uns lernen Sie nicht nur fahren - Sie werden zum Profi! 🚗✨', 423, 28 ),
-	);
+	/*
+	 * Die Like-/Kommentarzahlen standen hier frei erfunden im Code (234 Likes
+	 * usw.). Erfundene Reichweitenzahlen sind Werbung mit falschen Angaben -
+	 * sie sind ersatzlos entfallen. Es bleiben Bild und Bildtext.
+	 */
+	$posts = array();
+	foreach ( array( 'ig_1', 'ig_2', 'ig_3', 'ig_4', 'ig_5', 'ig_6' ) as $i => $key ) {
+		if ( ! fs_has_media( $key ) ) { continue; }
+		$posts[] = array( fs_media( $key ), $d[ 'cap_' . ( $i + 1 ) ] );
+	}
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
+
+	/*
+	 * Ohne hinterlegte Beiträge entfällt der Slider und es bleibt der reine
+	 * Verweis auf das echte Profil - kein leerer Rahmen, keine Platzhalter.
+	 */
+	if ( ! $posts ) {
+		ob_start(); ?>
+		<section class="fs-section fs-surface-light">
+			<div class="fs-container fs-z">
+				<div class="fs-head">
+					<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><h2><?php echo $heading; ?></h2></div>
+					<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+				</div>
+				<div class="fs-center">
+					<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( 'instagram', 20 ); ?> Besuchen Sie uns auf Instagram</a>
+				</div>
+			</div>
+		</section>
+		<?php
+		return ob_get_clean();
+	}
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light" data-fs-ig>
 		<div class="fs-container fs-wide" style="margin-inline:auto;">
@@ -532,7 +573,6 @@ function fs_render_instagram_slider( $a ) {
 						<img src="<?php echo esc_url( $p[0] ); ?>" alt="<?php echo esc_attr( wp_strip_all_tags( $p[1] ) ); ?>" width="500" height="500" loading="lazy" decoding="async">
 						<figcaption class="fs-ig__cap">
 							<p><?php echo esc_html( $p[1] ); ?></p>
-							<div class="fs-ig__meta"><span><?php echo esc_html( $p[2] ); ?> Likes</span><span><?php echo esc_html( $p[3] ); ?> Kommentare</span></div>
 						</figcaption>
 					</figure>
 				<?php endfor; ?></div>
@@ -979,23 +1019,31 @@ function fs_render_testimonials_detailed( $a ) {
 	$d = wp_parse_args( $a, array(
 		'heading'   => 'Kundenstimmen & Bewertungen',
 		'highlight' => 'Bewertungen',
+		'reviews_url' => 'https://www.google.com/search?q=Fahrschule+edi+Duisburg+Bewertungen',
 	) );
 	/*
 	 * Bewusst leer: Hier standen zuvor sechs erfundene Namen und Zitate
 	 * ("Sarah M.", "Marco K." usw. – keine dieser Personen existiert).
 	 * Erfundene Kundenstimmen wären schlimmer als keine (vgl. das
-	 * Schwesterprojekt KAZ, inc/data.php). Die Sektion blendet sich
+	 * einem Schwesterprojekt). Die Sektion blendet sich
 	 * automatisch aus, solange diese Liste leer ist – sobald echte, mit
 	 * Einwilligung veröffentlichte Zitate vorliegen, hier eintragen:
 	 * array( 'Vorname N.', 'Klasse/Kontext', 'Zitat' ).
 	 */
 	$t = array();
-	if ( ! $t ) { return ''; }
+
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container">
 			<div class="fs-head"><h2><?php echo $heading; ?></h2></div>
+			<?php if ( ! $t ) : ?>
+			<div class="fs-cta-band">
+				<h3>Echte Bewertungen statt erfundener Zitate</h3>
+				<p>Die Erfahrungsberichte unserer Fahrschülerinnen und Fahrschüler stehen öffentlich bei Google – ungefiltert und mit Namen.</p>
+				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $d['reviews_url'] ); ?>" target="_blank" rel="noopener noreferrer">Alle Bewertungen auf Google lesen <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
+			</div>
+			<?php else : ?>
 			<div class="fs-grid fs-grid--2" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $t as $item ) : ?>
 				<div class="fs-card fs-card--glass"><div class="fs-card__body">
@@ -1007,6 +1055,7 @@ function fs_render_testimonials_detailed( $a ) {
 				</div></div>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php

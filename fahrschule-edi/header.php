@@ -15,8 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 	<?php wp_head(); ?>
 	<noscript>
 		<!-- Ohne JavaScript werden Scroll-Animationen übersprungen,
-		     damit alle Inhalte sichtbar und crawlbar bleiben. -->
-		<style>.fs-fade-up{opacity:1 !important;animation:none !important}</style>
+		     damit alle Inhalte sichtbar und crawlbar bleiben.
+		     Cookie-Banner und TikTok-Badge werden ausgeblendet: beide
+		     lassen sich nur per JavaScript schließen und würden sonst
+		     dauerhaft den unteren Bildrand belegen (mobil 216px) und
+		     einander überdecken. Ohne JS lädt das Theme ohnehin keine
+		     einwilligungspflichtigen Ressourcen. -->
+		<style>
+			.fs-fade-up{opacity:1 !important;animation:none !important}
+			.fs-cookiebanner,.fs-tiktok{display:none !important}
+		</style>
 	</noscript>
 </head>
 <body <?php body_class(); ?>>

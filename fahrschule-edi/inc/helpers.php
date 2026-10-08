@@ -76,6 +76,21 @@ function fs_nl2br( $text ) {
 	return nl2br( esc_html( $text ) );
 }
 
+/**
+ * Zentrale Hauptrufnummer (Standort Duisburg, zugleich allgemeine Nummer).
+ *
+ * Stand vorher zweimal wörtlich in der Navigation und ein drittes Mal in
+ * inc/pdf-texts.php - eine Korrektur hätte die anderen Stellen nicht
+ * mitgezogen. Für die strukturierten Daten gilt weiterhin die eigene,
+ * standortgenaue Fassung in fahrschule_business_data() (inc/seo.php).
+ *
+ * @param string $format 'display' für die lesbare Schreibweise, 'link' für tel:.
+ */
+function fahrschule_phone( $format = 'display' ) {
+	$number = apply_filters( 'fahrschule_phone', '0203 5785703' );
+	return ( 'link' === $format ) ? 'tel:' . fs_tel( '+49' . ltrim( $number, '0' ) ) : $number;
+}
+
 /** Telefonnummer in tel:-Link säubern. */
 function fs_tel( $number ) {
 	return preg_replace( '/[^0-9+]/', '', $number );
