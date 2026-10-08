@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'FAHRSCHULE_VERSION', '1.1.0' ); // bei Änderungen an assets/css|js erhöhen (Cache-Busting über ?ver=)
+define( 'FAHRSCHULE_VERSION', '1.2.0' ); // bei Änderungen an assets/css|js erhöhen (Cache-Busting über ?ver=)
 define( 'FAHRSCHULE_DIR', get_template_directory() );
 define( 'FAHRSCHULE_URI', get_template_directory_uri() );
 
