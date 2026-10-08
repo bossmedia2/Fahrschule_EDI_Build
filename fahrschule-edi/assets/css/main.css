@@ -1,0 +1,758 @@
+:root {
+  /* ------------------------------------------------------------------
+     BASIS-PALETTE — die einzigen Rohfarben des Themes.
+     Alles andere leitet sich davon ab. Keine Farbwerte außerhalb dieses Blocks.
+     ------------------------------------------------------------------ */
+  --fs-brand:        #d12487; /* Signatur-Hintergrund (Vorgabe Kunde) */
+  --fs-brand-accent: #e62775; /* Akzent für Flächen, Icons, Rahmen */
+  --fs-brand-strong: #b81d5e; /* Button-Füllung & Akzenttext auf hellem Grund */
+  --fs-brand-deep:   #6d0d45; /* Tiefe Variante für helle Pinkflächen */
+  --fs-heading:      #8a1245; /* Überschriften auf hellem Grund */
+
+  --fs-light:        #ffffff; /* helle Fläche */
+  --fs-tint:         #fdeaf3; /* zarte Pinkfläche (Karten auf Hell) */
+
+  --fs-on-light:       #3a3a44;
+
+  --fs-scrim: rgba(0,0,0,.55); /* einheitlicher Abdunkler über Fotos - neutral Schwarz statt Navy */
+
+  /* ------------------------------------------------------------------
+     KONTEXT-VARIABLEN — werden je Fläche neu belegt (siehe „FLÄCHEN").
+     Komponenten benutzen ausschließlich diese, nie die Basis-Palette.
+     ------------------------------------------------------------------ */
+  --c-bg:            var(--fs-brand);
+  --c-text:          #ffffff;
+  --c-heading:       #ffffff;
+  --c-accent:        #ffffff;
+  --c-border:        rgba(255,255,255,.35);
+  --c-card:          var(--fs-light);
+  --c-card-text:     var(--fs-on-light);
+  --c-card-heading:  var(--fs-heading);
+  --c-card-accent:   var(--fs-brand-strong);
+  --c-card-border:   rgba(109,13,69,.25);
+  --c-btn-bg:        var(--fs-light);
+  --c-btn-text:      var(--fs-brand-deep);
+  --c-btn-bg-hover:  var(--fs-tint);
+
+  --fs-radius:      0.5rem;
+  --fs-radius-lg:   0.75rem;
+  --fs-radius-xl:   1rem;
+  --fs-container:   1152px;
+  --fs-font: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ==========================================================================
+   FLÄCHEN (Surfaces)
+   Jede Fläche legt Hintergrund UND passende Textfarben fest. Dadurch kann
+   keine Komponente mehr in einem Kontext landen, in dem sie unlesbar wird.
+   Alle Kombinationen erfüllen WCAG AA (>= 4.5:1).
+   ========================================================================== */
+.fs-surface-brand {
+  background: var(--fs-brand);
+  --c-bg: var(--fs-brand);
+  --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-light);
+  --c-border: rgba(255,255,255,.35);
+  --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
+  --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
+  --c-card-border: rgba(109,13,69,.25);
+  --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
+  color: var(--fs-light);
+}
+.fs-surface-light {
+  background: var(--fs-light);
+  --c-bg: var(--fs-light);
+  --c-text: var(--fs-on-light); --c-heading: var(--fs-heading); --c-accent: var(--fs-brand-strong);
+  --c-border: rgba(109,13,69,.25);
+  --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
+  --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
+  --c-card-border: rgba(138,18,69,.18);
+  --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
+  color: var(--fs-on-light);
+}
+/* Karten schalten den Kontext erneut um (heller Block auf farbiger Fläche). */
+.fs-card, .fs-value, .fs-philo, .fs-teaser, .fs-faq__item, .fs-calc, .fs-stat,
+.fs-quote, .fs-feature, .fs-teamcard, .fs-darktesti, .fs-classlist__cat,
+.fs-locform, .fs-distance, .fs-loccalc__total, .fs-legal__card, .fs-anmeldung,
+.fs-calc__result, .fs-distance__out, .fs-contactform {
+  background: var(--c-card);
+  border-color: var(--c-card-border);
+  color: var(--c-card-text);
+  --c-text: var(--c-card-text);
+  --c-heading: var(--c-card-heading);
+  --c-accent: var(--c-card-accent);
+  --c-border: var(--c-card-border);
+  /* Buttons in Karten gefüllt in der Kartenakzentfarbe – sonst stünde auf
+     pinker Fläche ein weißer Button auf weißer Karte (unsichtbar). */
+  --c-btn-bg: var(--c-card-accent); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--c-card-heading);
+}
+
+/* ---------- Reset / Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--fs-font);
+  background: var(--fs-brand);
+  color: var(--c-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img, video, svg { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+h1,h2,h3,h4,h5,h6 { margin: 0; line-height: 1.15; }
+p { margin: 0; }
+button { font-family: inherit; cursor: pointer; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+/* ---------- Layout-Helfer ---------- */
+.fs-container { width: 100%; max-width: var(--fs-container); margin-inline: auto; padding-inline: 1rem; }
+@media (min-width: 640px) { .fs-container { padding-inline: 1.5rem; } }
+.fs-wide { max-width: 1280px; }
+.fs-section { position: relative; overflow: hidden; padding-block: 4rem; }
+@media (min-width: 640px) { .fs-section { padding-block: 5rem; } }
+@media (min-width: 1024px) { .fs-section { padding-block: 7rem; } }
+
+/* Dekorative Blur-Kreise wie im Original */
+
+.fs-z { position: relative; z-index: 10; }
+
+/* Für Screenreader sichtbar, optisch nicht – z. B. <label> zu einem per
+   placeholder beschrifteten Formularfeld (WCAG 1.3.1/4.1.2). */
+.fs-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Eyebrow / Section heads ---------- */
+.fs-eyebrow { color: var(--c-accent); font-weight: 600; font-size: .875rem; text-transform: uppercase; letter-spacing: .08em; }
+.fs-head { text-align: center; margin-bottom: 3rem; }
+.fs-head h2 {
+  font-size: clamp(2.25rem, 6vw, 3.75rem);
+  font-weight: 800; color: var(--c-heading);
+  margin: .75rem 0 1rem;
+}
+.fs-head p { color: var(--c-text); font-size: 1.125rem; max-width: 42rem; margin-inline: auto; }
+.fs-accent { color: var(--c-accent); }
+
+/* ---------- Buttons ---------- */
+.fs-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .65rem 1.25rem; border-radius: var(--fs-radius);
+  font-weight: 600; font-size: .95rem; border: 2px solid transparent;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
+  line-height: 1.2; text-align: center; white-space: nowrap;
+}
+.fs-btn--lg { padding: .9rem 2rem; font-size: 1.05rem; }
+.fs-btn--block { width: 100%; }
+
+/* Primär: volle Fläche – Farbwerte liefert die umgebende Fläche */
+.fs-btn--primary,
+.fs-btn--primary-white {
+  background: var(--c-btn-bg); color: var(--c-btn-text); border-color: var(--c-btn-bg);
+}
+.fs-btn--primary:hover, .fs-btn--primary-white:hover,
+.fs-btn--primary:focus-visible, .fs-btn--primary-white:focus-visible {
+  background: var(--c-btn-bg-hover); border-color: var(--c-btn-bg-hover); transform: translateY(-2px);
+}
+
+/* Sekundär: Umriss in der Textfarbe der Fläche */
+.fs-btn--outline,
+.fs-btn--ghost-white {
+  background: transparent; color: var(--c-text); border-color: currentColor;
+}
+.fs-btn--outline:hover, .fs-btn--ghost-white:hover,
+.fs-btn--outline:focus-visible, .fs-btn--ghost-white:focus-visible {
+  background: var(--c-text); color: var(--c-bg);
+}
+
+/* ---------- Karten ---------- */
+.fs-card {
+  background: var(--c-card);
+  border: 1px solid var(--c-card-border);
+  border-radius: var(--fs-radius-lg);
+  transition: all .3s ease;
+}
+.fs-card:hover { border-color: var(--c-accent); box-shadow: 0 18px 40px -18px rgba(109,13,69,.35); transform: translateY(-4px); }
+.fs-card__body { padding: 1.5rem; }
+
+/* ---------- Animationen ---------- */
+@keyframes fs-fade-up { from { opacity:0; transform: translateY(20px);} to {opacity:1; transform:none;} }
+.fs-fade-up { opacity: 0; }
+/* Reveal beim Scrollen: die Klasse wird per IntersectionObserver gesetzt.
+   Ohne JavaScript sorgt der <noscript>-Fallback im Header für volle Sichtbarkeit. */
+.fs-fade-up.is-visible { animation: fs-fade-up .6s ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .fs-fade-up, .fs-fade-up.is-visible { opacity: 1; animation: none; }
+}
+
+/* ==========================================================================
+   NAVIGATION / HEADER
+   ========================================================================== */
+.fs-nav { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: all .3s ease; }
+.fs-nav.is-scrolled { background: rgba(255,255,255,.95); box-shadow: 0 8px 24px -12px rgba(109,13,69,.25); }
+.fs-nav__inner { display: flex; align-items: center; justify-content: space-between; height: 5rem; }
+.fs-nav__logo { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+.fs-nav__logo img { height: 2.5rem; width: auto; }
+.fs-nav__links { display: none; align-items: center; gap: 1.4rem; flex-wrap: wrap; }
+.fs-nav__toplink {
+  color: var(--c-text); background: none; border: 0; padding: .25rem 0;
+  transition: color .2s; display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .98rem; font-family: inherit; cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.fs-nav__toplink:hover, .fs-nav__toplink:focus-visible { color: var(--c-heading); }
+.fs-nav__toplink.is-active { color: var(--c-heading); border-bottom-color: var(--c-accent); }
+.fs-nav__drop:hover .fs-nav__toplink svg, .fs-nav__drop:focus-within .fs-nav__toplink svg { transform: rotate(180deg); }
+.fs-nav__toplink svg { transition: transform .3s; }
+.fs-nav__drop { position: relative; }
+.fs-nav__menu {
+  position: absolute; left: 0; top: 100%; width: 12rem; margin-top: .25rem;
+  background: var(--fs-brand-strong); border-radius: var(--fs-radius);
+  box-shadow: 0 20px 40px -16px rgba(109,13,69,.25);
+  opacity: 0; visibility: hidden; transform: translateY(.5rem); transition: all .3s ease;
+}
+.fs-nav__drop:hover .fs-nav__menu, .fs-nav__drop:focus-within .fs-nav__menu { opacity: 1; visibility: visible; transform: none; }
+/* Rechtestes Dropdown ("Über uns"): öffnet nach innen/links, statt das
+   Flyout weiter nach rechts über FAQ/Kontakt zu legen. */
+.fs-nav__drop:last-of-type .fs-nav__menu { left: auto; right: 0; }
+.fs-nav__menu a { display: block; padding: .75rem 1rem; color: var(--c-text); }
+.fs-nav__menu a:hover, .fs-nav__menu a:focus-visible { color: var(--fs-light); background: var(--fs-brand-strong); }
+.fs-nav__menu a[aria-current="page"] { background: var(--c-border); color: var(--fs-light); }
+.fs-nav__menu a:first-child { border-radius: var(--fs-radius) var(--fs-radius) 0 0; }
+.fs-nav__menu a:last-child { border-radius: 0 0 var(--fs-radius) var(--fs-radius); }
+.fs-nav__actions { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
+.fs-nav__cta { display: none; }
+.fs-nav__burger { background: none; border: 0; color: var(--c-heading); padding: .5rem; border-radius: var(--fs-radius); transition: background .2s; }
+.fs-nav__burger:hover { background: var(--fs-brand-strong); }
+/* Breakpoint bewusst auf 1180px (statt 1080px) angehoben: bei 4 Dropdowns +
+   FAQ + Kontakt reichte der Platz zwischen 1080-1180px nicht aus, um
+   Logo/Links/CTA-Buttons überlappungsfrei nebeneinander darzustellen. */
+@media (min-width: 1180px) { .fs-nav__links { display: flex; } .fs-nav__burger { display: none; } }
+@media (min-width: 640px) { .fs-nav__cta { display: inline-flex; } }
+
+/* Mobile drawer */
+.fs-drawer-overlay { position: fixed; inset: 0; background: var(--fs-scrim); z-index: 45; display: none; }
+.fs-drawer-overlay.is-open { display: block; }
+.fs-drawer {
+  position: fixed; top: 5rem; right: 0; bottom: 0; width: min(20rem, 85vw); z-index: 46;
+  background: var(--fs-brand-deep); box-shadow: -10px 0 30px -10px var(--fs-scrim);
+  transform: translateX(100%); transition: transform .3s ease; padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}
+.fs-drawer__group { border-bottom: 1px solid var(--c-border); padding-bottom: .75rem; }
+.fs-drawer__toggle { width: 100%; justify-content: space-between; display: flex !important; font-weight: 600; }
+.fs-drawer__toggle svg { transition: transform .3s; }
+.fs-drawer__group:has(.fs-drawer__sub.is-open) .fs-drawer__toggle svg { transform: rotate(180deg); }
+.fs-drawer__link { font-weight: 600; }
+.fs-drawer__actions { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: .75rem; }
+.fs-drawer.is-open { transform: none; }
+.fs-drawer a, .fs-drawer button { color: var(--c-text); font-size: 1.05rem; background: none; border: 0; text-align: left; display: inline-flex; align-items: center; gap: .4rem; }
+.fs-drawer a:hover { color: var(--c-heading); }
+.fs-drawer__sub { margin-top: .75rem; padding-left: 1rem; border-left: 2px solid var(--fs-brand-accent); display: none; flex-direction: column; gap: .5rem; }
+.fs-drawer__sub.is-open { display: flex; }
+@media (min-width: 1180px) { .fs-drawer, .fs-drawer-overlay { display: none !important; } }
+
+/* ==========================================================================
+   VIDEO HERO
+   ========================================================================== */
+.fs-vhero { position: relative; min-height: 90vh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding-top: 5rem; }
+.fs-vhero__media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.fs-vhero__overlay { position: absolute; inset: 0; z-index: 10; background: var(--fs-scrim); }
+.fs-vhero__inner { position: relative; z-index: 20; text-align: center; max-width: 48rem; }
+.fs-badge { display: inline-flex; align-items: center; gap: .5rem; background: var(--c-border); border: 1px solid var(--c-border); border-radius: 9999px; padding: .5rem 1rem; color: var(--c-accent); font-weight: 600; font-size: .875rem; }
+.fs-vhero h1 { font-size: clamp(2.75rem, 8vw, 4.5rem); font-weight: 800; color: var(--fs-light); margin: 1.25rem 0; }
+.fs-vhero p { font-size: clamp(1.05rem, 2.5vw, 1.25rem); color: var(--c-text); margin-bottom: 2rem; }
+/* PDF-Abschnitt F1: vier Absätze im Hero – enger gesetzt als ein einzelner Lead. */
+.fs-vhero__text { margin-bottom: 2rem; }
+.fs-vhero__text p { margin-bottom: .85rem; }
+.fs-vhero__text p:last-child { margin-bottom: 0; }
+.fs-hero-actions { display: flex; flex-direction: column; gap: 1rem; justify-content: center; }
+@media (min-width: 640px) { .fs-hero-actions { flex-direction: row; } }
+.fs-vhero .fs-fade-up:nth-child(2){ animation-delay:.1s } .fs-vhero .fs-fade-up:nth-child(3){ animation-delay:.2s } .fs-vhero .fs-fade-up:nth-child(4){ animation-delay:.3s }
+.fs-vhero .fs-fade-up { opacity: 0; }
+
+/* Heller Hero (Variante) */
+.fs-hero { position: relative; min-height: 90vh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding-top: 5rem; background: var(--fs-brand); }
+.fs-hero__bg { position: absolute; inset: 0; z-index: 0; background: var(--fs-brand); }
+.fs-hero__inner { position: relative; z-index: 10; text-align: center; }
+.fs-hero h1 { font-size: clamp(2.75rem, 8vw, 4.5rem); font-weight: 800; color: var(--c-heading); margin: 1.5rem 0; }
+.fs-hero p { font-size: clamp(1.05rem, 3vw, 1.5rem); color: var(--c-text); max-width: 48rem; margin: 0 auto 2rem; }
+
+/* ==========================================================================
+   FÜHRERSCHEINKLASSEN (Grid-Karten)
+   ========================================================================== */
+.fs-grid { display: grid; gap: 1rem; }
+.fs-grid--3 { grid-template-columns: 1fr; }
+@media (min-width: 640px){ .fs-grid--3 { grid-template-columns: repeat(2,1fr); } }
+@media (min-width: 1024px){ .fs-grid--3 { grid-template-columns: repeat(3,1fr); } }
+.fs-grid--2 { grid-template-columns: 1fr; gap: 1.5rem; }
+@media (min-width: 768px){ .fs-grid--2 { grid-template-columns: repeat(2,1fr); } }
+.fs-grid--4 { grid-template-columns: 1fr; gap: 1.5rem; }
+@media (min-width: 768px){ .fs-grid--4 { grid-template-columns: repeat(2,1fr); } }
+@media (min-width: 1024px){ .fs-grid--4 { grid-template-columns: repeat(4,1fr); } }
+
+.fs-license__name { font-size: 1.5rem; font-weight: 800; color: var(--c-accent); }
+.fs-license__sub { color: var(--c-text); font-size: .875rem; }
+.fs-license__desc { color: var(--c-heading); font-size: .9rem; margin: 1rem 0; }
+.fs-license__row { display: flex; justify-content: space-between; color: var(--c-text); font-size: .875rem; margin-bottom: .5rem; }
+.fs-license__row strong { color: var(--c-heading); font-weight: 600; }
+.fs-license__row strong.price { color: var(--c-accent); }
+
+/* Vollständige Klassenübersicht (PDF) */
+.fs-classlist { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+@media (min-width: 640px){ .fs-classlist { grid-template-columns: repeat(2,1fr);} }
+@media (min-width: 1024px){ .fs-classlist { grid-template-columns: repeat(4,1fr);} }
+.fs-classlist__cat { background: var(--c-card); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius-lg); padding: 1.5rem; }
+.fs-classlist__cat h2, .fs-classlist__cat h3 { color: var(--c-accent); font-size: 1.35rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; }
+.fs-classlist__cat ul { display: flex; flex-wrap: wrap; gap: .5rem; }
+.fs-classlist__cat li { background: var(--c-card); color: var(--c-heading); border: 1px solid var(--c-border); border-radius: 9999px; padding: .35rem .85rem; font-weight: 600; font-size: .9rem; }
+
+/* ==========================================================================
+   RECHNER
+   ========================================================================== */
+.fs-calc { max-width: 42rem; margin-inline: auto; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-lg); }
+.fs-calc__body { padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.fs-calc label { display: block; color: var(--c-heading); font-weight: 600; margin-bottom: .75rem; }
+.fs-pillgrid { display: grid; gap: .75rem; grid-template-columns: repeat(2,1fr); }
+@media (min-width: 640px){ .fs-pillgrid--3 { grid-template-columns: repeat(3,1fr);} }
+.fs-pill { padding: .5rem .75rem; border-radius: var(--fs-radius); font-weight: 600; background: var(--fs-brand); color: var(--c-text); border: 1px solid transparent; transition: all .2s; }
+.fs-pill:hover { border-color: var(--c-accent); }
+.fs-pill.is-active { background: var(--fs-brand-accent); color: var(--c-heading); }
+.fs-calc__result { margin-top: 1rem; padding: 1.5rem; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius); }
+.fs-calc__result .label { color: var(--c-text); font-size: .875rem; margin-bottom: .25rem; }
+.fs-calc__hours { font-size: 1.875rem; font-weight: 800; color: var(--c-heading); }
+.fs-calc__price { font-size: 2.25rem; font-weight: 800; color: var(--c-accent); }
+.fs-calc__hint { color: var(--c-text); font-size: .75rem; margin-top: .5rem; }
+
+/* ==========================================================================
+   STANDORTE (Sektion)
+   ========================================================================== */
+
+
+
+.fs-loc__img { height: 10rem; overflow: hidden; }
+.fs-loc__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.fs-card:hover .fs-loc__img img { transform: scale(1.05); }
+.fs-loc__title { font-size: 1.5rem; font-weight: 800; color: var(--c-heading); margin-bottom: 1rem; }
+.fs-loc__line { display: flex; gap: .75rem; margin-bottom: 1rem; color: var(--c-text); font-size: .9rem; }
+.fs-loc__line svg, .fs-icon-pink { color: var(--c-accent); flex: 0 0 auto; }
+.fs-card--glass { background: var(--c-card); border-color: var(--c-border); }
+
+/* ==========================================================================
+   TEAM SPIRIT
+   ========================================================================== */
+.fs-split { display: grid; gap: 3rem; align-items: center; grid-template-columns: 1fr; }
+@media (min-width: 1024px){ .fs-split { grid-template-columns: repeat(2,1fr);} }
+.fs-video-frame { position: relative; border-radius: var(--fs-radius-xl); overflow: hidden; border: 1px solid var(--c-border); background: var(--c-card); }
+.fs-video-frame video { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.fs-values { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+@media (min-width: 640px){ .fs-values { grid-template-columns: repeat(3,1fr);} }
+.fs-value { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius); padding: 1.5rem; transition: border-color .3s; }
+.fs-value:hover { border-color: var(--c-accent); }
+.fs-value__ico { width: 3rem; height: 3rem; border-radius: var(--fs-radius); background: var(--c-border); display: flex; align-items: center; justify-content: center; color: var(--c-accent); margin-bottom: 1rem; }
+.fs-value h3 { font-size: 1.25rem; font-weight: 600; color: var(--c-heading); margin-bottom: .5rem; }
+.fs-value p { color: var(--c-text); font-size: .875rem; }
+.fs-quote { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 1.5rem; }
+.fs-quote p { color: var(--c-text); font-style: italic; }
+.fs-quote .by { color: var(--c-accent); font-weight: 600; margin-top: 1rem; }
+.fs-prose h2 { font-size: clamp(2.25rem,5vw,3.75rem); font-weight: 800; color: var(--c-heading); margin-bottom: 1.5rem; line-height: 1.1; }
+.fs-prose > p { color: var(--c-text); font-size: 1.125rem; line-height: 1.7; margin-bottom: 2rem; }
+.fs-stack { display: flex; flex-direction: column; gap: 2rem; }
+
+/* ==========================================================================
+   FLOTTE & EINRICHTUNGEN  (dunkler Navy-Hintergrund)
+   ========================================================================== */
+.fs-tile { position: relative; overflow: hidden; border-radius: var(--fs-radius); border: 1px solid var(--c-border); transition: border-color .3s; }
+.fs-tile:hover { border-color: var(--c-accent); }
+.fs-tile__img { position: relative; height: 16rem; background: var(--fs-brand); }
+.fs-tile--lg .fs-tile__img { height: 18rem; }
+.fs-tile__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.fs-tile:hover .fs-tile__img img { transform: scale(1.08); }
+.fs-tile__shade { position: absolute; inset: 0; background: var(--fs-scrim); }
+.fs-tile__cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 1.5rem; }
+.fs-tile__cap h3 { color: var(--c-heading); font-weight: 800; font-size: 1.25rem; }
+.fs-tile__cap p { color: var(--c-text); font-size: .9rem; }
+.fs-cta-band { margin-top: 5rem; background: var(--fs-brand-strong); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; text-align: center; }
+.fs-cta-band h3 { font-size: 1.875rem; font-weight: 800; color: var(--c-heading); margin-bottom: 1rem; }
+.fs-cta-band p { color: var(--c-text); font-size: 1.125rem; margin-bottom: 2rem; }
+
+/* ==========================================================================
+   TESTIMONIALS
+   ========================================================================== */
+.fs-stars { display: flex; gap: .25rem; color: var(--c-accent); margin-bottom: .75rem; }
+.fs-testi { color: var(--c-text); line-height: 1.6; margin-bottom: 1rem; }
+.fs-testi-name { color: var(--c-heading); font-weight: 600; }
+.fs-testi-meta { color: var(--c-text); font-size: .875rem; }
+
+/* ==========================================================================
+   INSTAGRAM SLIDER
+   ========================================================================== */
+.fs-ig__head { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-bottom: 1rem; }
+.fs-ig__head h2 { font-size: clamp(2rem,5vw,2.5rem); font-weight: 800; color: var(--c-heading); }
+.fs-ig__head svg { color: var(--c-accent); }
+.fs-ig__track { display: grid; gap: 1.5rem; grid-template-columns: 1fr; margin-bottom: 2rem; }
+@media (min-width: 768px){ .fs-ig__track { grid-template-columns: repeat(3,1fr);} }
+.fs-ig__post { position: relative; overflow: hidden; border-radius: var(--fs-radius); border: 1px solid var(--c-border); transition: all .3s; }
+.fs-ig__post:hover { border-color: var(--c-accent); transform: scale(1.03); }
+.fs-ig__post img { width: 100%; height: 20rem; object-fit: cover; transition: transform .3s; }
+.fs-ig__post:hover img { transform: scale(1.08); }
+.fs-ig__badge { position: absolute; top: .75rem; left: .75rem; background: var(--fs-brand-strong); color: var(--c-heading); font-size: .72rem; font-weight: 600; padding: .25rem .75rem; border-radius: 9999px; }
+.fs-ig__nav { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+.fs-ig__arrow { padding: .75rem; border-radius: 9999px; background: var(--fs-brand); border: 1px solid var(--c-border); color: var(--c-accent); transition: all .3s; display: inline-flex; }
+.fs-ig__arrow:hover { border-color: var(--c-accent); }
+.fs-ig__dots { display: flex; gap: .5rem; }
+.fs-ig__dot { width: .5rem; height: .5rem; border-radius: 9999px; background: var(--c-border); border: 0; transition: all .3s; }
+.fs-ig__dot.is-active { background: var(--fs-brand-accent); width: 2rem; }
+
+/* ==========================================================================
+   FAQ (Accordion)
+   ========================================================================== */
+.fs-faq { max-width: 48rem; margin-inline: auto; display: flex; flex-direction: column; gap: 1rem; }
+.fs-faq__item { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-lg); transition: border-color .3s; overflow: hidden; }
+.fs-faq__item:hover { border-color: var(--c-accent); }
+.fs-faq__q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.5rem; background: none; border: 0; text-align: left; color: var(--c-heading); font-weight: 600; font-size: 1.125rem; }
+.fs-faq__q svg { color: var(--c-accent); flex: 0 0 auto; transition: transform .3s; }
+.fs-faq__item.is-open .fs-faq__q svg { transform: rotate(180deg); }
+.fs-faq__a { padding: 0 1.5rem 1.5rem; border-top: 1px solid var(--c-border); display: none; }
+.fs-faq__item.is-open .fs-faq__a { display: block; }
+.fs-faq__a p { color: var(--c-text); margin-top: 1rem; line-height: 1.6; }
+
+/* ==========================================================================
+   CTA
+   ========================================================================== */
+.fs-cta { position: relative; overflow: hidden; padding-block: 5rem; }
+@media (min-width:1024px){ .fs-cta { padding-block: 8rem; } }
+.fs-cta__bg { position: absolute; inset: 0; z-index: 0; background: var(--fs-brand); }
+.fs-cta h2 { font-size: clamp(2.25rem,6vw,3.75rem); font-weight: 800; color: var(--c-heading); margin-bottom: 1.5rem; }
+.fs-cta__lead { color: var(--c-text); font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem; }
+.fs-contact-line { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.fs-contact-line .sub { color: var(--c-text); font-size: .875rem; }
+.fs-contact-line .val { color: var(--c-heading); font-weight: 600; }
+.fs-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
+.fs-stat { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius); padding: 1.5rem; transition: border-color .3s; }
+.fs-stat:hover { border-color: var(--c-accent); }
+.fs-stat .num { font-size: 2.25rem; font-weight: 800; color: var(--c-accent); margin-bottom: .5rem; }
+.fs-stat .lbl { color: var(--c-text); font-size: .875rem; }
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.fs-footer { background: var(--fs-light); border-top: 1px solid var(--c-card-border); padding-block: 3rem; }
+.fs-footer__grid { display: grid; gap: 2rem; grid-template-columns: 1fr; max-width: 72rem; margin: 0 auto 2rem; }
+@media (min-width:640px){ .fs-footer__grid { grid-template-columns: repeat(2,1fr);} }
+@media (min-width:1024px){ .fs-footer__grid { grid-template-columns: repeat(4,1fr);} }
+.fs-footer h3 { font-size: 1.5rem; font-weight: 800; color: var(--c-heading); display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.fs-footer h4 { font-size: 1.125rem; font-weight: 600; color: var(--c-heading); margin-bottom: 1rem; }
+.fs-footer p, .fs-footer a, .fs-footer li { color: var(--c-text); font-size: .9rem; }
+.fs-footer ul { display: flex; flex-direction: column; gap: .5rem; }
+.fs-footer a:hover { color: var(--c-accent); }
+.fs-footer__bottom { border-top: 1px solid var(--fs-brand-strong); padding-top: 2rem; text-align: center; color: var(--c-text); font-size: .875rem; }
+.fs-footer__badges { display: flex; align-items: center; justify-content: center; gap: 2rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.fs-footer__badges img { height: 2rem; }
+
+/* ==========================================================================
+   TIKTOK BADGE
+   ========================================================================== */
+.fs-tiktok { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 40; }
+.fs-tiktok__link { position: relative; display: inline-flex; align-items: center; gap: .75rem; padding: .75rem 1.25rem; background: var(--fs-brand-accent); border-radius: 9999px; box-shadow: 0 12px 30px -8px rgba(109,13,69,.35); border: 1px solid var(--c-border); transition: all .3s; }
+.fs-tiktok__link:hover { box-shadow: 0 18px 44px -8px rgba(109,13,69,.35); }
+.fs-tiktok svg { color: var(--fs-light); width: 1.5rem; height: 1.5rem; }
+.fs-tiktok .t1 { color: var(--fs-light); font-weight: 700; font-size: .85rem; line-height: 1.1; display: block; }
+.fs-tiktok .t2 { color: rgba(255,255,255,.9); font-size: .75rem; line-height: 1.1; display: block; }
+.fs-tiktok__close { position: absolute; top: -.5rem; right: -.5rem; background: var(--fs-brand-deep); border: 1px solid var(--fs-brand-accent); color: var(--c-accent); border-radius: 9999px; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; }
+.fs-tiktok__close:hover { background: var(--fs-brand-accent); color: var(--fs-light); }
+
+/* Solange das Cookie-Banner offen ist, weicht der TikTok-Badge (ebenfalls
+   unten fixiert) zur Seite, statt sich mit dem Banner zu überlagern. */
+body.fs-cookie-open .fs-tiktok { display: none; }
+
+/* ---------- Cookie-Banner ---------- */
+.fs-cookiebanner {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 55;
+  background: var(--fs-light); border-top: 2px solid var(--fs-brand-accent);
+  box-shadow: 0 -12px 30px -12px rgba(109,13,69,.35);
+  padding: 1.25rem 1rem; transform: translateY(100%); transition: transform .3s ease;
+}
+.fs-cookiebanner.is-open { transform: translateY(0); }
+.fs-cookiebanner[hidden] { display: none; }
+.fs-cookiebanner__inner {
+  max-width: var(--fs-container); margin-inline: auto;
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
+}
+.fs-cookiebanner__text { color: var(--fs-on-light); font-size: .9rem; flex: 1 1 20rem; margin: 0; }
+.fs-cookiebanner__text a { color: var(--fs-brand-strong); text-decoration: underline; }
+.fs-cookiebanner__actions { display: flex; gap: .75rem; flex-wrap: wrap; flex: 0 0 auto; }
+
+/* ==========================================================================
+   ÜBER UNS — Timeline / Philosophie / Team
+   ========================================================================== */
+.fs-timeline { max-width: 48rem; margin-inline: auto; position: relative; }
+.fs-timeline::before { content: ""; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--c-accent); }
+.fs-timeline__item { display: flex; gap: 2rem; padding-bottom: 2rem; }
+.fs-timeline__dot { width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--fs-brand-accent); border: 4px solid var(--fs-brand-deep); flex: 0 0 auto; z-index: 1; }
+.fs-timeline__year { color: var(--c-accent); font-weight: 700; font-size: 1.125rem; }
+.fs-timeline__item h3 { font-size: 1.5rem; font-weight: 800; color: var(--c-heading); margin: .25rem 0; }
+.fs-timeline__item p { color: var(--c-text); }
+.fs-philo { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; transition: border-color .3s; }
+.fs-philo:hover { border-color: var(--c-accent); }
+.fs-philo svg { color: var(--c-accent); margin-bottom: 1rem; }
+.fs-philo h3 { font-size: 1.5rem; font-weight: 800; color: var(--c-heading); margin-bottom: .75rem; }
+.fs-philo p { color: var(--c-text); }
+/* Karte in der Kartenfarbe der Fläche (vorher Pink auf Pink – Namen kaum lesbar); nur das Initialen-Feld bleibt kräftig. */
+.fs-teamcard { position: relative; overflow: hidden; border-radius: var(--fs-radius-xl); background: var(--c-card); border: 1px solid var(--c-card-border); transition: border-color .3s; }
+.fs-teamcard:hover { border-color: var(--c-accent); }
+.fs-teamcard__avatar { aspect-ratio: 1/1; background: var(--fs-brand-strong); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; font-weight: 800; color: var(--fs-light); }
+.fs-teamcard__body { padding: 1.5rem; }
+.fs-teamcard__body h2, .fs-teamcard__body h3 { color: var(--c-heading); font-weight: 700; font-size: 1.125rem; }
+.fs-teamcard__body p { color: var(--c-text); font-size: .875rem; }
+.fs-teamcard__names { margin-top: .75rem; display: grid; gap: .25rem; }
+.fs-teamcard__names li { color: var(--c-heading); font-weight: 600; font-size: .9rem; }
+
+/* ==========================================================================
+   STANDORT-DETAILSEITEN (Location)
+   ========================================================================== */
+.fs-lochero { position: relative; min-height: 90vh; overflow: hidden; padding-top: 6rem; background: var(--fs-brand-deep); }
+.fs-lochero__inner { position: relative; z-index: 10; }
+.fs-lochero__grid { display: grid; gap: 3rem; align-items: center; padding-block: 5rem; grid-template-columns: 1fr; }
+@media (min-width:1024px){ .fs-lochero__grid { grid-template-columns: repeat(2,1fr);} }
+.fs-lochero h1 { font-size: clamp(2.25rem,5vw,3rem); font-weight: 800; color: var(--fs-light); line-height: 1.15; }
+.fs-lochero p.lead { color: var(--c-text); font-size: 1.125rem; line-height: 1.6; }
+.fs-lochero .fs-loc__line { color: var(--fs-light); }
+.fs-locform { border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; background: var(--c-card); position: relative; }
+.fs-locform::before, .fs-locform::after { content:""; position: absolute; width: 2rem; height: 2rem; border: 2px solid var(--fs-brand-accent); }
+.fs-locform::before { top: -1rem; left: -1rem; }
+.fs-locform::after { bottom: -1rem; right: -1rem; }
+.fs-locform h2, .fs-locform h3 { color: var(--c-heading); font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
+.fs-locform input, .fs-locform select {
+  width: 100%; background: var(--fs-brand-deep); border: 1px solid var(--c-border); border-radius: var(--fs-radius);
+  padding: .75rem 1rem; color: var(--fs-light); margin-bottom: 1rem; font-family: inherit; font-size: .95rem;
+}
+.fs-locform input::placeholder { color: var(--fs-tint); }
+.fs-locform input:focus, .fs-locform select:focus { outline: none; border-color: var(--c-accent); }
+.fs-contactform {
+  border: 1px solid var(--c-card-border); border-radius: var(--fs-radius-lg);
+  padding: 2rem; max-width: 640px; margin-inline: auto;
+}
+.fs-field { margin-bottom: 1.25rem; }
+.fs-contactform label { display: block; font-weight: 600; margin-bottom: .4rem; color: var(--c-card-heading); }
+.fs-contactform input, .fs-contactform select, .fs-contactform textarea {
+  width: 100%; background: var(--fs-light); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+  padding: .7rem 1rem; color: var(--c-card-text); font-family: inherit; font-size: .95rem;
+}
+.fs-contactform textarea { min-height: 8rem; resize: vertical; }
+.fs-contactform input:focus, .fs-contactform select:focus, .fs-contactform textarea:focus {
+  outline: none; border-color: var(--c-card-accent);
+}
+.fs-locimg { position: relative; height: 20rem; border-radius: var(--fs-radius-xl); overflow: hidden; border: 1px solid var(--c-border); transition: border-color .3s; }
+.fs-locimg:hover { border-color: var(--c-accent); }
+.fs-locimg img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.fs-locimg:hover img { transform: scale(1.05); }
+.fs-locimg__cap { position: absolute; inset: auto 0 0 0; padding: 1.5rem; background: var(--fs-scrim); }
+.fs-locimg__cap h3 { color: var(--fs-light); font-size: 1.5rem; font-weight: 800; }
+.fs-locimg__cap p { color: var(--c-text); }
+.fs-darktesti { background: var(--fs-brand-deep); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; transition: border-color .3s; }
+.fs-darktesti:hover { border-color: var(--c-accent); }
+.fs-darktesti p { color: var(--c-text); }
+.fs-darktesti .name { color: var(--fs-light); font-weight: 600; }
+
+/* Distanz-/Slider-Rechner */
+.fs-distance { max-width: 42rem; margin-inline: auto; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; }
+.fs-range { width: 100%; height: .5rem; border-radius: 9999px; appearance: none; -webkit-appearance: none; background: var(--fs-brand-deep); cursor: pointer; accent-color: var(--c-accent); }
+.fs-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1.25rem; height: 1.25rem; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
+.fs-range::-moz-range-thumb { width: 1.25rem; height: 1.25rem; border: 0; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
+.fs-distance__out { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
+.fs-distance__out .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
+.fs-distance__out p { color: var(--c-text); }
+
+/* Location Calculator (dunkler Verlauf) */
+.fs-loccalc { background: var(--fs-brand-deep); border-top: 1px solid var(--c-border); padding-block: 4rem; }
+.fs-loccalc h2 { font-size: clamp(2rem,5vw,2.5rem); font-weight: 800; color: var(--fs-light); text-align: center; margin-bottom: 1rem; }
+.fs-loccalc__lead { text-align: center; color: var(--c-text); max-width: 42rem; margin: 0 auto 3rem; }
+.fs-loccalc__grid { max-width: 48rem; margin-inline: auto; display: grid; gap: 2rem; grid-template-columns: 1fr; }
+@media (min-width:768px){ .fs-loccalc__grid { grid-template-columns: repeat(2,1fr);} }
+.fs-loccalc label { display: block; color: var(--fs-light); font-weight: 600; margin-bottom: 1rem; }
+.fs-loccalc .fs-pill { background: var(--fs-brand-strong); color: var(--c-text); }
+.fs-loccalc .fs-pill:hover { background: var(--fs-brand-strong); }
+.fs-loccalc .fs-pill.is-active { background: var(--fs-brand-accent); color: var(--fs-light); box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
+.fs-loccalc__total { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
+.fs-loccalc__total .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
+
+/* ==========================================================================
+   LEGAL / Content-Seiten
+   ========================================================================== */
+.fs-legal { max-width: 56rem; margin-inline: auto; }
+.fs-legal__card { background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; }
+@media (min-width:768px){ .fs-legal__card { padding: 3rem; } }
+.fs-legal h1 { font-size: clamp(2rem,5vw,3rem); font-weight: 800; color: var(--c-heading); }
+.fs-legal h2 { font-size: 1.5rem; font-weight: 800; color: var(--c-heading); margin-bottom: 1rem; }
+.fs-legal h3 { font-size: 1.25rem; font-weight: 700; color: var(--c-heading); margin: 1.5rem 0 .75rem; }
+.fs-legal__block { margin-bottom: 3rem; border-top: 1px solid var(--c-border); padding-top: 2rem; }
+.fs-legal__block:first-of-type { border-top: 0; padding-top: 0; }
+.fs-legal p, .fs-legal li { color: var(--c-text); margin-bottom: 1rem; line-height: 1.6; }
+.fs-legal a { color: var(--c-accent); }
+.fs-legal strong { color: var(--c-heading); }
+
+/* ==========================================================================
+   PDF-Custom-Blöcke: Leistungen / Berufskraftfahrer / ASF&FES / Moderne Ausbildung / Anmeldung
+   ========================================================================== */
+.fs-features { display: grid; gap: 1rem; grid-template-columns: 1fr; max-width: 56rem; margin-inline: auto; }
+@media (min-width:640px){ .fs-features { grid-template-columns: repeat(2,1fr);} }
+.fs-feature { display: flex; gap: .75rem; align-items: flex-start; background: var(--c-card); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius); padding: 1rem 1.25rem; transition: border-color .3s; }
+.fs-feature:hover { border-color: var(--c-accent); }
+.fs-feature svg { color: var(--c-accent); flex: 0 0 auto; margin-top: .15rem; }
+.fs-feature span { color: var(--c-heading); font-weight: 600; }
+/* Listen-Einleitung aus dem PDF („Unsere Leistungen:", „Inhalte:" …). */
+.fs-listintro { text-align: center; color: var(--c-heading); font-size: 1.25rem; font-weight: 700; margin: 0 auto 1.25rem; }
+.fs-rich { max-width: 56rem; margin-inline: auto; }
+.fs-rich p { color: var(--c-text); font-size: 1.05rem; line-height: 1.7; margin-bottom: 1rem; }
+.fs-rich p.lead { color: var(--c-heading); font-weight: 600; font-size: 1.2rem; }
+.fs-anmeldung { max-width: 48rem; margin-inline: auto; text-align: center; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem 2rem; }
+.fs-anmeldung h2 { color: var(--c-heading); font-size: clamp(1.8rem,4vw,2.5rem); font-weight: 800; margin-bottom: 1rem; }
+.fs-anmeldung p { color: var(--c-text); margin-bottom: 2rem; font-size: 1.1rem; }
+.fs-anmeldung__text p { margin-bottom: 1rem; }
+.fs-anmeldung__text { margin-bottom: 2rem; }
+.fs-anmeldung .fs-anmeldung__label { color: var(--c-heading); font-weight: 600; margin-bottom: .75rem; }
+.fs-anmeldung .fs-eyebrow { color: var(--c-accent); }
+
+/* Utility */
+.fs-center { text-align: center; }
+.fs-mt-4 { margin-top: 1rem; } .fs-mt-6 { margin-top: 1.5rem; } .fs-mt-8 { margin-top: 2rem; }
+.fs-mb-8 { margin-bottom: 2rem; }
+
+/* Abstand unter der fixierten Navigation für Seiten ohne Hero */
+.fs-pagetop { padding-top: 5rem; }
+
+/* Instagram: serverseitig gerenderte Beitragstexte */
+.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-deep); margin: 0; }
+.fs-ig__cap { padding: 1rem; }
+.fs-ig__cap p { color: var(--c-text); font-size: .85rem; margin-bottom: .5rem; }
+.fs-ig__meta { display: flex; gap: 1.5rem; color: var(--c-accent); font-weight: 600; font-size: .85rem; }
+
+/* Skip-Link (Barrierefreiheit) */
+.fs-skip {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--fs-brand-accent); color: var(--fs-light); padding: .75rem 1.25rem;
+  border-radius: 0 0 var(--fs-radius) 0; font-weight: 600;
+}
+.fs-skip:focus { left: 0; }
+:focus-visible { outline: 3px solid var(--fs-brand-accent); outline-offset: 2px; }
+
+/* ==========================================================================
+   UNTERSEITEN: Seitenkopf, Breadcrumbs, Themen-Teaser
+   ========================================================================== */
+.fs-pagehero {
+  position: relative; overflow: hidden; background: var(--fs-brand);
+  padding: 8rem 0 3rem; text-align: center;
+}
+@media (min-width: 768px) { .fs-pagehero { padding: 9.5rem 0 4rem; } }
+.fs-pagehero h1 {
+  font-size: clamp(2.1rem, 5.5vw, 3.4rem); font-weight: 800;
+  color: var(--c-heading); margin: .5rem 0 0;
+}
+.fs-pagehero__lead {
+  color: var(--c-text); font-size: 1.1rem; line-height: 1.6;
+  max-width: 46rem; margin: 1rem auto 0;
+}
+
+.fs-crumbs { background: var(--c-card); padding: .65rem 0; font-size: .85rem; }
+.fs-crumbs ol { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.fs-crumbs li { display: flex; align-items: center; gap: .4rem; color: var(--c-heading); }
+.fs-crumbs li + li::before { content: "›"; color: var(--c-accent); }
+.fs-crumbs a { color: var(--c-text); }
+.fs-crumbs a:hover { color: var(--c-accent); text-decoration: underline; }
+.fs-crumbs [aria-current="page"] span { font-weight: 600; color: var(--c-heading); }
+
+.fs-teasers { display: grid; gap: 1.25rem; grid-template-columns: 1fr; max-width: 72rem; margin-inline: auto; }
+@media (min-width: 640px)  { .fs-teasers { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .fs-teasers { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1024px) { .fs-teasers--3 { grid-template-columns: repeat(3, 1fr); } }
+.fs-teaser {
+  display: flex; flex-direction: column; gap: .5rem;
+  background: var(--c-card); border: 1px solid var(--c-card-border);
+  border-radius: var(--fs-radius-lg); padding: 1.5rem; transition: all .3s ease;
+}
+.fs-teaser:hover, .fs-teaser:focus-visible {
+  border-color: var(--c-accent); transform: translateY(-4px);
+  box-shadow: 0 18px 40px -18px rgba(109,13,69,.35);
+}
+.fs-teaser__ico {
+  width: 3rem; height: 3rem; border-radius: var(--fs-radius);
+  background: var(--c-card); color: var(--c-accent);
+  display: flex; align-items: center; justify-content: center; margin-bottom: .25rem;
+}
+.fs-teaser h2, .fs-teaser h3 { font-size: 1.15rem; font-weight: 700; color: var(--c-heading); }
+.fs-teaser p { color: var(--c-text); font-size: .9rem; line-height: 1.5; flex: 1; }
+.fs-teaser .fs-eyebrow { font-size: .75rem; }
+.fs-teaser__more {
+  display: inline-flex; align-items: center; gap: .35rem;
+  color: var(--c-accent); font-weight: 600; font-size: .875rem; margin-top: .5rem;
+}
+.fs-teaser:hover .fs-teaser__more { gap: .6rem; }
+
+.fs-footer__legal { display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.fs-footer__legal a { color: var(--c-text); }
+.fs-footer__legal a:hover { color: var(--c-accent); }
+.fs-footer__legal .fs-footer__consent {
+  background: none; border: none; padding: 0; margin: 0; font: inherit; cursor: pointer;
+  color: var(--c-text);
+}
+.fs-footer__legal .fs-footer__consent:hover, .fs-footer__legal .fs-footer__consent:focus-visible { color: var(--c-accent); }
+
+/* ==========================================================================
+   FOTO-OVERLAYS — einheitlicher Abdunkler, Text immer weiß
+   ========================================================================== */
+.fs-tile__shade, .fs-locimg__cap, .fs-vhero__overlay { background: var(--fs-scrim); }
+.fs-tile__cap, .fs-tile__cap h3, .fs-tile__cap p,
+.fs-locimg__cap, .fs-locimg__cap h3, .fs-locimg__cap p,
+.fs-vhero, .fs-vhero h1, .fs-vhero p { color: var(--fs-light); }
+.fs-vhero .fs-badge { background: var(--fs-brand); border-color: var(--fs-light); color: var(--fs-light); }
+
+/* Badge & Eyebrow folgen dem Flächenkontext */
+.fs-badge { background: var(--c-card); border: 1px solid var(--c-card-border); color: var(--c-card-accent); }
+.fs-eyebrow { color: var(--c-accent); }
+.fs-head h2, .fs-head h1 { color: var(--c-heading); }
+.fs-head p { color: var(--c-text); }
+.fs-accent { color: var(--c-accent); }
+
+/* Slider-Regler ohne Verlauf */
+.fs-range { background: var(--c-card-border); accent-color: var(--fs-brand-accent); }
+.fs-range::-webkit-slider-thumb { background: var(--fs-brand-accent); }
+.fs-range::-moz-range-thumb { background: var(--fs-brand-accent); }
+
+/* Aktive Auswahl (Pills) */
+.fs-pill { background: var(--c-card); color: var(--c-card-text); border: 1px solid var(--c-card-border); }
+.fs-pill:hover { border-color: var(--fs-brand-accent); }
+.fs-pill.is-active { background: var(--fs-brand-strong); color: var(--fs-light); border-color: var(--fs-brand-strong); }
+
+/* Navigation folgt der hellen Fläche, sobald sie hinterlegt ist */
+.fs-nav.is-scrolled { background: var(--fs-light); }
+.fs-nav.is-scrolled .fs-nav__toplink { color: var(--fs-on-light); }
+.fs-nav.is-scrolled .fs-nav__toplink:hover,
+.fs-nav.is-scrolled .fs-nav__toplink.is-active { color: var(--fs-heading); }
+.fs-nav__toplink { color: var(--fs-light); }
+.fs-nav__menu { background: var(--fs-light); border: 1px solid rgba(109,13,69,.15); }
+.fs-nav__menu a { color: var(--fs-on-light); }
+.fs-drawer { background: var(--fs-brand-deep); color: var(--fs-light); }
+.fs-drawer a, .fs-drawer button { color: var(--fs-light); }
+.fs-drawer a:hover, .fs-drawer button:hover { color: var(--fs-tint); }
+.fs-drawer { --c-text: var(--fs-light); --c-bg: var(--fs-brand-deep); --c-btn-bg: var(--fs-tint); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint); }
+
+/* Breadcrumbs */
+.fs-crumbs { background: var(--fs-brand-deep); color: var(--fs-light); }
+.fs-crumbs li, .fs-crumbs [aria-current="page"] span { color: var(--fs-light); }
+.fs-crumbs a { color: var(--fs-light); }
+.fs-crumbs a:hover { color: var(--fs-tint); }
+.fs-crumbs li + li::before { color: var(--fs-tint); }
+
+/* Sterne-Bewertung */
+.fs-stars { color: var(--c-accent); }
+/* Icons in Kontaktzeilen */
+.fs-loc__line svg, .fs-icon-pink, .fs-feature svg, .fs-teaser__ico { color: var(--c-accent); }
+.fs-teaser__ico { background: var(--c-card); }
+.fs-value__ico { background: var(--c-card); color: var(--c-card-accent); }
+
+/* Team-Foto (falls in der Medien-Registry hinterlegt) */
+.fs-teamcard__photo { aspect-ratio: 1/1; width: 100%; object-fit: cover; }

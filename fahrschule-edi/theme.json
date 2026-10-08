@@ -1,0 +1,111 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "settings": {
+    "appearanceTools": true,
+    "layout": {
+      "contentSize": "1152px",
+      "wideSize": "1280px"
+    },
+    "color": {
+      "custom": true,
+      "customGradient": false,
+      "defaultPalette": false,
+      "palette": [
+        {
+          "slug": "brand",
+          "name": "Pink Hintergrund",
+          "color": "#d12487"
+        },
+        {
+          "slug": "brand-accent",
+          "name": "Pink Akzent",
+          "color": "#e62775"
+        },
+        {
+          "slug": "brand-strong",
+          "name": "Pink Kräftig",
+          "color": "#b81d5e"
+        },
+        {
+          "slug": "brand-deep",
+          "name": "Pink Tief",
+          "color": "#6d0d45"
+        },
+        {
+          "slug": "heading",
+          "name": "Bordeaux (Überschrift)",
+          "color": "#8a1245"
+        },
+        {
+          "slug": "light",
+          "name": "Weiß",
+          "color": "#ffffff"
+        },
+        {
+          "slug": "tint",
+          "name": "Rosé (Karte)",
+          "color": "#fdeaf3"
+        },
+        {
+          "slug": "on-light",
+          "name": "Text auf Hell",
+          "color": "#3a3a44"
+        }
+      ]
+    },
+    "typography": {
+      "fontFamilies": [
+        {
+          "fontFamily": "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+          "slug": "sans",
+          "name": "Geist / Sans"
+        }
+      ],
+      "fontSizes": [
+        {
+          "slug": "small",
+          "size": "0.875rem",
+          "name": "Klein"
+        },
+        {
+          "slug": "medium",
+          "size": "1.125rem",
+          "name": "Mittel"
+        },
+        {
+          "slug": "large",
+          "size": "1.5rem",
+          "name": "Groß"
+        },
+        {
+          "slug": "x-large",
+          "size": "2.5rem",
+          "name": "Sehr groß"
+        },
+        {
+          "slug": "xx-large",
+          "size": "4rem",
+          "name": "Riesig"
+        }
+      ]
+    }
+  },
+  "styles": {
+    "color": {
+      "background": "#d12487",
+      "text": "#ffffff"
+    },
+    "typography": {
+      "fontFamily": "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+      "lineHeight": "1.6"
+    },
+    "elements": {
+      "link": {
+        "color": {
+          "text": "#ffffff"
+        }
+      }
+    }
+  }
+}

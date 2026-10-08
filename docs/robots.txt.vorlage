@@ -1,0 +1,150 @@
+# robots.txt – Fahrschule edi
+#
+# HINWEIS ZUR VERWENDUNG
+# ----------------------
+# Diese Datei ist eine Kopiervorlage für das WEB-ROOT (neben wp-config.php),
+# NICHT für den Theme-Ordner. WordPress liefert unter /robots.txt bereits eine
+# virtuelle Datei aus, die dieses Theme über den Filter `robots_txt`
+# (inc/seo.php) mit exakt diesem Inhalt befüllt.
+#
+# -> Normalfall: nichts kopieren, das Theme erledigt es automatisch.
+# -> Nur wenn eine physische Datei gewünscht ist (z. B. weil ein Plugin oder
+#    der Server die virtuelle Ausgabe blockiert), diese Datei ins Web-Root legen.
+#    Achtung: Eine physische Datei überschreibt die dynamische Ausgabe komplett;
+#    die Sitemap-Zeile unten dann an die echte Domain anpassen.
+#
+# Grundhaltung: Suchmaschinen sind ausdrücklich erwünscht (sonst keine
+# SEO-Sichtbarkeit). Ausgesperrt werden KI-Trainings-Crawler, aggressive
+# SEO-/Scraping-Bots und interne WordPress-Pfade.
+
+
+# --- Allgemeine Regeln (gilt für alle nicht separat genannten Bots) ---
+User-agent: *
+Disallow: /wp-admin/
+Allow: /wp-admin/admin-ajax.php
+Disallow: /wp-login.php
+Disallow: /xmlrpc.php
+Disallow: /wp-json/
+Disallow: /?s=
+Disallow: /search/
+Disallow: /*?replytocom=
+Disallow: /*?attachment_id=
+Allow: /wp-content/uploads/
+Allow: /wp-content/themes/*.css
+Allow: /wp-content/themes/*.js
+
+
+# --- KI-Trainings-Crawler aussperren ---
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: Timpibot
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+
+# --- Aggressive SEO-/Scraping-Bots (Serverlast ohne Gegenwert) ---
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+User-agent: SerpstatBot
+Disallow: /
+
+User-agent: ZoominfoBot
+Disallow: /
+
+User-agent: Barkrowler
+Disallow: /
+
+
+# --- Sitemap (Domain anpassen, falls physisch verwendet) ---
+Sitemap: https://www.fahrschule-edi.de/wp-sitemap.xml
+
+
+# ============================================================
+# KOMPLETTSPERRE (z. B. Staging-/Testumgebung)
+# ------------------------------------------------------------
+# Variante A – ohne Datei: in wp-config.php eintragen
+#   define( 'FAHRSCHULE_BLOCK_ALL_BOTS', true );
+#
+# Variante B – mit dieser Datei: alle Zeilen oben löschen und
+# stattdessen nur die folgenden zwei Zeilen aktiv lassen:
+#   User-agent: *
+#   Disallow: /
+#
+# Wichtig: robots.txt verhindert das Crawlen, nicht zwingend die
+# Indexierung verlinkter URLs. Für echte Nicht-Indexierung zusätzlich
+# unter Einstellungen -> Lesen die Sichtbarkeit deaktivieren
+# (setzt noindex-Header) oder HTTP-Basic-Auth verwenden.
+# ============================================================

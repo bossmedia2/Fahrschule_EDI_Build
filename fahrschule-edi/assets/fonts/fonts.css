@@ -1,0 +1,31 @@
+/**
+ * Geist – lokal, nicht von Google/Vercel.
+ *
+ * Dieselbe Begründung wie beim Schwesterprojekt (KAZ NRW): eine dynamisch von
+ * einem Drittserver nachgeladene Schrift überträgt die IP-Adresse der
+ * Besuchenden dorthin, bevor eine Einwilligung vorliegt (LG München I,
+ * 20.01.2022, Az. 3 O 17493/20 – Verletzung des allgemeinen
+ * Persönlichkeitsrechts). Geist ist unter der SIL Open Font License
+ * (https://github.com/vercel/geist-font) selbst hostbar.
+ *
+ * Die eigentlichen Dateien (geist-400.woff2 / geist-700.woff2) liegen noch
+ * nicht in diesem Ordner – siehe SYSTEM-REPORT.md. Ohne sie greift @font-face
+ * einfach nicht und der Fallback-Stack in main.css (-apple-system, Segoe UI,
+ * Roboto, Arial …) übernimmt unverändert; es entsteht kein Fehler.
+ */
+
+@font-face {
+  font-family: "Geist";
+  src: url("geist-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("geist-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

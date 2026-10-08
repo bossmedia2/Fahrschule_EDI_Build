@@ -1,0 +1,3 @@
+# Auslieferungspakete - werden von bin/build-zip.sh gebaut, nicht versioniert
+/dist/
+.DS_Store
