@@ -34,8 +34,8 @@ function fahrschule_media_map() {
 	return apply_filters( 'fahrschule_media', array(
 
 		/* --- Marke (lokal, aus der alten Seite extrahiert) --- */
-		'logo'          => $local . 'logo-edi.png',
-		'logo_certqua'  => $local . 'logo-certqua.png',
+		'logo'          => $local . 'logo-edi.webp',
+		'logo_certqua'  => $local . 'logo-certqua.webp',
 		// Trat auf jeder Seite der alten Website neben logo_certqua auf -
 		// vermutlich eine lokale Kooperation/Partnerschaft (Standort
 		// Gelsenkirchen). Noch ohne eigenen Platz im neuen Theme, siehe
@@ -54,19 +54,19 @@ function fahrschule_media_map() {
 		 * Seite nutzte dort einen Elementor-Bildschnitt ohne
 		 * wiederverwendbaren Dateinamen) - bleibt extern. */
 		'loc_duisburg'      => '',
-		'loc_essen'         => $local . 'loc-essen.jpg',
-		'loc_gelsenkirchen' => $local . 'loc-gelsenkirchen.jpg',
+		'loc_essen'         => $local . 'loc-essen.webp',
+		'loc_gelsenkirchen' => $local . 'loc-gelsenkirchen.webp',
 
 		/* --- Fuhrpark (lokal) --- */
-		'fleet_pkw'      => $local . 'fleet-pkw.jpg',
-		'fleet_lkw'      => $local . 'fleet-lkw.jpg',
-		'fleet_motorrad' => $local . 'fleet-motorrad.jpg',
-		'fleet_bus'      => $local . 'fleet-bus.jpg',
+		'fleet_pkw'      => $local . 'fleet-pkw.webp',
+		'fleet_lkw'      => $local . 'fleet-lkw.webp',
+		'fleet_motorrad' => $local . 'fleet-motorrad.webp',
+		'fleet_bus'      => $local . 'fleet-bus.webp',
 
 		/* --- Räumlichkeiten (lokal) --- */
-		'fac_klassenraum' => $local . 'fac-klassenraum.jpg',
-		'fac_empfang'     => $local . 'fac-empfang.jpg',
-		'fac_buero'       => $local . 'fac-buero.jpg',
+		'fac_klassenraum' => $local . 'fac-klassenraum.webp',
+		'fac_empfang'     => $local . 'fac-empfang.webp',
+		'fac_buero'       => $local . 'fac-buero.webp',
 
 		/* --- Absolventen: noch keine eigenen Fotos vorhanden --- */
 		'grad_auto'     => '',

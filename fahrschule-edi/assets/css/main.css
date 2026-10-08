@@ -98,7 +98,11 @@
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
 }
 .fs-ctx-deep,
-.fs-drawer {
+.fs-drawer,
+.fs-cta-band,
+.fs-distance__out,
+.fs-loccalc__total,
+.fs-ig__post {
   --c-bg: var(--fs-brand-deep);
   --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
   --c-border: rgba(255,255,255,.35);
@@ -110,8 +114,8 @@
 /* Karten schalten den Kontext erneut um (heller Block auf farbiger Fläche). */
 .fs-card, .fs-value, .fs-philo, .fs-teaser, .fs-faq__item, .fs-calc, .fs-stat,
 .fs-quote, .fs-feature, .fs-teamcard, .fs-darktesti, .fs-classlist__cat,
-.fs-locform, .fs-distance, .fs-loccalc__total, .fs-legal__card, .fs-anmeldung,
-.fs-calc__result, .fs-distance__out, .fs-contactform {
+.fs-locform, .fs-distance, .fs-legal__card, .fs-anmeldung,
+.fs-calc__result, .fs-contactform {
   background: var(--c-card);
   border-color: var(--c-card-border);
   color: var(--c-card-text);
@@ -232,7 +236,9 @@ ul { margin: 0; padding: 0; list-style: none; }
    ========================================================================== */
 .fs-nav { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: all .3s ease; }
 .fs-nav.is-scrolled { box-shadow: 0 8px 24px -12px rgba(109,13,69,.25); }
-.fs-nav__inner { display: flex; align-items: center; justify-content: space-between; height: 5rem; }
+/* gap sichert einen Mindestabstand zwischen Menü und CTA-Block: mit
+   space-between allein stehen beide bei knappem Platz bündig aneinander. */
+.fs-nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; height: 5rem; }
 .fs-nav__logo { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
 .fs-nav__logo img { height: 2.5rem; width: auto; max-width: 10rem; object-fit: contain; }
 /* nowrap statt wrap: bricht die Leiste nicht mehr lautlos in mehrere Zeilen
@@ -422,7 +428,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-tile__cap p { color: var(--c-text); font-size: .9rem; }
 /* Kräftig pinkes Band auf heller Fläche: H3 stand mit --c-heading (Bordeaux)
    bei 1,50:1 auf dem Band. Kontext auf „dunkel" stellen. */
-.fs-cta-band { --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
+.fs-cta-band { --c-bg: var(--fs-brand-strong);
   margin-top: 5rem; background: var(--fs-brand-strong); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; text-align: center; }
 .fs-cta-band h3 { font-size: 1.875rem; font-weight: 800; color: var(--c-heading); margin-bottom: 1rem; }
 .fs-cta-band p { color: var(--c-text); font-size: 1.125rem; margin-bottom: 2rem; }
@@ -617,8 +623,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-range::-moz-range-thumb { width: 1.25rem; height: 1.25rem; border: 0; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
 /* Dunkler Einsatz in einer hellen Karte: ohne eigenen Kontext blieben Text
    (#3a3a44 auf #6d0d45 = 1,04:1) und Zahl (1,88:1) praktisch unlesbar. */
-.fs-distance__out { --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
-  background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
+.fs-distance__out { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
 .fs-distance__out .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
 .fs-distance__out p { color: var(--c-text); }
 
@@ -632,8 +637,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-loccalc .fs-pill { background: var(--fs-brand-strong); color: var(--c-text); }
 .fs-loccalc .fs-pill:hover { background: var(--fs-brand-strong); }
 .fs-loccalc .fs-pill.is-active { background: var(--fs-brand-strong); color: var(--fs-light); box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
-.fs-loccalc__total { --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
-  background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
+.fs-loccalc__total { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
 .fs-loccalc__total .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
 
 /* ==========================================================================
@@ -682,8 +686,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-pagetop { padding-top: 5rem; }
 
 /* Instagram: serverseitig gerenderte Beitragstexte */
-.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-deep); margin: 0;
-  --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint); }
+.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-deep); margin: 0; }
 .fs-ig__cap { padding: 1rem; }
 .fs-ig__cap p { color: var(--c-text); font-size: .85rem; margin-bottom: .5rem; }
 .fs-ig__meta { display: flex; gap: 1.5rem; color: var(--c-accent); font-weight: 600; font-size: .85rem; }

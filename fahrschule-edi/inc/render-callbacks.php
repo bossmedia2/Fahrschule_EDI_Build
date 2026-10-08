@@ -39,7 +39,7 @@ function fs_render_navigation( $a ) {
 		<div class="fs-container">
 			<div class="fs-nav__inner">
 				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="fs-nav__logo" aria-label="Fahrschule edi – zur Startseite">
-					<img src="<?php echo esc_url( $logo ); ?>" alt="Fahrschule &amp; Fahrlehrerfachschule edi" width="120" height="40" decoding="async" fetchpriority="high">
+					<img src="<?php echo esc_url( $logo ); ?>" alt="Fahrschule &amp; Fahrlehrerfachschule edi" width="87" height="40" decoding="async" fetchpriority="high">
 				</a>
 
 				<div class="fs-nav__links">
