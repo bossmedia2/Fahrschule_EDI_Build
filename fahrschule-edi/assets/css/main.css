@@ -9,8 +9,9 @@
   --fs-brand-deep:   #6d0d45; /* Tiefe Variante für helle Pinkflächen */
   --fs-heading:      #8a1245; /* Überschriften auf hellem Grund */
 
-  --fs-light:        #ffffff; /* helle Fläche */
-  --fs-tint:         #fdeaf3; /* zarte Pinkfläche (Karten auf Hell) */
+  --fs-light:        #ffffff; /* Karte, Button, Formularfeld, Flyout - NICHT mehr für große Flächen */
+  --fs-rose:         #fbdce9; /* helle Sektionsfläche (ersetzt Weiß) */
+  --fs-tint:         #fdeaf3; /* zarter Hover-/Akzentton */
 
   --fs-on-light:       #3a3a44;
 
@@ -33,7 +34,7 @@
   --c-heading:       #ffffff;
   --c-accent:        #ffffff;
   --c-border:        rgba(255,255,255,.35);
-  --c-card:          var(--fs-light);
+  --c-card:          var(--fs-tint);
   --c-card-text:     var(--fs-on-light);
   --c-card-heading:  var(--fs-heading);
   --c-card-accent:   var(--fs-brand-strong);
@@ -55,25 +56,26 @@
    keine Komponente mehr in einem Kontext landen, in dem sie unlesbar wird.
    Alle Kombinationen erfüllen WCAG AA (>= 4.5:1).
    ========================================================================== */
-.fs-surface-brand {
+.fs-surface-brand,
+.fs-loccalc {
   background: var(--fs-brand);
   --c-bg: var(--fs-brand);
   --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-light);
   --c-border: rgba(255,255,255,.35);
-  --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
+  --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(109,13,69,.25);
   --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
   color: var(--fs-light);
 }
 .fs-surface-light {
-  background: var(--fs-light);
-  --c-bg: var(--fs-light);
+  background: var(--fs-rose);
+  --c-bg: var(--fs-rose);
   --c-text: var(--fs-on-light); --c-heading: var(--fs-heading); --c-accent: var(--fs-brand-strong);
   --c-border: rgba(109,13,69,.25);
-  --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
+  --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
-  --c-card-border: rgba(138,18,69,.18);
+  --c-card-border: rgba(138,18,69,.25);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
   color: var(--fs-on-light);
 }
@@ -84,17 +86,18 @@
    :root-Kontext (= Textfarben für die pinke Fläche, also hell). Sobald so
    eine Komponente einen eigenen hellen bzw. dunklen Hintergrund bekommt,
    bindet sie hier den passenden Satz ein, statt Einzelfarben zu überschreiben.
-   Die Werte sind deckungsgleich mit .fs-surface-light bzw. der dunklen Stufe.
+   Die Werte sind deckungsgleich mit .fs-surface-light bzw. der kräftigen Pinkstufe.
    -------------------------------------------------------------------------- */
 .fs-ctx-light,
 .fs-nav.is-scrolled,
+.fs-nav__menu,
 .fs-cookiebanner {
   --c-bg: var(--fs-light);
   --c-text: var(--fs-on-light); --c-heading: var(--fs-heading); --c-accent: var(--fs-brand-strong);
   --c-border: rgba(109,13,69,.25);
-  --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
+  --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
-  --c-card-border: rgba(138,18,69,.18);
+  --c-card-border: rgba(138,18,69,.25);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
 }
 .fs-ctx-deep,
@@ -103,10 +106,10 @@
 .fs-distance__out,
 .fs-loccalc__total,
 .fs-ig__post {
-  --c-bg: var(--fs-brand-deep);
+  --c-bg: var(--fs-brand-strong);
   --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
   --c-border: rgba(255,255,255,.35);
-  --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
+  --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(109,13,69,.25);
   --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
@@ -288,7 +291,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-drawer-overlay.is-open { display: block; }
 .fs-drawer {
   position: fixed; top: 5rem; right: 0; bottom: 0; width: min(20rem, 85vw); z-index: 46;
-  background: var(--fs-brand-deep); box-shadow: -10px 0 30px -10px var(--fs-scrim);
+  background: var(--fs-brand-strong); box-shadow: -10px 0 30px -10px var(--fs-scrim);
   transform: translateX(100%); transition: transform .3s ease; padding: 1.5rem;
   display: flex; flex-direction: column; gap: 1rem;
   overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
@@ -300,7 +303,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-drawer__link { font-weight: 600; }
 .fs-drawer__actions { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: .75rem; }
 .fs-drawer.is-open { transform: none; }
-.fs-drawer a, .fs-drawer button { color: var(--c-text); font-size: 1.05rem; background: none; border: 0; text-align: left; display: inline-flex; align-items: center; gap: .4rem; }
+.fs-drawer a:not(.fs-btn), .fs-drawer button:not(.fs-btn) { color: var(--c-text); font-size: 1.05rem; background: none; border: 0; text-align: left; display: inline-flex; align-items: center; gap: .4rem; }
 .fs-drawer a:hover { color: var(--c-heading); }
 .fs-drawer__sub { margin-top: .75rem; padding-left: 1rem; border-left: 2px solid var(--fs-brand-accent); display: none; flex-direction: column; gap: .5rem; }
 .fs-drawer__sub.is-open { display: flex; }
@@ -494,7 +497,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 /* ==========================================================================
    FOOTER
    ========================================================================== */
-.fs-footer { background: var(--fs-light); border-top: 1px solid var(--c-card-border); padding-block: 3rem; }
+.fs-footer { background: var(--fs-rose); border-top: 1px solid var(--c-card-border); padding-block: 3rem; }
 .fs-footer__grid { display: grid; gap: 2rem; grid-template-columns: 1fr; max-width: 72rem; margin: 0 auto 2rem; }
 @media (min-width:640px){ .fs-footer__grid { grid-template-columns: repeat(2,1fr);} }
 @media (min-width:1024px){ .fs-footer__grid { grid-template-columns: repeat(4,1fr);} }
@@ -529,7 +532,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
    Standardfläche und steht weiß auf weiß — der Ablehnen-Button verschwindet. */
 .fs-cookiebanner {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 55;
-  background: var(--fs-light); border-top: 2px solid var(--fs-brand-accent);
+  background: var(--fs-rose); border-top: 2px solid var(--fs-brand-accent);
   box-shadow: 0 -12px 30px -12px rgba(109,13,69,.35);
   padding: 1.25rem 1rem; transform: translateY(100%); transition: transform .3s ease;
 }
@@ -572,7 +575,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* ==========================================================================
    STANDORT-DETAILSEITEN (Location)
    ========================================================================== */
-.fs-lochero { position: relative; min-height: 90vh; overflow: hidden; padding-top: 6rem; background: var(--fs-brand-deep); }
+.fs-lochero { position: relative; min-height: 90vh; overflow: hidden; padding-top: 6rem; background: var(--fs-brand); }
 .fs-lochero__inner { position: relative; z-index: 10; }
 .fs-lochero__grid { display: grid; gap: 3rem; align-items: center; padding-block: 5rem; grid-template-columns: 1fr; }
 @media (min-width:1024px){ .fs-lochero__grid { grid-template-columns: repeat(2,1fr);} }
@@ -585,10 +588,10 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-locform::after { bottom: -1rem; right: -1rem; }
 .fs-locform h2, .fs-locform h3 { color: var(--c-heading); font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
 .fs-locform input, .fs-locform select {
-  width: 100%; background: var(--fs-brand-deep); border: 1px solid var(--c-border); border-radius: var(--fs-radius);
-  padding: .75rem 1rem; color: var(--fs-light); margin-bottom: 1rem; font-family: inherit; font-size: .95rem;
+  width: 100%; background: var(--fs-light); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+  padding: .75rem 1rem; color: var(--c-card-text); margin-bottom: 1rem; font-family: inherit; font-size: .95rem;
 }
-.fs-locform input::placeholder { color: var(--fs-tint); }
+.fs-locform input::placeholder { color: var(--fs-brand-strong); }
 .fs-locform input:focus, .fs-locform select:focus { outline: none; border-color: var(--c-accent); }
 .fs-contactform {
   border: 1px solid var(--c-card-border); border-radius: var(--fs-radius-lg);
@@ -611,7 +614,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-locimg__cap { position: absolute; inset: auto 0 0 0; padding: 1.5rem; background: var(--fs-scrim); }
 .fs-locimg__cap h3 { color: var(--fs-light); font-size: 1.5rem; font-weight: 800; }
 .fs-locimg__cap p { color: var(--c-text); }
-.fs-darktesti { background: var(--fs-brand-deep); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; transition: border-color .3s; }
+.fs-darktesti { background: var(--fs-brand-strong); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; transition: border-color .3s; }
 .fs-darktesti:hover { border-color: var(--c-accent); }
 .fs-darktesti p { color: var(--c-text); }
 .fs-darktesti .name { color: var(--fs-light); font-weight: 600; }
@@ -623,21 +626,19 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-range::-moz-range-thumb { width: 1.25rem; height: 1.25rem; border: 0; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
 /* Dunkler Einsatz in einer hellen Karte: ohne eigenen Kontext blieben Text
    (#3a3a44 auf #6d0d45 = 1,04:1) und Zahl (1,88:1) praktisch unlesbar. */
-.fs-distance__out { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
+.fs-distance__out { background: var(--fs-brand-strong); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius); padding: 2rem; text-align: center; margin-top: 2rem; }
 .fs-distance__out .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
 .fs-distance__out p { color: var(--c-text); }
 
 /* Location Calculator (dunkler Verlauf) */
-.fs-loccalc { background: var(--fs-brand-deep); border-top: 1px solid var(--c-border); padding-block: 4rem; }
+.fs-loccalc { border-top: 1px solid var(--c-border); padding-block: 4rem; }
 .fs-loccalc h2 { font-size: clamp(2rem,5vw,2.5rem); font-weight: 800; color: var(--fs-light); text-align: center; margin-bottom: 1rem; }
 .fs-loccalc__lead { text-align: center; color: var(--c-text); max-width: 42rem; margin: 0 auto 3rem; }
 .fs-loccalc__grid { max-width: 48rem; margin-inline: auto; display: grid; gap: 2rem; grid-template-columns: 1fr; }
 @media (min-width:768px){ .fs-loccalc__grid { grid-template-columns: repeat(2,1fr);} }
 .fs-loccalc label { display: block; color: var(--fs-light); font-weight: 600; margin-bottom: 1rem; }
-.fs-loccalc .fs-pill { background: var(--fs-brand-strong); color: var(--c-text); }
-.fs-loccalc .fs-pill:hover { background: var(--fs-brand-strong); }
-.fs-loccalc .fs-pill.is-active { background: var(--fs-brand-strong); color: var(--fs-light); box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
-.fs-loccalc__total { background: var(--fs-brand-deep); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
+.fs-loccalc .fs-pill.is-active { box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
+.fs-loccalc__total { background: var(--fs-brand-strong); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
 .fs-loccalc__total .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
 
 /* ==========================================================================
@@ -686,7 +687,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-pagetop { padding-top: 5rem; }
 
 /* Instagram: serverseitig gerenderte Beitragstexte */
-.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-deep); margin: 0; }
+.fs-ig__post { display: flex; flex-direction: column; background: var(--fs-brand-strong); margin: 0; }
 .fs-ig__cap { padding: 1rem; }
 .fs-ig__cap p { color: var(--c-text); font-size: .85rem; margin-bottom: .5rem; }
 .fs-ig__meta { display: flex; gap: 1.5rem; color: var(--c-accent); font-weight: 600; font-size: .85rem; }
@@ -809,17 +810,17 @@ body.fs-cookie-open .fs-tiktok { display: none; }
    CTA-Buttons lesen ihre Farben ohnehin aus --c-*. Vorher wurde nur
    .fs-nav__toplink umgefärbt — Burger und Telefon-CTA blieben weiß und
    verschwanden auf der weißen Leiste (Kontrast 1:1, Mobilmenü unerreichbar). */
-.fs-nav.is-scrolled { background: var(--fs-light); }
+.fs-nav.is-scrolled { background: var(--fs-rose); }
 .fs-nav__toplink { color: var(--c-text); }
 /* Das Flyout ist immer hell, unabhängig vom Zustand der Leiste. */
 .fs-nav__menu { background: var(--fs-light); border: 1px solid rgba(109,13,69,.15); }
 .fs-nav__menu a { color: var(--c-text); }
-.fs-drawer { background: var(--fs-brand-deep); color: var(--fs-light); }
-.fs-drawer a, .fs-drawer button { color: var(--fs-light); }
-.fs-drawer a:hover, .fs-drawer button:hover { color: var(--fs-tint); }
+.fs-drawer { background: var(--fs-brand-strong); color: var(--fs-light); }
+.fs-drawer a:not(.fs-btn), .fs-drawer button:not(.fs-btn) { color: var(--fs-light); }
+.fs-drawer a:not(.fs-btn):hover, .fs-drawer button:not(.fs-btn):hover { color: var(--fs-tint); }
 
 /* Breadcrumbs */
-.fs-crumbs { background: var(--fs-brand-deep); color: var(--fs-light); }
+.fs-crumbs { background: var(--fs-brand-strong); color: var(--fs-light); }
 .fs-crumbs li, .fs-crumbs [aria-current="page"] span { color: var(--fs-light); }
 .fs-crumbs a { color: var(--fs-light); }
 .fs-crumbs a:hover { color: var(--fs-tint); }

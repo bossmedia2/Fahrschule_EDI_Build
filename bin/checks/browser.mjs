@@ -72,12 +72,18 @@ function scanUi(){
     const cs=getComputedStyle(el);
     if(cs.display==='none'||!el.offsetParent) continue;
     const bg=effBg(el.parentElement||document.body);
-    const bc=parse(cs.borderTopColor), fc=parse(cs.backgroundColor);
-    // SC 1.4.11: die KOMPONENTE muss erkennbar sein - dafür genügt eine
-    // kontrastierende Füllung ODER ein kontrastierender Rand.
+    // Ein 0px breiter Rahmen traegt keine Farbe und zaehlt deshalb nicht mit.
+    const hasBorder = parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== 'none';
+    const bc=hasBorder?parse(cs.borderTopColor):null, fc=parse(cs.backgroundColor);
+    // SC 1.4.11: die KOMPONENTE muss erkennbar sein - dafuer genuegt eine
+    // kontrastierende Fuellung ODER ein kontrastierender Rand, und bei einem
+    // reinen Icon-Button (Burger) die Strichfarbe des SVG selbst: es erbt sie
+    // ueber currentColor aus der color-Eigenschaft des Buttons.
+    const ic=el.querySelector('svg')?parse(cs.color):null;
     const rb=bc&&bc.a>0?ratio(over(bc,{r:bg[0],g:bg[1],b:bg[2]}),bg):0;
     const rf=fc&&fc.a>0?ratio(over(fc,{r:bg[0],g:bg[1],b:bg[2]}),bg):0;
-    const r=Math.max(rb,rf);
+    const ri=ic&&ic.a>0?ratio(over(ic,{r:bg[0],g:bg[1],b:bg[2]}),bg):0;
+    const r=Math.max(rb,rf,ri);
     if(r<3) bad.push({sel:el.className,r:+r.toFixed(2),fill:cs.backgroundColor,border:cs.borderTopColor,bg:'rgb('+bg.map(Math.round).join(',')+')'});
   }
   return bad;
@@ -146,27 +152,107 @@ if (!zf) ok('kein horizontaler Scroll, kein Umbruch bei 200% Zoom');
 console.log('\nKontrast (WCAG 2.1 AA)');
 const fs = await import('node:fs');
 const pages = fs.readdirSync(dir).filter(f => f.endsWith('.html'));
-await page.setViewportSize({ width: 1440, height: 1000 });
 const seen = new Map();
+const NOANIM = '*{transition:none!important;animation:none!important}.fs-fade-up{opacity:1!important}';
+
+const collect = async (state) => {
+  const r = await page.evaluate(new Function(HELPERS + 'return {t:scanText(),u:scanUi()}'));
+  for (const x of r.t) seen.set('T' + state + x.sel + x.r, { ...x, state, kind: 'Text' });
+  for (const x of r.u) seen.set('U' + state + x.sel + x.r, { ...x, state, kind: 'Bedienelement' });
+};
+
+// 3a) Seiteninhalt: jede Seite, Leiste oben und gescrollt.
+await page.setViewportSize({ width: 1440, height: 1000 });
 for (const f of pages) {
   await page.goto('file://' + dir + '/' + f);
-  await page.addStyleTag({ content: '*{transition:none!important;animation:none!important}.fs-fade-up{opacity:1!important}' });
+  await page.addStyleTag({ content: NOANIM });
   await page.waitForTimeout(40);
-  for (const state of ['top', 'scrolled']) {
-    if (state === 'scrolled') {
-      await page.evaluate(() => { const n = document.querySelector('.fs-nav'); if (n) n.classList.add('is-scrolled'); });
-      await page.waitForTimeout(30);
-    }
-    const r = await page.evaluate(new Function(HELPERS + 'return {t:scanText(),u:scanUi()}'));
-    for (const x of r.t) seen.set('T' + x.sel + x.r, { ...x, state, kind: 'Text' });
-    for (const x of r.u) seen.set('U' + x.sel + x.r, { ...x, state, kind: 'Bedienelement' });
-  }
+  await collect('oben');
+  await page.evaluate(() => { const n = document.querySelector('.fs-nav'); if (n) n.classList.add('is-scrolled'); });
+  await page.waitForTimeout(30);
+  await collect('gescrollt');
 }
-if (!seen.size) ok(`keine Kontrastverstöße auf ${pages.length} Seiten (Normalzustand und gescrollte Navigation)`);
+
+/* 3b) Aufgeklappte Menüs.
+ * Diese Zustände hatten bis Oktober 2026 kein Prüfschritt erfasst, und genau
+ * darin steckte ein Fehler: das Flyout hat einen eigenen weißen Hintergrund,
+ * las aber das --c-text der Leiste, das am Seitenanfang weiß ist - weiße
+ * Schrift auf weißem Menü. Im Ruhezustand ist das Flyout visibility:hidden
+ * und opacity:0, wird von scanText() also übersprungen. Es muss geöffnet
+ * werden, sonst sieht die Prüfung es nie.
+ * Die Navigation ist auf allen Seiten derselbe Block, eine Seite genügt. */
+await page.goto('file://' + dir + '/home.html');
+await page.addStyleTag({ content: NOANIM });
+for (const bar of ['oben', 'gescrollt']) {
+  await page.evaluate((scrolled) => {
+    const n = document.querySelector('.fs-nav');
+    if (n) n.classList.toggle('is-scrolled', scrolled);
+    document.querySelectorAll('.fs-nav__drop').forEach(d => d.classList.add('is-open'));
+  }, bar === 'gescrollt');
+  await page.waitForTimeout(60);
+  await collect('Flyout offen, Leiste ' + bar);
+}
+
+/* 3c) Schmale Breite. Burger und Schubfach sind ab 1240px display:none und
+ * werden von den Durchläufen oben nie erfasst. Beide Zustände der Leiste
+ * zählen: der ursprüngliche P0 war ein Burger, der erst auf der hinterlegten
+ * Leiste unsichtbar wurde - bei 1440px ist er gar nicht da, oben auf der
+ * Seite steht er auf Pink und fällt nicht auf. */
+await page.setViewportSize({ width: 390, height: 800 });
+await page.goto('file://' + dir + '/home.html');
+await page.addStyleTag({ content: NOANIM });
+await page.waitForTimeout(40);
+await collect('schmal, Leiste oben');
+await page.evaluate(() => document.querySelector('.fs-nav')?.classList.add('is-scrolled'));
+await page.waitForTimeout(40);
+await collect('schmal, Leiste gescrollt');
+await page.evaluate(() => {
+  document.querySelector('.fs-nav')?.classList.remove('is-scrolled');
+  document.querySelector('.fs-drawer')?.classList.add('is-open');
+  document.querySelector('.fs-drawer-overlay')?.classList.add('is-open');
+  document.querySelectorAll('[data-fs-sub]').forEach(x => x.classList.add('is-open'));
+});
+await page.waitForTimeout(60);
+await collect('mobiles Menü offen');
+await page.setViewportSize({ width: 1440, height: 1000 });
+
+if (!seen.size) ok(`keine Kontrastverstöße auf ${pages.length} Seiten – Leiste oben und gescrollt, Flyout und mobiles Menü geöffnet`);
 for (const [, v] of [...seen].sort((a, b) => a[1].r - b[1].r)) {
   if (v.kind === 'Text') fail(`${v.r}:1 (nötig ${v.need}:1) [${v.state}] ${v.sel} "${v.txt}" – ${v.color} auf ${v.bg}`);
   else                   fail(`${v.r}:1 (nötig 3:1) [${v.state}] ${v.sel} – Füllung ${v.fill}, Rand ${v.border} auf ${v.bg}`);
 }
+
+/* ---------- 3d) Ausgewählter Zustand muss sichtbar sein ------------------
+ * Eine Auswahl, die genauso aussieht wie die nicht gewählten Geschwister,
+ * ist keine Auswahl. Beim Härten der Kontraste war genau das zweimal
+ * passiert: die aktive Pille bekam dieselbe Füllung wie die inaktiven und
+ * unterschied sich nur noch durch einen kaum sichtbaren Schatten. Reine
+ * Kontrastprüfung findet das nicht - beide Zustände sind für sich lesbar. */
+console.log('\nAusgewählter Zustand (Pills)');
+let pillChecked = 0;
+for (const f of ['preise.html', 'duisburg.html', 'klassen.html'].filter(x => pages.includes(x))) {
+  await page.goto('file://' + dir + '/' + f);
+  await page.addStyleTag({ content: NOANIM });
+  await page.waitForTimeout(40);
+  const bad = await page.evaluate(() => {
+    const out = [];
+    for (const group of document.querySelectorAll('[data-fs-group]')) {
+      const on = group.querySelector('.fs-pill.is-active');
+      const off = group.querySelector('.fs-pill:not(.is-active)');
+      if (!on || !off) continue;
+      const a = getComputedStyle(on), b = getComputedStyle(off);
+      if (a.backgroundColor === b.backgroundColor && a.color === b.color) {
+        out.push({ group: group.getAttribute('data-fs-group'), bg: a.backgroundColor, color: a.color });
+      }
+    }
+    return out;
+  });
+  pillChecked++;
+  for (const x of bad) {
+    fail(`Pill-Gruppe "${x.group}" in ${f}: gewählt und ungewählt sind identisch (${x.bg}, Schrift ${x.color})`);
+  }
+}
+if (pillChecked) ok(`gewählter Zustand auf ${pillChecked} Seiten von den ungewählten unterscheidbar`);
 
 // ---------- 4) Fokusring auf jeder Fläche --------------------------------
 console.log('\nFokusring (WCAG SC 1.4.11)');
