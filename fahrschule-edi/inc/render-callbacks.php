@@ -1847,3 +1847,132 @@ function fs_render_instructor_training( $a ) {
 	<?php
 	return ob_get_clean();
 }
+
+/* -------------------------------------------------------------------------
+ * BEREICHS-ÜBERSICHT (Ebene 1)
+ *
+ * Listet die Seiten auf, die der Registry nach diesem Bereich untergeordnet
+ * sind. Die Karten entstehen damit aus der Seitenstruktur selbst: wer eine
+ * Klassenseite anlegt und ihr 'parent' setzt, bekommt die Karte automatisch -
+ * es gibt keine zweite Liste, die man vergessen könnte zu pflegen.
+ * ---------------------------------------------------------------------- */
+function fs_render_bereich_uebersicht( $a ) {
+	$d = fs_attrs( $a, array(
+		'bereich'  => '',
+		'eyebrow'  => '',
+		'heading'  => '',
+		'subtitle' => '',
+		'icon'     => 'award',
+		'more'     => 'Zur Klasse',
+	) );
+
+	// Ohne ausdrückliche Angabe gilt die Seite, auf der der Block steht.
+	// Ist auch die unbekannt (Editor-Vorschau, Pattern-Katalog), gibt es
+	// nichts auszugeben - sonst würde parent === '' auf alle Wurzelseiten
+	// passen und der Block die halbe Website auflisten.
+	$parent = $d['bereich'] ? $d['bereich'] : fahrschule_current_key();
+	if ( '' === $parent ) { return ''; }
+	$map    = fahrschule_page_map();
+
+	$children = array();
+	foreach ( $map as $key => $page ) {
+		if ( isset( $page['parent'] ) && $page['parent'] === $parent ) {
+			$children[ $key ] = $page;
+		}
+	}
+	if ( ! $children ) { return ''; }
+
+	ob_start(); ?>
+	<section class="fs-section fs-surface-brand">
+		<div class="fs-container fs-z">
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
+			<div class="fs-teasers fs-teasers--3">
+				<?php foreach ( $children as $key => $page ) : ?>
+				<a class="fs-teaser" href="<?php echo esc_url( fs_url( $key ) ); ?>">
+					<span class="fs-teaser__ico"><?php echo fs_icon( isset( $page['icon'] ) ? $page['icon'] : $d['icon'], 24 ); ?></span>
+					<h2><?php echo esc_html( $page['menu'] ); ?></h2>
+					<?php echo fs_el( 'p', isset( $page['lead'] ) ? $page['lead'] : '' ); ?>
+					<span class="fs-teaser__more"><?php echo esc_html( $d['more'] ); ?> <?php echo fs_icon( 'arrow-right', 16 ); ?></span>
+				</a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
+ * KURS-/KLASSEN-DETAILS (Ebene 2)
+ *
+ * Feste Inhalts-Slots einer Klassenseite. Jeder Slot ist einzeln leerbar und
+ * verschwindet dann samt Überschrift - eine Klasse ohne Förderung zeigt
+ * keinen leeren Förderungs-Kasten.
+ * ---------------------------------------------------------------------- */
+function fs_render_kurs_details( $a ) {
+	$d = fs_attrs( $a, array(
+		'eyebrow'        => '',
+		'heading'        => 'Das Wichtigste auf einen Blick',
+		'alter'          => '',
+		'dauer'          => '',
+		'preis'          => '',
+		'voraussetzungen'=> '',
+		'ablauf'         => '',
+		'foerderung'     => '',
+		'hinweis'        => '',
+	) );
+
+	// Kennzahlen-Kacheln: Beschriftung => Wert.
+	$facts = array(
+		'Mindestalter' => $d['alter'],
+		'Ausbildungsdauer' => $d['dauer'],
+		'Richtpreis' => $d['preis'],
+	);
+	$facts = array_filter( $facts, static function ( $v ) { return '' !== trim( (string) $v ); } );
+
+	// Textblöcke: Überschrift => Inhalt.
+	$sections = array(
+		'Voraussetzungen' => $d['voraussetzungen'],
+		'Ablauf der Ausbildung' => $d['ablauf'],
+		'Förderung & Finanzierung' => $d['foerderung'],
+	);
+	$sections = array_filter( $sections, static function ( $v ) { return '' !== trim( (string) $v ); } );
+
+	if ( ! $facts && ! $sections && ! fs_has( $d, 'hinweis' ) ) { return ''; }
+
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light">
+		<div class="fs-container">
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] ), 'class="fs-head"' ); ?>
+
+			<?php if ( $facts ) : ?>
+			<div class="fs-grid fs-grid--3" style="max-width:64rem;margin-inline:auto;">
+				<?php foreach ( $facts as $label => $value ) : ?>
+				<div class="fs-stat">
+					<div class="big"><?php echo esc_html( $value ); ?></div>
+					<p><?php echo esc_html( $label ); ?></p>
+				</div>
+				<?php endforeach; ?>
+			</div>
+			<?php endif; ?>
+
+			<?php if ( $sections ) : ?>
+			<div class="fs-grid fs-grid--2 fs-mt-8" style="max-width:64rem;margin-inline:auto;">
+				<?php foreach ( $sections as $title => $text ) : ?>
+				<div class="fs-card"><div class="fs-card__body">
+					<h3><?php echo esc_html( $title ); ?></h3>
+					<?php echo fs_paragraphs( $text ); ?>
+				</div></div>
+				<?php endforeach; ?>
+			</div>
+			<?php endif; ?>
+
+			<?php echo fs_el( 'p', $d['hinweis'], 'class="fs-center fs-mt-8" style="color:var(--c-text);max-width:42rem;margin-inline:auto;"' ); ?>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}

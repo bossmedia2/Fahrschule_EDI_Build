@@ -144,6 +144,217 @@ function fahrschule_page_map() {
 			),
 		),
 
+
+		/* ---------------- Bereiche (Ebene 1) ---------------- */
+		'pkw' => array(
+			'slug' => 'pkw', 'parent' => '', 'nav' => 'sub', 'group' => 'ausbildung',
+			'title' => 'PKW', 'menu' => 'PKW', 'icon' => 'award',
+			'lead'  => 'Alle Pkw-Klassen: vom klassischen Führerschein bis zum Anhänger.',
+			'desc'  => 'Pkw-Führerschein bei der Fahrschule edi: Klasse B, B197 (Automatik), BE und B96 – Ausbildung in Duisburg, Essen und Gelsenkirchen.',
+			'blocks' => array(
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'pkw', 'heading' => 'Klassen im Bereich PKW' ) ),
+				array( 'fahrschule/cta', array() ),
+			),
+		),
+		'motorrad' => array(
+			'slug' => 'motorrad', 'parent' => '', 'nav' => 'sub', 'group' => 'ausbildung',
+			'title' => 'Motorrad', 'menu' => 'Motorrad', 'icon' => 'zap',
+			'lead'  => 'Vom Roller bis zur offenen Maschine – alle Zweiradklassen.',
+			'desc'  => 'Motorradführerschein bei der Fahrschule edi: Klassen AM, A1, A2 und A mit eigenem Übungsgelände und erfahrenen Motorrad-Fahrlehrern.',
+			'blocks' => array(
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'motorrad', 'heading' => 'Klassen im Bereich Motorrad' ) ),
+				array( 'fahrschule/cta', array() ),
+			),
+		),
+		'lkw-bus' => array(
+			'slug' => 'lkw-bus', 'parent' => '', 'nav' => 'sub', 'group' => 'ausbildung',
+			'title' => 'LKW & Bus', 'menu' => 'LKW & Bus', 'icon' => 'truck',
+			'lead'  => 'Berufliche Fahrerlaubnisse für Güter- und Personenverkehr.',
+			'desc'  => 'Lkw- und Busführerschein bei der Fahrschule edi: Klassen C, CE und D – Ausbildung im Ruhrgebiet mit moderner Flotte.',
+			'blocks' => array(
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'lkw-bus', 'heading' => 'Klassen im Bereich LKW & Bus' ) ),
+				array( 'fahrschule/cta', array() ),
+			),
+		),
+
+		/* ---------------- Klassen (Ebene 2) ---------------- */
+		'klasse-b' => array(
+			'slug' => 'klasse-b', 'parent' => 'pkw', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse B', 'menu' => 'Klasse B', 'icon' => 'award',
+			'lead'  => 'Der klassische Pkw-Führerschein bis 3.500 kg.',
+			'desc'  => 'Führerschein Klasse B bei der Fahrschule edi: Voraussetzungen, Dauer und Richtpreis für den Pkw-Führerschein im Ruhrgebiet.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse B',
+					'alter' => '18 Jahre (BF17 ab 17)', 'dauer' => '32-40 Fahrstunden', 'preis' => '€1.650 – €2.100',
+					'voraussetzungen' => 'Sehtest, Erste-Hilfe-Kurs und ein biometrisches Lichtbild. Der Antrag läuft über die Führerscheinstelle Ihres Wohnorts – wir übernehmen die Formalitäten.',
+					'ablauf' => 'Theorieunterricht in 14 Doppelstunden, danach die Fahrpraxis mit Grund- und Sonderfahrten. Theorie- und Praxisprüfung legen Sie bei TÜV oder DEKRA ab.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'pkw', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-b197' => array(
+			'slug' => 'klasse-b197', 'parent' => 'pkw', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse B197', 'menu' => 'Klasse B197', 'icon' => 'award',
+			'lead'  => 'Automatik lernen, Schaltwagen fahren dürfen.',
+			'desc'  => 'Klasse B197 bei der Fahrschule edi: Ausbildung im Automatikfahrzeug mit Schaltkompetenz-Nachweis – ohne Eintrag der Schlüsselzahl 78.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse B197',
+					'alter' => '18 Jahre (BF17 ab 17)', 'dauer' => 'zzgl. 10 Schaltstunden', 'preis' => '€1.750 – €2.200',
+					'voraussetzungen' => 'Dieselben wie bei Klasse B. Zusätzlich sind mindestens zehn Fahrstunden im Schaltwagen und eine Testfahrt nachzuweisen.',
+					'ablauf' => 'Sie lernen im Automatikfahrzeug und legen auch die Prüfung darin ab. Der Schaltkompetenz-Nachweis sorgt dafür, dass im Führerschein keine Beschränkung auf Automatik eingetragen wird.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'pkw', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-be' => array(
+			'slug' => 'klasse-be', 'parent' => 'pkw', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse BE', 'menu' => 'Klasse BE', 'icon' => 'truck',
+			'lead'  => 'Pkw mit schwerem Anhänger – Wohnwagen, Pferdeanhänger, Bootstrailer.',
+			'desc'  => 'Klasse BE bei der Fahrschule edi: Anhängerführerschein für Gespanne über 3.500 kg – Voraussetzungen, Dauer und Richtpreis.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse BE',
+					'alter' => '18 Jahre', 'dauer' => '20-30 Fahrstunden', 'preis' => '€900 – €1.500',
+					'voraussetzungen' => 'Gültige Fahrerlaubnis der Klasse B. Eine erneute Theorieprüfung ist nicht nötig.',
+					'ablauf' => 'Reine Praxisausbildung mit Schwerpunkt Rangieren, Ankuppeln und Fahren im Gespann. Es folgt ausschließlich eine praktische Prüfung.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'pkw', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-b96' => array(
+			'slug' => 'klasse-b96', 'parent' => 'pkw', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse B96', 'menu' => 'Klasse B96', 'icon' => 'truck',
+			'lead'  => 'Die Erweiterung für mittelschwere Gespanne – ohne Prüfung.',
+			'desc'  => 'Klasse B96 bei der Fahrschule edi: Schulung für Gespanne bis 4.250 kg an einem Tag, ohne Prüfung.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse B96',
+					'alter' => '18 Jahre', 'dauer' => 'ein Schulungstag', 'preis' => '€450 – €600',
+					'voraussetzungen' => 'Gültige Fahrerlaubnis der Klasse B.',
+					'ablauf' => 'Eine Tagesschulung aus Theorie, Fahrübungen und Fahrten im öffentlichen Verkehr. Es gibt keine Prüfung – die Teilnahme wird bescheinigt und eingetragen.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'pkw', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-am' => array(
+			'slug' => 'klasse-am', 'parent' => 'motorrad', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse AM', 'menu' => 'Klasse AM', 'icon' => 'zap',
+			'lead'  => 'Roller und Mopeds bis 45 km/h – der Einstieg ab 15.',
+			'desc'  => 'Klasse AM bei der Fahrschule edi: Rollerführerschein ab 15 Jahren – Voraussetzungen, Dauer und Richtpreis.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse AM',
+					'alter' => '15 Jahre', 'dauer' => '12-18 Fahrstunden', 'preis' => '€600 – €900',
+					'voraussetzungen' => 'Sehtest, Erste-Hilfe-Kurs und ein biometrisches Lichtbild.',
+					'ablauf' => 'Theorie und Praxis sind kompakt gehalten. Die Klasse AM ist in den Klassen A1, A2, A und B bereits enthalten.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'motorrad', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-a1' => array(
+			'slug' => 'klasse-a1', 'parent' => 'motorrad', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse A1', 'menu' => 'Klasse A1', 'icon' => 'zap',
+			'lead'  => 'Leichtkrafträder bis 125 ccm ab 16 Jahren.',
+			'desc'  => 'Klasse A1 bei der Fahrschule edi: Motorradführerschein für 125er ab 16 Jahren – Voraussetzungen, Dauer und Richtpreis.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse A1',
+					'alter' => '16 Jahre', 'dauer' => '15-25 Fahrstunden', 'preis' => '€800 – €1.200',
+					'voraussetzungen' => 'Sehtest, Erste-Hilfe-Kurs und ein biometrisches Lichtbild.',
+					'ablauf' => 'Theorieunterricht mit motorradspezifischem Zusatzstoff, dann Grund- und Sonderfahrten auf dem Übungsgelände und im Verkehr.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'motorrad', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-a2' => array(
+			'slug' => 'klasse-a2', 'parent' => 'motorrad', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse A2', 'menu' => 'Klasse A2', 'icon' => 'zap',
+			'lead'  => 'Mittlere Maschinen bis 35 kW ab 18 Jahren.',
+			'desc'  => 'Klasse A2 bei der Fahrschule edi: Motorradführerschein bis 35 kW – Voraussetzungen, Dauer und Richtpreis.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse A2',
+					'alter' => '18 Jahre', 'dauer' => '15-25 Fahrstunden', 'preis' => '€1.000 – €1.500',
+					'voraussetzungen' => 'Sehtest, Erste-Hilfe-Kurs und ein biometrisches Lichtbild. Wer die A1 bereits zwei Jahre besitzt, kann im Aufstieg prüfen.',
+					'ablauf' => 'Theorie und Praxis wie bei A1, jedoch auf stärkeren Maschinen. Beim Aufstieg aus A1 entfällt die Theorieprüfung.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'motorrad', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-a' => array(
+			'slug' => 'klasse-a', 'parent' => 'motorrad', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse A', 'menu' => 'Klasse A', 'icon' => 'zap',
+			'lead'  => 'Die offene Klasse – Motorräder ohne Leistungsbegrenzung.',
+			'desc'  => 'Klasse A bei der Fahrschule edi: offener Motorradführerschein – Voraussetzungen, Dauer und Richtpreis im Ruhrgebiet.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse A',
+					'alter' => '24 Jahre (20 bei Aufstieg aus A2)', 'dauer' => '25-35 Fahrstunden', 'preis' => '€1.200 – €1.800',
+					'voraussetzungen' => 'Sehtest, Erste-Hilfe-Kurs und ein biometrisches Lichtbild. Der Aufstieg aus A2 ist nach zwei Jahren Besitzzeit möglich.',
+					'ablauf' => 'Praxisschwerpunkt auf Fahrdynamik und Gefahrenbremsung. Beim Aufstieg aus A2 ist nur eine praktische Prüfung nötig.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'motorrad', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-c' => array(
+			'slug' => 'klasse-c', 'parent' => 'lkw-bus', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse C', 'menu' => 'Klasse C', 'icon' => 'truck',
+			'lead'  => 'Lkw über 3.500 kg für den gewerblichen Güterverkehr.',
+			'desc'  => 'Klasse C bei der Fahrschule edi: Lkw-Führerschein – Voraussetzungen, Dauer, Richtpreis und Hinweise zur Förderung.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse C',
+					'alter' => '18 Jahre', 'dauer' => '30-40 Fahrstunden', 'preis' => '€1.800 – €2.500',
+					'voraussetzungen' => 'Gültige Fahrerlaubnis der Klasse B sowie ärztliche und augenärztliche Untersuchung.',
+					'ablauf' => 'Theorie mit Fachstoff für Lkw, dazu Grund- und Sonderfahrten. Für den gewerblichen Einsatz ist zusätzlich die Grundqualifikation nach BKrFQG nötig.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'lkw-bus', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-ce' => array(
+			'slug' => 'klasse-ce', 'parent' => 'lkw-bus', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse CE', 'menu' => 'Klasse CE', 'icon' => 'truck',
+			'lead'  => 'Lkw mit Anhänger – der Standard im Fernverkehr.',
+			'desc'  => 'Klasse CE bei der Fahrschule edi: Lkw-Führerschein mit Anhänger – Voraussetzungen, Dauer und Richtpreis.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse CE',
+					'alter' => '18 Jahre', 'dauer' => '20-30 Fahrstunden', 'preis' => '€1.900 – €2.600',
+					'voraussetzungen' => 'Gültige oder gleichzeitig erworbene Fahrerlaubnis der Klasse C.',
+					'ablauf' => 'Reine Praxisausbildung mit Schwerpunkt Rangieren und Gespannfahren. Häufig wird CE direkt im Anschluss an C erworben.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'lkw-bus', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+		'klasse-d' => array(
+			'slug' => 'klasse-d', 'parent' => 'lkw-bus', 'nav' => 'none', 'group' => 'ausbildung',
+			'title' => 'Klasse D', 'menu' => 'Klasse D', 'icon' => 'users',
+			'lead'  => 'Omnibusse im Linien- und Reiseverkehr.',
+			'desc'  => 'Klasse D bei der Fahrschule edi: Busführerschein – Voraussetzungen, Dauer, Richtpreis und Hinweise zur Förderung.',
+			'blocks' => array(
+				array( 'fahrschule/kurs-details', array(
+					'heading' => 'Das Wichtigste zur Klasse D',
+					'alter' => '24 Jahre (21 mit Grundqualifikation)', 'dauer' => '30-40 Fahrstunden', 'preis' => '€2.800 – €3.800',
+					'voraussetzungen' => 'Gültige Fahrerlaubnis der Klasse B, ärztliche und augenärztliche Untersuchung sowie ein Führungszeugnis.',
+					'ablauf' => 'Theorie mit Fachstoff für Personenbeförderung, dann Grund- und Sonderfahrten im Omnibus. Für den gewerblichen Einsatz kommt die Grundqualifikation nach BKrFQG hinzu.',
+				) ),
+				array( 'fahrschule/bereich-uebersicht', array( 'bereich' => 'lkw-bus', 'eyebrow' => 'Weitere Klassen', 'heading' => 'Andere Klassen in diesem Bereich' ) ),
+				array( 'fahrschule/anmeldung', array() ),
+			),
+		),
+
 		/* ---------------- Standorte ---------------- */
 		'standorte' => array(
 			'slug' => 'standorte', 'parent' => '', 'nav' => 'main', 'group' => 'standorte',

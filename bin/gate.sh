@@ -52,6 +52,16 @@ check "$rc" "Smoke-Test"
 step "Referenzen: Blöcke, Icons, Assets, CSS-Klassen, Keyframes, Farben"
 python3 -I "$ROOT/bin/checks/refs.py" "$ROOT"; check $? "Referenzprüfung"
 
+# --- 4b --------------------------------------------------------------------
+step "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar"
+php "$ROOT/bin/checks/emptiable.php" "$THEME" 2>&1 | grep -E "^(Textfelder|  ok|  FEHLER|Wiederholfelder|LEERBARKEIT)" | sed 's/^/  /'
+rc=${PIPESTATUS[0]}
+check "$rc" "Editierbarkeit"
+
+# --- 4c --------------------------------------------------------------------
+step "Struktur: Seitenvorlagen, Start-Patterns, Hierarchie"
+python3 -I "$ROOT/bin/checks/structure.py" "$ROOT"; check $? "Struktur"
+
 # --- 5 ---------------------------------------------------------------------
 if [ "$SKIP_BROWSER" -eq 0 ]; then
 	step "Browser: Navigationslayout, Zoom, Kontrast, Fokusring"

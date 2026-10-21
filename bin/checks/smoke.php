@@ -28,7 +28,11 @@ foreach(array_keys($GLOBALS['__blocks']) as $name){
   catch(\Throwable $e){ $status='FATAL: '.$e->getMessage(); $failed++; }
   $len=strlen($html); $total+=$len; $outs[$name]=$html;
   if($status==='OK'){
-    if($len===0){ $status='!! EMPTY OUTPUT'; $empty++; }
+    // Manche Bloecke sind reine Inhalts-Huellen (Bereichsliste, Kurs-Slots):
+    // ohne Konfiguration haben sie nichts auszugeben, und genau das ist richtig.
+    $mayBeEmpty = !empty($cfg[$name]['may_be_empty']);
+    if($len===0 && !$mayBeEmpty){ $status='!! EMPTY OUTPUT'; $empty++; }
+    elseif($len===0){ $status='leer (ohne Konfiguration gewollt)'; }
     elseif($errs){ $status='!! '.count($errs).' notice/warning'; $failed++; }
   }
   printf("%-40s %9d %7d %s\n", $name, $len, count($errs), $status);

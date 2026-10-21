@@ -53,6 +53,37 @@ function fahrschule_blocks_config() {
 
 	return array(
 
+		/* ---- Hierarchie: Bereiche (Ebene 1) & Klassen (Ebene 2) ---- */
+		'fahrschule/bereich-uebersicht' => array(
+			'title' => 'Bereich: Klassen-Übersicht', 'description' => 'Karten aller Klassen, die diesem Bereich untergeordnet sind. Die Liste entsteht aus der Seitenstruktur.',
+			'icon' => 'grid-view', 'keywords' => array( 'bereich', 'klassen', 'übersicht', 'kategorie' ),
+			'render' => 'fs_render_bereich_uebersicht', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Bereich',
+			'fields' => array(
+				'bereich'  => $t( '', 'Bereich (Seitenschlüssel, leer = aktuelle Seite)', 'text' ),
+				'eyebrow'  => $t( 'Führerscheinklassen', 'Eyebrow', 'text' ),
+				'heading'  => $t( 'Klassen in diesem Bereich', 'Überschrift', 'text' ),
+				'subtitle' => $t( '', 'Untertitel', 'textarea' ),
+				'icon'     => $t( 'award', 'Icon für Karten ohne eigenes Icon', 'text' ),
+				'more'     => $t( 'Zur Klasse', 'Linktext auf der Karte', 'text' ),
+			),
+		),
+		'fahrschule/kurs-details' => array(
+			'title' => 'Kurs: Eckdaten & Inhalte', 'description' => 'Mindestalter, Dauer, Richtpreis sowie Voraussetzungen, Ablauf und Förderung. Jeder Slot ist einzeln leerbar.',
+			'icon' => 'id-alt', 'keywords' => array( 'kurs', 'klasse', 'details', 'voraussetzungen' ),
+			'render' => 'fs_render_kurs_details', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Kurs',
+			'fields' => array(
+				'eyebrow'         => $t( '', 'Eyebrow', 'text' ),
+				'heading'         => $t( 'Das Wichtigste auf einen Blick', 'Überschrift', 'text' ),
+				'alter'           => $t( '', 'Mindestalter', 'text' ),
+				'dauer'           => $t( '', 'Ausbildungsdauer', 'text' ),
+				'preis'           => $t( '', 'Richtpreis', 'text' ),
+				'voraussetzungen' => $t( '', 'Voraussetzungen', 'textarea' ),
+				'ablauf'          => $t( '', 'Ablauf der Ausbildung', 'textarea' ),
+				'foerderung'      => $t( '', 'Förderung & Finanzierung', 'textarea' ),
+				'hinweis'         => $t( '', 'Abschließender Hinweis', 'textarea' ),
+			),
+		),
+
 		/* ---- Global / Header / Footer ---- */
 		'fahrschule/navigation' => array(
 			'title' => 'Navigation', 'description' => 'Fixierte Kopfzeile mit Logo, Menü & Standorte-Dropdown.',
