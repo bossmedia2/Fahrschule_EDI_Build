@@ -31,7 +31,7 @@ function get_stylesheet_directory_uri(){return get_template_directory_uri();}
 function trailingslashit($s){return rtrim((string)$s,'/').'/';}
 function untrailingslashit($s){return rtrim((string)$s,'/');}
 function add_query_arg($k,$v=null,$u=null){return ($u?:'/').'?'.$k.'='.$v;}
-function wp_parse_args($a,$d=[]){ $a=(array)$a; return array_merge($d,array_filter($a,function($x){return $x!==null && $x!=='';})); }
+function wp_parse_args($a,$d=[]){ return (is_array($d)&&$d) ? array_merge($d,(array)$a) : (array)$a; } // wie WordPress: schlichtes array_merge. Ein frueherer array_filter hier verwarf leere Werte und verbarg damit genau die Faelle, in denen ein geleertes Feld eine leere Huelle hinterlaesst.
 function wp_parse_url($u,$c=-1){return parse_url($u,$c);}
 function wp_json_encode($d,$f=0){return json_encode($d,$f);}
 function get_option($k,$d=false){return $d;} function update_option($k,$v){return true;}

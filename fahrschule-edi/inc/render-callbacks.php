@@ -121,7 +121,7 @@ function fs_render_navigation( $a ) {
  * ---------------------------------------------------------------------- */
 function fs_render_video_hero( $a ) {
 	$f1 = fahrschule_pdf( 'f1' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'badge'      => 'Seit über 30 Jahren für Sie da',
 		'heading'    => $f1['headline'],
 		'highlight'  => $f1['highlight'],
@@ -142,13 +142,9 @@ function fs_render_video_hero( $a ) {
 		</video>
 		<div class="fs-vhero__overlay"></div>
 		<div class="fs-container fs-vhero__inner">
-			<span class="fs-badge fs-fade-up"><?php echo esc_html( $d['badge'] ); ?></span>
-			<h1 class="fs-fade-up"><?php echo $heading; // bereits escaped ?></h1>
-			<div class="fs-vhero__text fs-fade-up">
-				<?php foreach ( $paragraphs as $p ) : ?>
-					<p><?php echo esc_html( $p ); ?></p>
-				<?php endforeach; ?>
-			</div>
+			<?php echo fs_el( 'span', $d['badge'], 'class="fs-badge fs-fade-up"' ); ?>
+			<?php echo fs_el( 'h1', '', 'class="fs-fade-up"', $heading ); ?>
+			<?php echo fs_wrap( 'div', fs_paragraphs( $d['text'] ), 'class="fs-vhero__text fs-fade-up"' ); ?>
 			<div class="fs-hero-actions fs-fade-up">
 				<a class="fs-btn fs-btn--lg fs-btn--primary-white" href="<?php echo esc_url( fs_link( $d['btn1_url'] ) ); ?>"><?php echo esc_html( $d['btn1_label'] ); ?> <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
 				<a class="fs-btn fs-btn--lg fs-btn--ghost-white" href="<?php echo esc_url( fs_link( $d['btn2_url'] ) ); ?>"><?php echo fs_icon( 'play', 20 ); ?> <?php echo esc_html( $d['btn2_label'] ); ?></a>
@@ -163,7 +159,7 @@ function fs_render_video_hero( $a ) {
  * HERO (helle Variante)
  * ---------------------------------------------------------------------- */
 function fs_render_hero( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'badge'     => 'Seit über 30 Jahren',
 		'heading'   => fahrschule_pdf_text( 'f1', 'headline' ),
 		'highlight' => fahrschule_pdf_text( 'f1', 'highlight' ),
@@ -176,12 +172,12 @@ function fs_render_hero( $a ) {
 	<section class="fs-hero fs-surface-brand">
 		<div class="fs-hero__bg"></div>
 		<div class="fs-container fs-hero__inner fs-z">
-			<span class="fs-badge fs-fade-up"><?php echo esc_html( $d['badge'] ); ?></span>
-			<h1 class="fs-fade-up"><?php echo $heading; ?></h1>
-			<p class="fs-fade-up"><?php echo esc_html( $d['text'] ); ?></p>
+			<?php echo fs_el( 'span', $d['badge'], 'class="fs-badge fs-fade-up"' ); ?>
+			<?php echo fs_el( 'h1', '', 'class="fs-fade-up"', $heading ); ?>
+			<?php echo fs_el( 'p', $d['text'], 'class="fs-fade-up"' ); ?>
 			<div class="fs-hero-actions fs-fade-up">
-				<a class="fs-btn fs-btn--lg fs-btn--primary-white" href="<?php echo esc_url( fs_link( $d['btn1_url'] ) ); ?>"><?php echo esc_html( $d['btn1_label'] ); ?> <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
-				<a class="fs-btn fs-btn--lg fs-btn--outline" href="<?php echo esc_url( fs_link( $d['btn2_url'] ) ); ?>"><?php echo esc_html( $d['btn2_label'] ); ?></a>
+				<?php echo fs_button( $d['btn1_label'], $d['btn1_url'], 'fs-btn fs-btn--lg fs-btn--primary-white' ); ?>
+				<?php echo fs_button( $d['btn2_label'], $d['btn2_url'], 'fs-btn fs-btn--lg fs-btn--outline' ); ?>
 			</div>
 		</div>
 	</section>
@@ -193,7 +189,7 @@ function fs_render_hero( $a ) {
  * FÜHRERSCHEINKLASSEN (Karten-Grid)
  * ---------------------------------------------------------------------- */
 function fs_render_license_classes( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow'  => 'Führerscheinklassen',
 		'heading'  => 'Alle Führerscheinklassen',
 		'subtitle' => 'Von der Richtpreis-Berechnung bis zur professionellen Ausbildung',
@@ -209,11 +205,9 @@ function fs_render_license_classes( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
 			<div class="fs-grid fs-grid--3 fs-wide" style="margin-inline:auto;">
 				<?php foreach ( $classes as $c ) : ?>
 				<article class="fs-card fs-fade-up">
@@ -243,7 +237,7 @@ function fs_render_license_classes( $a ) {
  * FÜHRERSCHEIN-RECHNER
  * ---------------------------------------------------------------------- */
 function fs_render_calculator( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow'  => 'Transparente Preise',
 		'heading'  => 'Führerschein-Rechner',
 		'subtitle' => 'Kalkulieren Sie schnell und einfach Ihren Gesamtpreis',
@@ -257,11 +251,9 @@ function fs_render_calculator( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
 			<div class="fs-calc" data-fs-calc data-prices='<?php echo esc_attr( $prices ); ?>'>
 				<div class="fs-calc__body">
 					<div>
@@ -311,7 +303,7 @@ function fs_render_calculator( $a ) {
  * ---------------------------------------------------------------------- */
 function fs_render_locations( $a ) {
 	$f8 = fahrschule_pdf( 'f8' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'  => $f8['label'],
 		'heading'  => $f8['headline'],
 		'subtitle' => $f8['paragraphs'][0],
@@ -324,10 +316,10 @@ function fs_render_locations( $a ) {
 		<div class="fs-container fs-z">
 			<div class="fs-head">
 				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
+				<?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?>
+				<?php echo fs_el( 'h2', $d['heading'] ); ?>
 				<?php endif; ?>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 			</div>
 			<div class="fs-grid fs-grid--3 fs-wide" style="margin-inline:auto;">
 				<?php /* Reihenfolge, Adressen, Telefon und E-Mail wie in PDF-Abschnitt F8. */ ?>
@@ -355,7 +347,7 @@ function fs_render_locations( $a ) {
  * TEAM SPIRIT
  * ---------------------------------------------------------------------- */
 function fs_render_team_spirit( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'badge'    => 'Unser Team Spirit',
 		'heading'  => 'Eine Familie voller Leidenschaft',
 		'highlight'=> 'Familie',
@@ -382,8 +374,8 @@ function fs_render_team_spirit( $a ) {
 				<div class="fs-prose fs-stack">
 					<div>
 						<span class="fs-badge fs-mb-8" style="margin-bottom:1.5rem;"><?php echo fs_icon( 'users', 16 ); ?> <?php echo esc_html( $d['badge'] ); ?></span>
-						<h2><?php echo $heading; ?></h2>
-						<p><?php echo esc_html( $d['text'] ); ?></p>
+						<?php echo fs_el( 'h2', '', '', $heading ); ?>
+						<?php echo fs_el( 'p', $d['text'] ); ?>
 					</div>
 					<div class="fs-values">
 						<?php foreach ( $values as $v ) : ?>
@@ -396,7 +388,7 @@ function fs_render_team_spirit( $a ) {
 					</div>
 					<div class="fs-quote">
 						<p>"<?php echo esc_html( $d['quote'] ); ?>"</p>
-						<p class="by"><?php echo esc_html( $d['quote_by'] ); ?></p>
+						<?php echo fs_el( 'p', $d['quote_by'], 'class="by"' ); ?>
 					</div>
 				</div>
 			</div>
@@ -455,7 +447,7 @@ function fs_render_fleet_facilities( $a ) {
  * TESTIMONIALS (Startseite)
  * ---------------------------------------------------------------------- */
 function fs_render_testimonials( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow'  => 'Was unsere Schüler sagen',
 		'heading'  => 'Kundenbewertungen',
 		'subtitle' => 'Lesen Sie, was unsere zufriedenen Fahrschüler über uns berichten',
@@ -475,11 +467,9 @@ function fs_render_testimonials( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
 			<?php if ( ! $t ) : ?>
 			<?php /* Solange keine freigegebenen Zitate vorliegen, verweist der
 			         Abschnitt auf die echten Google-Bewertungen, statt die
@@ -511,7 +501,7 @@ function fs_render_testimonials( $a ) {
  * INSTAGRAM SLIDER
  * ---------------------------------------------------------------------- */
 function fs_render_instagram_slider( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'  => 'Folgen Sie uns auf Instagram',
 		'highlight'=> 'Instagram',
 		'subtitle' => 'Erleben Sie die beste Fahrschule im Ruhrgebiet direkt in Ihrem Feed. Tipps, Erfolgsgeschichten und Behind-the-Scenes.',
@@ -544,8 +534,8 @@ function fs_render_instagram_slider( $a ) {
 		<section class="fs-section fs-surface-light">
 			<div class="fs-container fs-z">
 				<div class="fs-head">
-					<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><h2><?php echo $heading; ?></h2></div>
-					<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+					<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><?php echo fs_el( 'h2', '', '', $heading ); ?></div>
+					<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 				</div>
 				<div class="fs-center">
 					<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( 'instagram', 20 ); ?> Besuchen Sie uns auf Instagram</a>
@@ -559,8 +549,8 @@ function fs_render_instagram_slider( $a ) {
 	<section class="fs-section fs-surface-light" data-fs-ig>
 		<div class="fs-container fs-wide" style="margin-inline:auto;">
 			<div class="fs-head">
-				<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><h2><?php echo $heading; ?></h2></div>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+				<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><?php echo fs_el( 'h2', '', '', $heading ); ?></div>
+				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 			</div>
 			<div class="fs-ig__track" id="fs-ig-track" aria-live="polite" data-fs-ig-track
 				data-posts='<?php echo esc_attr( wp_json_encode( $posts ) ); ?>'><?php
@@ -594,7 +584,7 @@ function fs_render_instagram_slider( $a ) {
  * FAQ
  * ---------------------------------------------------------------------- */
 function fs_render_faq( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow' => 'Häufig gestellte Fragen',
 		'heading' => 'FAQ',
 	) );
@@ -604,10 +594,8 @@ function fs_render_faq( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] ), 'class="fs-head"' ); ?>
 			<div class="fs-faq" data-fs-faq>
 				<?php foreach ( $faqs as $f ) : ?>
 				<div class="fs-faq__item">
@@ -626,7 +614,7 @@ function fs_render_faq( $a ) {
  * CTA / KONTAKT
  * ---------------------------------------------------------------------- */
 function fs_render_cta( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => 'Bereit für Ihren Führerschein?',
 		'highlight' => 'Führerschein?',
 		'lead'      => 'Starten Sie noch heute Ihre Fahrausbildung. Unsere Experten in Gelsenkirchen, Essen und Duisburg stehen Ihnen zur Verfügung.',
@@ -641,11 +629,11 @@ function fs_render_cta( $a ) {
 		<div class="fs-container fs-z">
 			<div class="fs-split">
 				<div>
-					<h2><?php echo $heading; ?></h2>
-					<p class="fs-cta__lead"><?php echo esc_html( $d['lead'] ); ?></p>
+					<?php echo fs_el( 'h2', '', '', $heading ); ?>
+					<?php echo fs_el( 'p', $d['lead'], 'class="fs-cta__lead"' ); ?>
 					<div class="fs-mb-8">
-						<div class="fs-contact-line"><?php echo fs_icon( 'phone', 24, 'fs-icon-pink' ); ?><div><p class="sub">Telefonisch erreichbar</p><p class="val"><?php echo esc_html( $d['phone'] ); ?></p></div></div>
-						<div class="fs-contact-line"><?php echo fs_icon( 'mail', 24, 'fs-icon-pink' ); ?><div><p class="sub">E-Mail</p><p class="val"><?php echo esc_html( $d['email'] ); ?></p></div></div>
+						<div class="fs-contact-line"><?php echo fs_icon( 'phone', 24, 'fs-icon-pink' ); ?><div><p class="sub">Telefonisch erreichbar</p><?php echo fs_el( 'p', $d['phone'], 'class="val"' ); ?></div></div>
+						<div class="fs-contact-line"><?php echo fs_icon( 'mail', 24, 'fs-icon-pink' ); ?><div><p class="sub">E-Mail</p><?php echo fs_el( 'p', $d['email'], 'class="val"' ); ?></div></div>
 						<div class="fs-contact-line"><?php echo fs_icon( 'map-pin', 24, 'fs-icon-pink' ); ?><div><p class="sub">Besuchen Sie uns</p><p class="val">3 Standorte im Ruhrgebiet</p></div></div>
 					</div>
 					<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( fs_url( 'preise' ) ); ?>">Jetzt anmelden <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
@@ -771,7 +759,7 @@ function fs_render_cookie_banner( $a ) {
  * TIKTOK BADGE
  * ---------------------------------------------------------------------- */
 function fs_render_tiktok_badge( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'url'   => 'https://www.tiktok.com/@edi_fahrschule',
 		'line1' => 'Besuchen Sie uns',
 		'line2' => 'auf TikTok',
@@ -780,7 +768,7 @@ function fs_render_tiktok_badge( $a ) {
 	<div class="fs-tiktok" data-fs-tiktok>
 		<a class="fs-tiktok__link" href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" rel="noopener noreferrer">
 			<?php echo fs_icon( 'tiktok', 24 ); ?>
-			<span><span class="t1"><?php echo esc_html( $d['line1'] ); ?></span><span class="t2"><?php echo esc_html( $d['line2'] ); ?></span></span>
+			<span><?php echo fs_el( 'span', $d['line1'], 'class="t1"' ); ?><?php echo fs_el( 'span', $d['line2'], 'class="t2"' ); ?></span>
 			<button type="button" class="fs-tiktok__close" data-fs-tiktok-close aria-label="Schließen"><?php echo fs_icon( 'x', 14 ); ?></button>
 		</a>
 	</div>
@@ -797,7 +785,7 @@ function fs_render_tiktok_badge( $a ) {
  * ---------------------------------------------------------------------- */
 function fs_render_about_intro( $a ) {
 	$f2 = fahrschule_pdf( 'f2' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'   => $f2['label'],
 		'heading'   => $f2['headline'],
 		'highlight' => $f2['highlight'],
@@ -811,12 +799,12 @@ function fs_render_about_intro( $a ) {
 	<section class="fs-section fs-surface-brand" data-pdf-section="F2">
 		<div class="fs-container fs-z">
 			<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
-			<div class="fs-head"><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2><?php echo $heading; ?></h2></div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ) . fs_el( 'h2', '', '', $heading ), 'class="fs-head"' ); ?>
 			<?php endif; ?>
 			<div class="fs-rich">
-				<p class="lead"><?php echo esc_html( $d['p1'] ); ?></p>
-				<p><?php echo esc_html( $d['p2'] ); ?></p>
-				<p><?php echo esc_html( $d['p3'] ); ?></p>
+				<?php echo fs_el( 'p', $d['p1'], 'class="lead"' ); ?>
+				<?php echo fs_el( 'p', $d['p2'] ); ?>
+				<?php echo fs_el( 'p', $d['p3'] ); ?>
 			</div>
 		</div>
 	</section>
@@ -828,7 +816,7 @@ function fs_render_about_intro( $a ) {
  * ÜBER UNS – Timeline
  * ---------------------------------------------------------------------- */
 function fs_render_about_timeline( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => 'Tradition trifft Moderne',
 		'highlight' => 'Moderne',
 		'subtitle'  => 'Über 30 Jahre Erfahrung in der Fahrerausbildung im Ruhrgebiet',
@@ -843,7 +831,7 @@ function fs_render_about_timeline( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
-			<div class="fs-head" style="margin-bottom:5rem;"><h2><?php echo $heading; ?></h2><p style="color:var(--c-text);font-size:1.25rem;max-width:42rem;margin:1rem auto 0;"><?php echo esc_html( $d['subtitle'] ); ?></p></div>
+			<div class="fs-head" style="margin-bottom:5rem;"><?php echo fs_el( 'h2', '', '', $heading ); ?><?php echo fs_el( 'p', $d['subtitle'], 'style="color:var(--c-text);font-size:1.25rem;max-width:42rem;margin:1rem auto 0;"' ); ?></div>
 			<div class="fs-timeline">
 				<?php foreach ( $items as $it ) : ?>
 				<div class="fs-timeline__item">
@@ -866,7 +854,7 @@ function fs_render_about_timeline( $a ) {
  * ÜBER UNS – Philosophie
  * ---------------------------------------------------------------------- */
 function fs_render_about_philosophy( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => 'Unsere Philosophie',
 		'highlight' => 'Philosophie',
 		'subtitle'  => 'Mit Kompetenz und Betreuung bis zum Führerschein',
@@ -880,7 +868,7 @@ function fs_render_about_philosophy( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container">
-			<div class="fs-head"><h2><?php echo $heading; ?></h2><p style="color:var(--c-text);font-size:1.25rem;"><?php echo esc_html( $d['subtitle'] ); ?></p></div>
+			<?php echo fs_wrap( 'div', fs_el( 'h2', '', '', $heading ) . fs_el( 'p', $d['subtitle'], 'style="color:var(--c-text);font-size:1.25rem;"' ), 'class="fs-head"' ); ?>
 			<div class="fs-grid fs-grid--3" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $items as $it ) : ?>
 				<div class="fs-philo"><?php echo fs_icon( $it[0], 40 ); ?><h3><?php echo esc_html( $it[1] ); ?></h3><p><?php echo esc_html( $it[2] ); ?></p></div>
@@ -897,7 +885,7 @@ function fs_render_about_philosophy( $a ) {
  * ---------------------------------------------------------------------- */
 function fs_render_about_team( $a ) {
 	$f9 = fahrschule_pdf( 'f9' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow' => $f9['label'],
 		'heading' => $f9['headline'],
 		'p1'      => $f9['paragraphs'][0],
@@ -930,11 +918,11 @@ function fs_render_about_team( $a ) {
 	<section class="fs-section fs-surface-light" data-pdf-section="F9">
 		<div class="fs-container">
 			<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
-			<div class="fs-head"><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2><?php echo esc_html( $d['heading'] ); ?></h2></div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ) . fs_el( 'h2', $d['heading'] ), 'class="fs-head"' ); ?>
 			<?php endif; ?>
 			<div class="fs-rich fs-center">
-				<p class="lead"><?php echo esc_html( $d['p1'] ); ?></p>
-				<p><?php echo esc_html( $d['p2'] ); ?></p>
+				<?php echo fs_el( 'p', $d['p1'], 'class="lead"' ); ?>
+				<?php echo fs_el( 'p', $d['p2'] ); ?>
 			</div>
 			<div class="fs-grid fs-grid--3 fs-mt-8" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $f9['groups'] as $group => $where ) : ?>
@@ -954,7 +942,7 @@ function fs_render_about_team( $a ) {
 				</div>
 				<?php endforeach; ?>
 			</div>
-			<p class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"><?php echo esc_html( $d['footer'] ); ?></p>
+			<?php echo fs_el( 'p', $d['footer'], 'class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
 	</section>
 	<?php
@@ -965,7 +953,7 @@ function fs_render_about_team( $a ) {
  * TESTIMONIALS – Hero-Counter
  * ---------------------------------------------------------------------- */
 function fs_render_testimonials_hero( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => 'Über 30 Jahre Erfahrung im Ruhrgebiet',
 		'highlight' => '30 Jahre Erfahrung',
 		'subtitle'  => 'Seit 1993 begleiten wir Fahrschülerinnen und Fahrschüler in Duisburg, Essen und Gelsenkirchen zum Führerschein.',
@@ -974,8 +962,8 @@ function fs_render_testimonials_hero( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-center">
-			<h1 style="font-size:clamp(2.75rem,8vw,4.5rem);font-weight:800;color:var(--c-heading);"><?php echo $heading; ?></h1>
-			<p style="color:var(--c-text);font-size:1.25rem;max-width:42rem;margin:1rem auto 0;"><?php echo esc_html( $d['subtitle'] ); ?></p>
+			<?php echo fs_el( 'h1', '', 'style="font-size:clamp(2.75rem,8vw,4.5rem);font-weight:800;color:var(--c-heading);"', $heading ); ?>
+			<?php echo fs_el( 'p', $d['subtitle'], 'style="color:var(--c-text);font-size:1.25rem;max-width:42rem;margin:1rem auto 0;"' ); ?>
 			<a class="fs-btn fs-btn--lg fs-btn--outline fs-mt-4" href="https://www.google.com/search?q=Fahrschule+edi+Duisburg+Bewertungen" target="_blank" rel="noopener noreferrer">Echte Bewertungen auf Google ansehen <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
 		</div>
 	</section>
@@ -987,7 +975,7 @@ function fs_render_testimonials_hero( $a ) {
  * TESTIMONIALS – Absolventen-Galerie
  * ---------------------------------------------------------------------- */
 function fs_render_graduates_gallery( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => 'Unsere Absolventen im Überblick',
 		'highlight' => 'Absolventen',
 	) );
@@ -1000,7 +988,7 @@ function fs_render_graduates_gallery( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container">
-			<div class="fs-head"><h2><?php echo $heading; ?></h2></div>
+			<?php echo fs_wrap( 'div', fs_el( 'h2', '', '', $heading ), 'class="fs-head"' ); ?>
 			<div class="fs-grid fs-grid--3" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $items as $it ) : ?>
 				<div class="fs-locimg" style="aspect-ratio:1/1;height:auto;"><img src="<?php echo esc_url( $it[0] ); ?>" alt="<?php echo esc_attr( $it[1] ); ?> – Absolvent der Fahrschule edi" width="500" height="500" loading="lazy" decoding="async"><div class="fs-locimg__cap"><h3 style="font-size:1.25rem;"><?php echo esc_html( $it[1] ); ?></h3></div></div>
@@ -1016,7 +1004,7 @@ function fs_render_graduates_gallery( $a ) {
  * TESTIMONIALS – ausführliches Raster (mit Klasse)
  * ---------------------------------------------------------------------- */
 function fs_render_testimonials_detailed( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => 'Kundenstimmen & Bewertungen',
 		'highlight' => 'Bewertungen',
 		'reviews_url' => 'https://www.google.com/search?q=Fahrschule+edi+Duisburg+Bewertungen',
@@ -1036,7 +1024,7 @@ function fs_render_testimonials_detailed( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container">
-			<div class="fs-head"><h2><?php echo $heading; ?></h2></div>
+			<?php echo fs_wrap( 'div', fs_el( 'h2', '', '', $heading ), 'class="fs-head"' ); ?>
 			<?php if ( ! $t ) : ?>
 			<div class="fs-cta-band">
 				<h3>Echte Bewertungen statt erfundener Zitate</h3>
@@ -1066,7 +1054,7 @@ function fs_render_testimonials_detailed( $a ) {
  * STANDORT-HERO (generisch, je Stadt konfigurierbar)
  * ---------------------------------------------------------------------- */
 function fs_render_location_hero( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'city'     => 'Duisburg',
 		'icon'     => 'shield',
 		'badge'    => 'Hafen & Logistik',
@@ -1086,13 +1074,17 @@ function fs_render_location_hero( $a ) {
 			<div class="fs-lochero__grid">
 				<div class="fs-stack" style="gap:1.5rem;">
 					<span class="fs-badge"><?php echo fs_icon( $d['icon'], 16 ); ?> <?php echo esc_html( $d['badge'] ); ?></span>
-					<h1><?php echo esc_html( $d['heading'] ); ?></h1>
-					<p class="lead"><?php echo esc_html( $d['lead'] ); ?></p>
-					<div class="fs-loc__line"><?php echo fs_icon( 'map-pin', 20 ); ?><div><p style="font-weight:600;color:var(--c-heading);margin:0;"><?php echo esc_html( $d['address'] ); ?></p><p style="margin:0;"><?php echo esc_html( $d['zip'] ); ?></p></div></div>
+					<?php echo fs_el( 'h1', $d['heading'] ); ?>
+					<?php echo fs_el( 'p', $d['lead'], 'class="lead"' ); ?>
+					<div class="fs-loc__line"><?php echo fs_icon( 'map-pin', 20 ); ?><div><?php echo fs_el( 'p', $d['address'], 'style="font-weight:600;color:var(--c-heading);margin:0;"' ); ?><?php echo fs_el( 'p', $d['zip'], 'style="margin:0;"' ); ?></div></div>
+					<?php if ( fs_has( $d, 'phone' ) ) : ?>
 					<div class="fs-loc__line"><?php echo fs_icon( 'phone', 20 ); ?><a href="tel:<?php echo esc_attr( fs_tel( $d['phone'] ) ); ?>" style="color:var(--c-heading);"><?php echo esc_html( $d['phone'] ); ?></a></div>
+					<?php endif; ?>
+					<?php if ( fs_has( $d, 'email' ) ) : ?>
 					<div class="fs-loc__line"><?php echo fs_icon( 'mail', 20 ); ?><a href="mailto:<?php echo esc_attr( $d['email'] ); ?>" style="color:var(--c-heading);"><?php echo esc_html( $d['email'] ); ?></a></div>
+					<?php endif; ?>
 					<?php if ( $d['hours'] ) : ?>
-					<div class="fs-loc__line"><?php echo fs_icon( 'clock', 20 ); ?><p style="margin:0;"><?php echo esc_html( $d['hours'] ); ?></p></div>
+					<div class="fs-loc__line"><?php echo fs_icon( 'clock', 20 ); ?><?php echo fs_el( 'p', $d['hours'], 'style="margin:0;"' ); ?></div>
 					<?php endif; ?>
 					<?php if ( $d['contact'] ) : ?>
 					<div class="fs-loc__line"><?php echo fs_icon( 'users', 20 ); ?><p style="margin:0;">Ansprechpartner vor Ort: <strong style="color:var(--c-heading);"><?php echo esc_html( $d['contact'] ); ?></strong></p></div>
@@ -1149,7 +1141,7 @@ function fs_render_location_hero( $a ) {
  * STANDORT-INHALT (Bilder + Distanzrechner + lokale Bewertungen)
  * ---------------------------------------------------------------------- */
 function fs_render_location_content( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'city'    => 'Duisburg',
 		'img1'    => fs_media( 'loc_duisburg' ),
 		'img1_t'  => 'Moderne Fahrschule',
@@ -1175,8 +1167,8 @@ function fs_render_location_content( $a ) {
 			<div style="margin-bottom:5rem;">
 				<div class="fs-head"><h2>Unser <span class="fs-accent">Standort in <?php echo esc_html( $d['city'] ); ?></span></h2></div>
 				<div class="fs-grid fs-grid--2" style="max-width:64rem;margin-inline:auto;">
-					<div class="fs-locimg"><img src="<?php echo esc_url( $d['img1'] ); ?>" alt="<?php echo esc_attr( $d['img1_t'] ); ?> – Fahrschule edi <?php echo esc_attr( $d['city'] ); ?>" width="800" height="640" loading="lazy" decoding="async"><div class="fs-locimg__cap"><h3><?php echo esc_html( $d['img1_t'] ); ?></h3><p><?php echo esc_html( $d['img1_s'] ); ?></p></div></div>
-					<div class="fs-locimg"><img src="<?php echo esc_url( $d['img2'] ); ?>" alt="<?php echo esc_attr( $d['img2_t'] ); ?> – Fahrschule edi <?php echo esc_attr( $d['city'] ); ?>" width="800" height="640" loading="lazy" decoding="async"><div class="fs-locimg__cap"><h3><?php echo esc_html( $d['img2_t'] ); ?></h3><p><?php echo esc_html( $d['img2_s'] ); ?></p></div></div>
+					<div class="fs-locimg"><img src="<?php echo esc_url( $d['img1'] ); ?>" alt="<?php echo esc_attr( $d['img1_t'] ); ?> – Fahrschule edi <?php echo esc_attr( $d['city'] ); ?>" width="800" height="640" loading="lazy" decoding="async"><div class="fs-locimg__cap"><?php echo fs_el( 'h3', $d['img1_t'] ); ?><?php echo fs_el( 'p', $d['img1_s'] ); ?></div></div>
+					<div class="fs-locimg"><img src="<?php echo esc_url( $d['img2'] ); ?>" alt="<?php echo esc_attr( $d['img2_t'] ); ?> – Fahrschule edi <?php echo esc_attr( $d['city'] ); ?>" width="800" height="640" loading="lazy" decoding="async"><div class="fs-locimg__cap"><?php echo fs_el( 'h3', $d['img2_t'] ); ?><?php echo fs_el( 'p', $d['img2_s'] ); ?></div></div>
 				</div>
 			</div>
 			<div style="margin-bottom:5rem;">
@@ -1189,7 +1181,7 @@ function fs_render_location_content( $a ) {
 			</div>
 			<?php if ( $testi ) : ?>
 			<div>
-				<div class="fs-head"><h2>Bewertungen aus <span class="fs-accent"><?php echo esc_html( $d['city'] ); ?></span></h2></div>
+				<div class="fs-head"><h2>Bewertungen aus <?php echo fs_el( 'span', $d['city'], 'class="fs-accent"' ); ?></h2></div>
 				<div class="fs-grid fs-grid--2" style="max-width:56rem;margin-inline:auto;">
 					<?php foreach ( $testi as $t ) : ?>
 					<div class="fs-darktesti">
@@ -1271,7 +1263,7 @@ function fs_render_location_calculator( $a ) {
 /* Vollständige Führerscheinklassen-Übersicht (PDF S.2) */
 function fs_render_license_overview( $a ) {
 	$f3 = fahrschule_pdf( 'f3' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'  => $f3['label'],
 		'heading'  => $f3['headline'],
 		'subtitle' => $f3['paragraphs'][0],
@@ -1282,8 +1274,8 @@ function fs_render_license_overview( $a ) {
 	<section class="fs-section fs-surface-brand" data-pdf-section="F3">
 		<div class="fs-container fs-z">
 			<div class="fs-head">
-				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2><?php echo esc_html( $d['heading'] ); ?></h2><?php endif; ?>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?><?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?><?php echo fs_el( 'h2', $d['heading'] ); ?><?php endif; ?>
+				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 			</div>
 			<div class="fs-classlist">
 				<?php foreach ( $f3['groups'] as $cat => $classes ) : ?>
@@ -1302,7 +1294,7 @@ function fs_render_license_overview( $a ) {
 /* Unsere Leistungen (PDF S.3) */
 function fs_render_services( $a ) {
 	$f4 = fahrschule_pdf( 'f4' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'    => $f4['label'],
 		'heading'    => $f4['headline'],
 		'subtitle'   => $f4['paragraphs'][0],
@@ -1314,16 +1306,16 @@ function fs_render_services( $a ) {
 	<section class="fs-section fs-surface-light" data-pdf-section="F4">
 		<div class="fs-container fs-z">
 			<div class="fs-head">
-				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2><?php echo esc_html( $d['heading'] ); ?></h2><?php endif; ?>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?><?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?><?php echo fs_el( 'h2', $d['heading'] ); ?><?php endif; ?>
+				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 			</div>
-			<?php if ( $d['list_intro'] ) : ?><p class="fs-listintro"><?php echo esc_html( $d['list_intro'] ); ?></p><?php endif; ?>
+			<?php if ( $d['list_intro'] ) : ?><?php echo fs_el( 'p', $d['list_intro'], 'class="fs-listintro"' ); ?><?php endif; ?>
 			<div class="fs-features">
 				<?php foreach ( $f4['items'] as $it ) : ?>
 				<div class="fs-feature"><?php echo fs_icon( 'check-circle', 22 ); ?><span><?php echo esc_html( $it ); ?></span></div>
 				<?php endforeach; ?>
 			</div>
-			<p class="fs-center fs-mt-8" style="color:var(--c-text);max-width:42rem;margin-inline:auto;"><?php echo esc_html( $d['footer'] ); ?></p>
+			<?php echo fs_el( 'p', $d['footer'], 'class="fs-center fs-mt-8" style="color:var(--c-text);max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
 	</section>
 	<?php
@@ -1338,7 +1330,7 @@ function fs_render_services( $a ) {
  * unverändert übernommen (/theorieunterricht/).
  * ---------------------------------------------------------------------- */
 function fs_render_theory_schedule( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow' => 'Theorieunterricht',
 		'heading' => 'Unsere Theorie-Termine',
 		'lead'    => 'Der Theorieunterricht findet wöchentlich an festen Terminen statt – wählen Sie den Standort, der für Sie am besten passt.',
@@ -1368,11 +1360,9 @@ function fs_render_theory_schedule( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
-				<p><?php echo esc_html( $d['lead'] ); ?></p>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['lead'] ), 'class="fs-head"' ); ?>
 			<div class="fs-grid fs-grid--2" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $groups as $g ) : ?>
 				<div class="fs-card"><div class="fs-card__body">
@@ -1403,7 +1393,7 @@ function fs_render_theory_schedule( $a ) {
 /* Berufskraftfahrer (PDF S.3) – CUSTOM */
 function fs_render_professional_drivers( $a ) {
 	$f5 = fahrschule_pdf( 'f5' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'    => $f5['label'],
 		'heading'    => $f5['headline'],
 		'p1'         => $f5['paragraphs'][0],
@@ -1416,19 +1406,19 @@ function fs_render_professional_drivers( $a ) {
 	<section class="fs-section fs-surface-light" data-pdf-section="F5">
 		<div class="fs-container">
 			<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
-			<div class="fs-head"><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2 style="color:var(--c-heading);"><?php echo esc_html( $d['heading'] ); ?></h2></div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ) . fs_el( 'h2', $d['heading'], 'style="color:var(--c-heading);"' ), 'class="fs-head"' ); ?>
 			<?php endif; ?>
 			<div class="fs-rich fs-center">
-				<p><?php echo esc_html( $d['p1'] ); ?></p>
-				<p><?php echo esc_html( $d['p2'] ); ?></p>
+				<?php echo fs_el( 'p', $d['p1'] ); ?>
+				<?php echo fs_el( 'p', $d['p2'] ); ?>
 			</div>
-			<?php if ( $d['list_intro'] ) : ?><p class="fs-listintro fs-mt-8"><?php echo esc_html( $d['list_intro'] ); ?></p><?php endif; ?>
+			<?php if ( $d['list_intro'] ) : ?><?php echo fs_el( 'p', $d['list_intro'], 'class="fs-listintro fs-mt-8"' ); ?><?php endif; ?>
 			<div class="fs-features">
 				<?php foreach ( $f5['items'] as $it ) : ?>
 				<div class="fs-feature"><?php echo fs_icon( 'truck', 22 ); ?><span style="color:var(--c-heading);"><?php echo esc_html( $it ); ?></span></div>
 				<?php endforeach; ?>
 			</div>
-			<p class="fs-center fs-mt-8" style="color:var(--c-text);max-width:42rem;margin-inline:auto;"><?php echo esc_html( $d['footer'] ); ?></p>
+			<?php echo fs_el( 'p', $d['footer'], 'class="fs-center fs-mt-8" style="color:var(--c-text);max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
 	</section>
 	<?php
@@ -1438,7 +1428,7 @@ function fs_render_professional_drivers( $a ) {
 /* ASF & FES (PDF S.4) – CUSTOM */
 function fs_render_seminars( $a ) {
 	$f6 = fahrschule_pdf( 'f6' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'    => $f6['label'],
 		'heading'    => $f6['headline'],
 		'subtitle'   => $f6['paragraphs'][0],
@@ -1450,16 +1440,16 @@ function fs_render_seminars( $a ) {
 	<section class="fs-section fs-surface-brand" data-pdf-section="F6">
 		<div class="fs-container fs-z">
 			<div class="fs-head">
-				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2><?php echo esc_html( $d['heading'] ); ?></h2><?php endif; ?>
-				<p><?php echo esc_html( $d['subtitle'] ); ?></p>
+				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?><?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?><?php echo fs_el( 'h2', $d['heading'] ); ?><?php endif; ?>
+				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 			</div>
-			<?php if ( $d['list_intro'] ) : ?><p class="fs-listintro"><?php echo esc_html( $d['list_intro'] ); ?></p><?php endif; ?>
+			<?php if ( $d['list_intro'] ) : ?><?php echo fs_el( 'p', $d['list_intro'], 'class="fs-listintro"' ); ?><?php endif; ?>
 			<div class="fs-features">
 				<?php foreach ( $f6['items'] as $it ) : ?>
 				<div class="fs-feature"><?php echo fs_icon( 'check-circle', 22 ); ?><span><?php echo esc_html( $it ); ?></span></div>
 				<?php endforeach; ?>
 			</div>
-			<p class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"><?php echo esc_html( $d['footer'] ); ?></p>
+			<?php echo fs_el( 'p', $d['footer'], 'class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
 	</section>
 	<?php
@@ -1469,7 +1459,7 @@ function fs_render_seminars( $a ) {
 /* Moderne Ausbildung (PDF S.4) – CUSTOM */
 function fs_render_modern_training( $a ) {
 	$f7 = fahrschule_pdf( 'f7' );
-	$d  = wp_parse_args( $a, array(
+	$d  = fs_attrs( $a, array(
 		'eyebrow'   => $f7['label'],
 		'heading'   => $f7['headline'],
 		'highlight' => $f7['highlight'],
@@ -1484,14 +1474,14 @@ function fs_render_modern_training( $a ) {
 	<section class="fs-section fs-surface-light" data-pdf-section="F7">
 		<div class="fs-container">
 			<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
-			<div class="fs-head"><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><h2><?php echo $heading; ?></h2></div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ) . fs_el( 'h2', '', '', $heading ), 'class="fs-head"' ); ?>
 			<?php endif; ?>
 			<div class="fs-rich fs-center">
-				<p style="color:var(--c-heading);font-weight:600;font-size:1.2rem;"><?php echo esc_html( $d['p1'] ); ?></p>
-				<p><?php echo esc_html( $d['p2'] ); ?></p>
-				<p><?php echo esc_html( $d['p3'] ); ?></p>
+				<?php echo fs_el( 'p', $d['p1'], 'style="color:var(--c-heading);font-weight:600;font-size:1.2rem;"' ); ?>
+				<?php echo fs_el( 'p', $d['p2'] ); ?>
+				<?php echo fs_el( 'p', $d['p3'] ); ?>
 			</div>
-			<p class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"><?php echo esc_html( $d['footer'] ); ?></p>
+			<?php echo fs_el( 'p', $d['footer'], 'class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
 	</section>
 	<?php
@@ -1501,7 +1491,7 @@ function fs_render_modern_training( $a ) {
 /* Anmeldung (PDF S.6) – CUSTOM CTA */
 function fs_render_anmeldung( $a ) {
 	$f10 = fahrschule_pdf( 'f10' );
-	$d   = wp_parse_args( $a, array(
+	$d   = fs_attrs( $a, array(
 		'eyebrow'    => $f10['label'],
 		'heading'    => $f10['headline'],
 		'p1'         => $f10['paragraphs'][0],
@@ -1518,15 +1508,15 @@ function fs_render_anmeldung( $a ) {
 			<div class="fs-anmeldung">
 				<?php echo fs_icon( 'graduation', 48, 'fs-icon-pink' ); ?>
 				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
-				<p class="fs-eyebrow fs-mt-4" style="margin-bottom:0;"><?php echo esc_html( $d['eyebrow'] ); ?></p>
-				<h2 class="fs-mt-4"><?php echo esc_html( $d['heading'] ); ?></h2>
+				<?php echo fs_el( 'p', $d['eyebrow'], 'class="fs-eyebrow fs-mt-4" style="margin-bottom:0;"' ); ?>
+				<?php echo fs_el( 'h2', $d['heading'], 'class="fs-mt-4"' ); ?>
 				<?php endif; ?>
 				<div class="fs-anmeldung__text">
-					<p><?php echo esc_html( $d['p1'] ); ?></p>
-					<p><?php echo esc_html( $d['p2'] ); ?></p>
-					<p style="color:var(--c-heading);font-weight:600;"><?php echo esc_html( $d['p3'] ); ?></p>
+					<?php echo fs_el( 'p', $d['p1'] ); ?>
+					<?php echo fs_el( 'p', $d['p2'] ); ?>
+					<?php echo fs_el( 'p', $d['p3'], 'style="color:var(--c-heading);font-weight:600;"' ); ?>
 				</div>
-				<?php if ( $d['link_intro'] ) : ?><p class="fs-anmeldung__label"><?php echo esc_html( $d['link_intro'] ); ?></p><?php endif; ?>
+				<?php if ( $d['link_intro'] ) : ?><?php echo fs_el( 'p', $d['link_intro'], 'class="fs-anmeldung__label"' ); ?><?php endif; ?>
 				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( fs_link( $d['btn_url'] ) ); ?>"><?php echo esc_html( $d['btn_label'] ); ?> <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
 			</div>
 		</div>
@@ -1543,7 +1533,7 @@ function fs_render_anmeldung( $a ) {
  * Rücksprung-URL über das versteckte Feld fs_back.
  */
 function fs_render_contact_form( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading' => 'Schreiben Sie uns',
 		'lead'    => 'Fragen zur Ausbildung, den Kosten oder einem Standort? Wir melden uns kurzfristig bei Ihnen zurück.',
 	) );
@@ -1552,10 +1542,8 @@ function fs_render_contact_form( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light" id="kontaktformular">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<h2><?php echo esc_html( $d['heading'] ); ?></h2>
-				<p><?php echo esc_html( $d['lead'] ); ?></p>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['lead'] ), 'class="fs-head"' ); ?>
 			<?php if ( 'ok' === $state ) : ?>
 				<p role="status" class="fs-contactform" style="text-align:center;font-weight:600;color:var(--c-card-heading);">Danke für Ihre Nachricht! Wir melden uns kurzfristig bei Ihnen.</p>
 			<?php else : ?>
@@ -1611,7 +1599,7 @@ function fs_render_contact_form( $a ) {
 
 /* Rechtstext-Block (Impressum / Datenschutz) */
 function fs_render_legal( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'kind' => 'impressum',
 	) );
 	ob_start();
@@ -1715,7 +1703,7 @@ function fs_legal_datenschutz() { ?>
  * Titel und Einleitung stammen aus der zentralen Seiten-Registry.
  */
 function fs_render_page_hero( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'heading'   => '',
 		'lead'      => '',
 		'eyebrow'   => '',
@@ -1745,9 +1733,9 @@ function fs_render_page_hero( $a ) {
 	ob_start(); ?>
 	<section class="fs-pagehero fs-surface-brand"<?php echo $pdf_id ? ' data-pdf-section="' . esc_attr( $pdf_id ) . '"' : ''; ?>>
 		<div class="fs-container fs-z">
-			<?php if ( $d['eyebrow'] ) : ?><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><?php endif; ?>
-			<h1><?php echo $heading; ?></h1>
-			<?php if ( $d['lead'] ) : ?><p class="fs-pagehero__lead"><?php echo esc_html( $d['lead'] ); ?></p><?php endif; ?>
+			<?php if ( $d['eyebrow'] ) : ?><?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?><?php endif; ?>
+			<?php echo fs_el( 'h1', '', '', $heading ); ?>
+			<?php if ( $d['lead'] ) : ?><?php echo fs_el( 'p', $d['lead'], 'class="fs-pagehero__lead"' ); ?><?php endif; ?>
 		</div>
 	</section>
 	<?php
@@ -1759,7 +1747,7 @@ function fs_render_page_hero( $a ) {
  * statt innerhalb einer Onepage zu Sektionen zu springen.
  */
 function fs_render_page_teasers( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow'  => '',
 		'heading'  => '',
 		'subtitle' => '',
@@ -1781,9 +1769,9 @@ function fs_render_page_teasers( $a ) {
 		<div class="fs-container fs-z">
 			<?php if ( $d['eyebrow'] || $d['heading'] || $d['subtitle'] ) : ?>
 			<div class="fs-head">
-				<?php if ( $d['eyebrow'] ) : ?><span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span><?php endif; ?>
-				<?php if ( $d['heading'] ) : ?><h2><?php echo esc_html( $d['heading'] ); ?></h2><?php endif; ?>
-				<?php if ( $d['subtitle'] ) : ?><p><?php echo esc_html( $d['subtitle'] ); ?></p><?php endif; ?>
+				<?php if ( $d['eyebrow'] ) : ?><?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?><?php endif; ?>
+				<?php if ( $d['heading'] ) : ?><?php echo fs_el( 'h2', $d['heading'] ); ?><?php endif; ?>
+				<?php if ( $d['subtitle'] ) : ?><?php echo fs_el( 'p', $d['subtitle'] ); ?><?php endif; ?>
 			</div>
 			<?php endif; ?>
 			<div class="fs-teasers fs-teasers--3">
@@ -1810,7 +1798,7 @@ function fs_render_page_teasers( $a ) {
  * Eigener Geschäftsbereich laut Firmierung „Fahrschule & Fahrlehrerfachschule edi GmbH".
  */
 function fs_render_instructor_training( $a ) {
-	$d = wp_parse_args( $a, array(
+	$d = fs_attrs( $a, array(
 		'eyebrow'   => 'Fahrlehrerfachschule',
 		'heading'   => 'Machen Sie Ihr Können zum Beruf',
 		'highlight' => 'Beruf',
@@ -1838,13 +1826,11 @@ function fs_render_instructor_training( $a ) {
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
-			<div class="fs-head">
-				<span class="fs-eyebrow"><?php echo esc_html( $d['eyebrow'] ); ?></span>
-				<h2><?php echo $heading; ?></h2>
-			</div>
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', '', '', $heading ), 'class="fs-head"' ); ?>
 			<div class="fs-rich fs-center">
-				<p style="color:var(--c-heading);font-weight:600;font-size:1.2rem;"><?php echo esc_html( $d['p1'] ); ?></p>
-				<p><?php echo esc_html( $d['p2'] ); ?></p>
+				<?php echo fs_el( 'p', $d['p1'], 'style="color:var(--c-heading);font-weight:600;font-size:1.2rem;"' ); ?>
+				<?php echo fs_el( 'p', $d['p2'] ); ?>
 			</div>
 			<div class="fs-grid fs-grid--2 fs-mt-8" style="max-width:56rem;margin-inline:auto;">
 				<?php foreach ( $content as $c ) : ?>
@@ -1862,7 +1848,7 @@ function fs_render_instructor_training( $a ) {
 				<?php endforeach; ?>
 			</div>
 			<div class="fs-center fs-mt-8">
-				<p style="color:var(--c-text);max-width:42rem;margin:0 auto 1.5rem;"><?php echo esc_html( $d['footer'] ); ?></p>
+				<?php echo fs_el( 'p', $d['footer'], 'style="color:var(--c-text);max-width:42rem;margin:0 auto 1.5rem;"' ); ?>
 				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( fs_link( $d['btn_url'] ) ); ?>"><?php echo esc_html( $d['btn_label'] ); ?> <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
 			</div>
 		</div>

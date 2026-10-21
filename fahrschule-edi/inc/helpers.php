@@ -54,6 +54,87 @@ function fs_icon( $name, $size = 20, $extra_class = '' ) {
 	);
 }
 
+/* =========================================================================
+ * EDITIERBARKEIT: leere Felder sollen verschwinden, nicht leere Hüllen lassen
+ *
+ * Ein Attribut hat drei Zustände, die auseinandergehalten werden müssen:
+ *   - nicht gesetzt  -> WordPress liefert die Vorgabe aus der Registrierung
+ *   - gesetzt        -> der Redakteurswert gilt
+ *   - leer gesetzt   -> der Redakteur hat das Feld BEWUSST geleert
+ *
+ * Der dritte Fall ist der, an dem das Theme bisher scheiterte: `''` lief
+ * unverändert in `esc_html()` und hinterließ <h2></h2> oder eine leere
+ * Badge. Darum liest Rendercode Felder nicht mehr direkt, sondern über
+ * fs_has()/fs_el() - dann fällt mit dem Wert auch sein Element weg.
+ * ====================================================================== */
+
+/**
+ * Wie wp_parse_args, aber ausdrücklich ohne Filtern: ein leerer Wert ist eine
+ * Aussage („dieses Feld soll weg") und darf nicht zur Vorgabe zurückfallen.
+ */
+function fs_attrs( $a, $defaults = array() ) {
+	return array_merge( $defaults, (array) $a );
+}
+
+/** Hat das Feld einen ausgebbaren Wert? Leerstring und reiner Leerraum zählen nicht. */
+function fs_has( $d, $key ) {
+	return isset( $d[ $key ] ) && '' !== trim( (string) $d[ $key ] );
+}
+
+/**
+ * Gibt ein Element samt Inhalt aus - oder nichts, wenn der Inhalt leer ist.
+ *
+ * @param string $tag     Elementname, z. B. 'h2'.
+ * @param string $value   Roher Text; wird escaped.
+ * @param string $attr    Fertige Attribute, z. B. 'class="fs-eyebrow"'.
+ * @param string $raw     Bereits sicheres HTML statt $value (z. B. aus fs_highlight()).
+ */
+function fs_el( $tag, $value, $attr = '', $raw = null ) {
+	$inner = ( null !== $raw ) ? $raw : esc_html( (string) $value );
+	if ( '' === trim( wp_strip_all_tags( (string) $inner ) ) && null === $raw ) { return ''; }
+	if ( null !== $raw && '' === trim( wp_strip_all_tags( (string) $raw ) ) ) { return ''; }
+	$tag = preg_replace( '/[^a-z0-9]/', '', strtolower( $tag ) );
+	return sprintf( '<%1$s%2$s>%3$s</%1$s>', $tag, $attr ? ' ' . $attr : '', $inner );
+}
+
+/**
+ * Gibt einen Container nur aus, wenn er Inhalt hat.
+ *
+ * Nötig, weil ein geleertes Feld zwar sein eigenes Element verliert, der
+ * umgebende Kasten aber stehen bliebe - .fs-head bringt 3rem Abstand mit und
+ * hinterlässt sonst eine sichtbare Lücke ohne Inhalt.
+ */
+function fs_wrap( $tag, $inner, $attr = '' ) {
+	if ( '' === trim( (string) $inner ) ) { return ''; }
+	$tag = preg_replace( '/[^a-z0-9]/', '', strtolower( $tag ) );
+	return sprintf( '<%1$s%2$s>%3$s</%1$s>', $tag, $attr ? ' ' . $attr : '', $inner );
+}
+
+/** Mehrzeiligen Text als Absätze - oder nichts, wenn nichts da ist. */
+function fs_paragraphs( $text, $attr = '' ) {
+	$text = trim( (string) $text );
+	if ( '' === $text ) { return ''; }
+	$out = '';
+	foreach ( preg_split( '/\n\s*\n/', $text ) as $p ) {
+		$p = trim( $p );
+		if ( '' === $p ) { continue; }
+		$out .= fs_el( 'p', '', $attr, nl2br( esc_html( $p ) ) );
+	}
+	return $out;
+}
+
+/**
+ * Button nur ausgeben, wenn Beschriftung UND Ziel gesetzt sind. Ein Knopf ohne
+ * Beschriftung ist eine unsichtbare Tabfalle, einer ohne Ziel führt ins Leere.
+ */
+function fs_button( $label, $url, $class = 'fs-btn fs-btn--primary' ) {
+	if ( '' === trim( (string) $label ) || '' === trim( (string) $url ) ) { return ''; }
+	return sprintf(
+		'<a class="%s" href="%s">%s</a>',
+		esc_attr( $class ), esc_url( fs_link( $url ) ), esc_html( $label )
+	);
+}
+
 /**
  * Rendert einen registrierten dynamischen Block mit optionalen Attributen.
  * Wird in den Seiten-Templates verwendet, damit die Seiten ohne manuelles
