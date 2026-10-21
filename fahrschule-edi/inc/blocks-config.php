@@ -28,6 +28,25 @@ function fahrschule_blocks_config() {
 		return array( 'default' => $default, 'label' => $label, 'control' => $control, 'options' => $options );
 	};
 
+	/*
+	 * Wiederholfeld (Repeater): eine Liste gleichartiger Zeilen, die der
+	 * Redakteur erweitern, umsortieren und löschen kann. Ersetzt die Arrays,
+	 * die bisher fest in den Render-Callbacks standen und im Editor
+	 * unerreichbar waren.
+	 *
+	 * $columns – Spaltenbeschriftungen, in der Reihenfolge der Zeilenwerte
+	 * $rows    – Vorgabezeilen; jede Zeile ist eine Liste in Spaltenreihenfolge
+	 */
+	$rep = function ( $rows, $label, $columns ) {
+		return array(
+			'default' => $rows,
+			'label'   => $label,
+			'control' => 'repeater',
+			'columns' => $columns,
+			'options' => array(),
+		);
+	};
+
 	/* Kundentexte (PDF) – dieselbe Quelle wie die Render-Callbacks, siehe inc/pdf-texts.php. */
 	$pdf  = 'fahrschule_pdf';
 	$head = $t( '1', 'Abschnittskopf (Label + Überschrift) anzeigen', 'select', array( '1' => 'Ja', '0' => 'Nein – steht bereits im Seitenkopf' ) );
@@ -101,6 +120,14 @@ function fahrschule_blocks_config() {
 			'icon' => 'id-alt', 'keywords' => array( 'klassen', 'führerschein', 'preise' ),
 			'render' => 'fs_render_license_classes', 'pattern' => true, 'page' => 'Startseite',
 			'fields' => array(
+				'classes'  => $rep( array(
+					array( 'Klasse B', 'PKW', 'Personenkraftwagen bis 3.500 kg', '32-40 Std.', '€1.650 - €2.100', '18 Jahre' ),
+					array( 'Klasse BE', 'PKW + Anhänger', 'Motorwagen mit Anhänger', '20-30 Std.', '€900 - €1.500', '18 Jahre' ),
+					array( 'Klasse A', 'Motorrad', 'Motorräder über 35 kW', '25-35 Std.', '€1.200 - €1.800', '24 Jahre' ),
+					array( 'Klasse A1', 'Leichtkraftrad', 'Motorräder bis 125 ccm', '15-25 Std.', '€800 - €1.200', '16 Jahre' ),
+					array( 'Klasse AM', 'Roller/Mofa', 'Mopeds und leichte Roller', '12-18 Std.', '€600 - €900', '15 Jahre' ),
+					array( 'Klasse C', 'LKW', 'Lastkraftwagen', '30-40 Std.', '€1.800 - €2.500', '18 Jahre' ),
+				), 'Führerscheinklasse', array( 'Klasse', 'Kategorie', 'Beschreibung', 'Dauer', 'Richtpreis', 'Mindestalter' ) ),
 				'eyebrow'  => $t( 'Führerscheinklassen', 'Eyebrow', 'text' ),
 				'heading'  => $t( 'Alle Führerscheinklassen', 'Überschrift', 'text' ),
 				'subtitle' => $t( 'Von der Richtpreis-Berechnung bis zur professionellen Ausbildung', 'Untertitel', 'textarea' ),
@@ -132,6 +159,11 @@ function fahrschule_blocks_config() {
 			'icon' => 'groups', 'keywords' => array( 'team', 'video', 'werte' ),
 			'render' => 'fs_render_team_spirit', 'pattern' => true, 'page' => 'Startseite',
 			'fields' => array(
+				'values'   => $rep( array(
+					array( 'heart', 'Mit Herz dabei', 'Wir lieben, was wir tun. Ihre Erfolgsgeschichte ist auch unsere.' ),
+					array( 'zap', 'Energie & Motivation', 'Positive Energie steckt an. Unsere Begeisterung überträgt sich auf Sie.' ),
+					array( 'users', 'Gemeinschaft', 'Wir sind eine Familie, die sich gegenseitig unterstützt.' ),
+				), 'Wert', array( 'Icon (heart, zap, users …)', 'Titel', 'Text' ) ),
 				'badge'     => $t( 'Unser Team Spirit', 'Badge', 'text' ),
 				'heading'   => $t( 'Eine Familie voller Leidenschaft', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Familie', 'Hervorgehobenes Wort', 'text' ),
@@ -182,6 +214,12 @@ function fahrschule_blocks_config() {
 			'icon' => 'megaphone', 'keywords' => array( 'cta', 'kontakt', 'anmeldung' ),
 			'render' => 'fs_render_cta', 'pattern' => true, 'page' => 'Startseite',
 			'fields' => array(
+				'stats'    => $rep( array(
+					array( '30+', 'Jahre Erfahrung' ),
+					array( '5000+', 'Bestandene Prüfungen' ),
+					array( '3', 'Standorte' ),
+					array( '5', 'Sprachen' ),
+				), 'Kennzahl', array( 'Wert', 'Beschriftung' ) ),
 				'heading'   => $t( 'Bereit für Ihren Führerschein?', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Führerschein?', 'Hervorgehobenes Wort', 'text' ),
 				'lead'      => $t( 'Starten Sie noch heute Ihre Fahrausbildung. Unsere Experten in Gelsenkirchen, Essen und Duisburg stehen Ihnen zur Verfügung.', 'Lead-Text', 'textarea' ),
@@ -210,6 +248,12 @@ function fahrschule_blocks_config() {
 			'icon' => 'clock', 'keywords' => array( 'timeline', 'geschichte', 'über uns' ),
 			'render' => 'fs_render_about_timeline', 'pattern' => true, 'page' => 'Über uns',
 			'fields' => array(
+				'items'    => $rep( array(
+					array( '1993', 'Gründung', 'Fahrschule edi wird mit Leidenschaft gegründet' ),
+					array( '2000er', 'Expansion', 'Eröffnung weiterer Standorte in Essen und Duisburg' ),
+					array( '2010', 'Modernisierung', 'Einführung digitaler Lernmethoden und moderner Fahrzeuge' ),
+					array( 'Heute', 'Größte im Ruhrgebiet', 'Eine der erfolgreichsten Fahrschulen mit über 10.000+ glücklichen Absolventen' ),
+				), 'Station', array( 'Jahr', 'Titel', 'Text' ) ),
 				'heading'   => $t( 'Tradition trifft Moderne', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Moderne', 'Hervorgehobenes Wort', 'text' ),
 				'subtitle'  => $t( 'Über 30 Jahre Erfahrung in der Fahrerausbildung im Ruhrgebiet', 'Untertitel', 'textarea' ),
@@ -220,6 +264,11 @@ function fahrschule_blocks_config() {
 			'icon' => 'lightbulb', 'keywords' => array( 'philosophie', 'werte', 'über uns' ),
 			'render' => 'fs_render_about_philosophy', 'pattern' => true, 'page' => 'Über uns',
 			'fields' => array(
+				'items'    => $rep( array(
+					array( 'heart', 'Individuelle Betreuung', 'Jeder Fahrschüler erhält persönliche Aufmerksamkeit und wird individuell begleitet – auch in schwierigen Fällen.' ),
+					array( 'zap', 'Moderne Methoden', 'Wir kombinieren bewährte Ausbildungsmethoden mit modernen digitalen Lerntools für optimale Erfolge.' ),
+					array( 'users', 'Erfahrenes Team', 'Unsere Fahrlehrer sind kompetent, hoch motiviert und verfügen über umfangreiche Erfahrung.' ),
+				), 'Grundsatz', array( 'Icon', 'Titel', 'Text' ) ),
 				'heading'   => $t( 'Unsere Philosophie', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Philosophie', 'Hervorgehobenes Wort', 'text' ),
 				'subtitle'  => $t( 'Mit Kompetenz und Betreuung bis zum Führerschein', 'Untertitel', 'textarea' ),

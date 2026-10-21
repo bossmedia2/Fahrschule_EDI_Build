@@ -116,6 +116,7 @@ function fahrschule_editor_assets() {
 					'control' => $f['control'],
 					'default' => $f['default'],
 					'options' => isset( $f['options'] ) ? $f['options'] : array(),
+					'columns' => isset( $f['columns'] ) ? $f['columns'] : array(),
 				);
 			}
 		}
@@ -168,8 +169,11 @@ function fahrschule_register_blocks_and_patterns() {
 		$defaults   = array();
 		if ( ! empty( $cfg['fields'] ) ) {
 			foreach ( $cfg['fields'] as $key => $f ) {
+				// Wiederholfelder sind Listen, keine Zeichenketten - sonst
+				// verwirft der Block-Editor den Wert beim Speichern.
+				$is_repeater = ( isset( $f['control'] ) && 'repeater' === $f['control'] );
 				$attributes[ $key ] = array(
-					'type'    => 'string',
+					'type'    => $is_repeater ? 'array' : 'string',
 					'default' => $f['default'],
 				);
 				$defaults[ $key ] = $f['default'];

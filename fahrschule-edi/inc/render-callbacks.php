@@ -194,20 +194,15 @@ function fs_render_license_classes( $a ) {
 		'heading'  => 'Alle Führerscheinklassen',
 		'subtitle' => 'Von der Richtpreis-Berechnung bis zur professionellen Ausbildung',
 	) );
-	$classes = array(
-		array( 'Klasse B', 'PKW', 'Personenkraftwagen bis 3.500 kg', '32-40 Std.', '€1.650 - €2.100', '18 Jahre' ),
-		array( 'Klasse BE', 'PKW + Anhänger', 'Motorwagen mit Anhänger', '20-30 Std.', '€900 - €1.500', '18 Jahre' ),
-		array( 'Klasse A', 'Motorrad', 'Motorräder über 35 kW', '25-35 Std.', '€1.200 - €1.800', '24 Jahre' ),
-		array( 'Klasse A1', 'Leichtkraftrad', 'Motorräder bis 125 ccm', '15-25 Std.', '€800 - €1.200', '16 Jahre' ),
-		array( 'Klasse AM', 'Roller/Mofa', 'Mopeds und leichte Roller', '12-18 Std.', '€600 - €900', '15 Jahre' ),
-		array( 'Klasse C', 'LKW', 'Lastkraftwagen', '30-40 Std.', '€1.800 - €2.500', '18 Jahre' ),
-	);
+	// Zeilen kommen aus dem Wiederholfeld; leere Zeilen hat fs_rows() entfernt.
+	$classes = fs_rows( $d['classes'], 6 );
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-z">
 			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
 				. fs_el( 'h2', $d['heading'] )
 				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
+			<?php if ( $classes ) : ?>
 			<div class="fs-grid fs-grid--3 fs-wide" style="margin-inline:auto;">
 				<?php foreach ( $classes as $c ) : ?>
 				<article class="fs-card fs-fade-up">
@@ -227,6 +222,7 @@ function fs_render_license_classes( $a ) {
 				</article>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php
@@ -357,11 +353,7 @@ function fs_render_team_spirit( $a ) {
 		'video_url'=> fs_media( 'video_team' ),
 	) );
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
-	$values = array(
-		array( 'heart', 'Mit Herz dabei', 'Wir lieben, was wir tun. Ihre Erfolgsgeschichte ist auch unsere.' ),
-		array( 'zap', 'Energie & Motivation', 'Positive Energie steckt an. Unsere Begeisterung überträgt sich auf Sie.' ),
-		array( 'users', 'Gemeinschaft', 'Wir sind eine Familie, die sich gegenseitig unterstützt.' ),
-	);
+	$values = fs_rows( $d['values'], 3 );
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-z">
@@ -377,6 +369,7 @@ function fs_render_team_spirit( $a ) {
 						<?php echo fs_el( 'h2', '', '', $heading ); ?>
 						<?php echo fs_el( 'p', $d['text'] ); ?>
 					</div>
+					<?php if ( $values ) : ?>
 					<div class="fs-values">
 						<?php foreach ( $values as $v ) : ?>
 						<div class="fs-value">
@@ -386,6 +379,7 @@ function fs_render_team_spirit( $a ) {
 						</div>
 						<?php endforeach; ?>
 					</div>
+					<?php endif; ?>
 					<div class="fs-quote">
 						<p>"<?php echo esc_html( $d['quote'] ); ?>"</p>
 						<?php echo fs_el( 'p', $d['quote_by'], 'class="by"' ); ?>
@@ -622,7 +616,7 @@ function fs_render_cta( $a ) {
 		'email'     => 'info@fahrschule-edi.de',
 	) );
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
-	$stats = array( array( '30+', 'Jahre Erfahrung' ), array( '5000+', 'Bestandene Prüfungen' ), array( '3', 'Standorte' ), array( '5', 'Sprachen' ) );
+	$stats = fs_rows( $d['stats'], 2 );
 	ob_start(); ?>
 	<section class="fs-cta fs-surface-brand">
 		<div class="fs-cta__bg"></div>
@@ -638,11 +632,13 @@ function fs_render_cta( $a ) {
 					</div>
 					<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( fs_url( 'preise' ) ); ?>">Jetzt anmelden <?php echo fs_icon( 'arrow-right', 20 ); ?></a>
 				</div>
+				<?php if ( $stats ) : ?>
 				<div class="fs-stats">
 					<?php foreach ( $stats as $s ) : ?>
 					<div class="fs-stat"><div class="num"><?php echo esc_html( $s[0] ); ?></div><p class="lbl"><?php echo esc_html( $s[1] ); ?></p></div>
 					<?php endforeach; ?>
 				</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</section>
@@ -822,16 +818,12 @@ function fs_render_about_timeline( $a ) {
 		'subtitle'  => 'Über 30 Jahre Erfahrung in der Fahrerausbildung im Ruhrgebiet',
 	) );
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
-	$items = array(
-		array( '1993', 'Gründung', 'Fahrschule edi wird mit Leidenschaft gegründet' ),
-		array( '2000er', 'Expansion', 'Eröffnung weiterer Standorte in Essen und Duisburg' ),
-		array( '2010', 'Modernisierung', 'Einführung digitaler Lernmethoden und moderner Fahrzeuge' ),
-		array( 'Heute', 'Größte im Ruhrgebiet', 'Eine der erfolgreichsten Fahrschulen mit über 10.000+ glücklichen Absolventen' ),
-	);
+	$items = fs_rows( $d['items'], 3 );
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
 			<div class="fs-head" style="margin-bottom:5rem;"><?php echo fs_el( 'h2', '', '', $heading ); ?><?php echo fs_el( 'p', $d['subtitle'], 'style="color:var(--c-text);font-size:1.25rem;max-width:42rem;margin:1rem auto 0;"' ); ?></div>
+			<?php if ( $items ) : ?>
 			<div class="fs-timeline">
 				<?php foreach ( $items as $it ) : ?>
 				<div class="fs-timeline__item">
@@ -844,6 +836,7 @@ function fs_render_about_timeline( $a ) {
 				</div>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php
@@ -860,20 +853,18 @@ function fs_render_about_philosophy( $a ) {
 		'subtitle'  => 'Mit Kompetenz und Betreuung bis zum Führerschein',
 	) );
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
-	$items = array(
-		array( 'heart', 'Individuelle Betreuung', 'Jeder Fahrschüler erhält persönliche Aufmerksamkeit und wird individuell begleitet – auch in schwierigen Fällen.' ),
-		array( 'zap', 'Moderne Methoden', 'Wir kombinieren bewährte Ausbildungsmethoden mit modernen digitalen Lerntools für optimale Erfolge.' ),
-		array( 'users', 'Erfahrenes Team', 'Unsere Fahrlehrer sind kompetent, hoch motiviert und verfügen über umfangreiche Erfahrung.' ),
-	);
+	$items = fs_rows( $d['items'], 3 );
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container">
 			<?php echo fs_wrap( 'div', fs_el( 'h2', '', '', $heading ) . fs_el( 'p', $d['subtitle'], 'style="color:var(--c-text);font-size:1.25rem;"' ), 'class="fs-head"' ); ?>
+			<?php if ( $items ) : ?>
 			<div class="fs-grid fs-grid--3" style="max-width:64rem;margin-inline:auto;">
 				<?php foreach ( $items as $it ) : ?>
 				<div class="fs-philo"><?php echo fs_icon( $it[0], 40 ); ?><h3><?php echo esc_html( $it[1] ); ?></h3><p><?php echo esc_html( $it[2] ); ?></p></div>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php

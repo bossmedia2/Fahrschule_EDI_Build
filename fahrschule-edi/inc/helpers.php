@@ -98,6 +98,42 @@ function fs_el( $tag, $value, $attr = '', $raw = null ) {
 }
 
 /**
+ * Zeilen eines Wiederholfelds in eine saubere Liste bringen.
+ *
+ * Der Block-Editor liefert Zeilen je nach Weg als Liste oder als Objekt mit
+ * numerischen Schlüsseln; beides wird hier vereinheitlicht. Vollständig leere
+ * Zeilen fallen weg - so löscht ein Redakteur einen Eintrag, indem er ihn
+ * leert, und bekommt keine leere Karte im Frontend.
+ *
+ * @param mixed $value Attributwert.
+ * @param int   $cols  Erwartete Spaltenzahl; fehlende Spalten werden ergänzt.
+ * @return array Liste numerisch indizierter Zeilen.
+ */
+function fs_rows( $value, $cols = 0 ) {
+	if ( is_string( $value ) ) {
+		$decoded = json_decode( $value, true );
+		$value   = ( JSON_ERROR_NONE === json_last_error() ) ? $decoded : array();
+	}
+	if ( ! is_array( $value ) ) { return array(); }
+
+	$out = array();
+	foreach ( $value as $row ) {
+		if ( ! is_array( $row ) ) { $row = array( $row ); }
+		$row = array_values( $row );
+		if ( $cols > 0 ) {
+			$row = array_slice( array_pad( $row, $cols, '' ), 0, $cols );
+		}
+		// Zeile ganz leer? Dann hat der Redakteur sie gelöscht.
+		$has = false;
+		foreach ( $row as $cell ) {
+			if ( '' !== trim( (string) $cell ) ) { $has = true; break; }
+		}
+		if ( $has ) { $out[] = $row; }
+	}
+	return $out;
+}
+
+/**
  * Gibt einen Container nur aus, wenn er Inhalt hat.
  *
  * Nötig, weil ein geleertes Feld zwar sein eigenes Element verliert, der
