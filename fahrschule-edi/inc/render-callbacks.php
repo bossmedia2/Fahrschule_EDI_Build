@@ -1976,3 +1976,220 @@ function fs_render_kurs_details( $a ) {
 	<?php
 	return ob_get_clean();
 }
+
+/* -------------------------------------------------------------------------
+ * FAHRLEHRER-FINDER
+ *
+ * Eine Fahrschule wird danach ausgesucht, ob der Fahrlehrer sympathisch wirkt
+ * und ob der Standort passt. Das Raster ist deshalb filterbar statt eine
+ * ungeordnete Fotowand.
+ *
+ * Das Foto kommt über edi-team-<slug> aus der Mediathek, das Zweitfoto über
+ * denselben Namen mit -b als Wechselbild. Standort, Klassen und Rolle stehen
+ * bewusst NICHT im Dateinamen, sondern im Wiederholfeld: ein Standortwechsel
+ * wäre sonst ein Umbenennen samt Neuimport.
+ * ---------------------------------------------------------------------- */
+function fs_render_fahrlehrer_finder( $a ) {
+	$d = fs_attrs( $a, array(
+		'eyebrow'  => 'Unser Team',
+		'heading'  => 'Finden Sie Ihren Fahrlehrer',
+		'subtitle' => 'Filtern Sie nach Standort und Führerscheinklasse.',
+		'people'   => array(),
+		'empty'    => 'Für diese Auswahl ist gerade niemand hinterlegt.',
+	) );
+
+	$people = fs_rows( $d['people'], 5 );
+	if ( ! $people ) { return ''; }
+
+	// Filterwerte aus den Daten ableiten - keine zweite Liste zu pflegen.
+	$orte = array();
+	$klassen = array();
+	foreach ( $people as $p ) {
+		if ( '' !== trim( $p[2] ) ) { $orte[ $p[2] ] = true; }
+		foreach ( preg_split( '/\s*,\s*/', $p[3] ) as $k ) {
+			if ( '' !== trim( $k ) ) { $klassen[ trim( $k ) ] = true; }
+		}
+	}
+	$orte    = array_keys( $orte );
+	$klassen = array_keys( $klassen );
+	sort( $orte );
+	sort( $klassen );
+
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light" data-fs-team>
+		<div class="fs-container">
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
+
+			<?php if ( count( $people ) > 3 ) : ?>
+			<div class="fs-teamfilter" role="group" aria-label="Fahrlehrer filtern">
+				<label>
+					<span class="fs-visually-hidden">Standort</span>
+					<select data-fs-team-ort>
+						<option value="">Alle Standorte</option>
+						<?php foreach ( $orte as $o ) : ?>
+						<option value="<?php echo esc_attr( $o ); ?>"><?php echo esc_html( $o ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+				<label>
+					<span class="fs-visually-hidden">Führerscheinklasse</span>
+					<select data-fs-team-klasse>
+						<option value="">Alle Klassen</option>
+						<?php foreach ( $klassen as $k ) : ?>
+						<option value="<?php echo esc_attr( $k ); ?>">Klasse <?php echo esc_html( $k ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+				<label class="fs-teamfilter__check">
+					<input type="checkbox" data-fs-team-weiblich>
+					<span>Nur Fahrlehrerinnen</span>
+				</label>
+			</div>
+			<?php endif; ?>
+
+			<div class="fs-teamgrid" data-fs-team-grid>
+				<?php foreach ( $people as $p ) :
+					list( $name, $slug, $ort, $kl, $rolle ) = $p;
+					$foto  = $slug ? fs_media_by_slug( 'edi-team-' . $slug ) : '';
+					$foto2 = $slug ? fs_media_by_slug( 'edi-team-' . $slug . '-b' ) : '';
+					// Fahrlehrerin ergibt sich aus der Rolle - keine eigene Spalte nötig.
+					$weiblich = ( false !== mb_stripos( $rolle, 'lehrerin' ) ) ? '1' : '0';
+					$initialen = mb_strtoupper( mb_substr( trim( $name ), 0, 1 ) );
+					?>
+				<article class="fs-teamcard"
+					data-ort="<?php echo esc_attr( $ort ); ?>"
+					data-klassen="<?php echo esc_attr( $kl ); ?>"
+					data-weiblich="<?php echo esc_attr( $weiblich ); ?>">
+					<div class="fs-teamcard__photo">
+						<?php if ( $foto ) : ?>
+							<img src="<?php echo esc_url( $foto ); ?>" alt="<?php echo esc_attr( sprintf( '%s, %s%s', $name, $rolle, $ort ? ' in ' . $ort : '' ) ); ?>" width="800" height="1000" loading="lazy" decoding="async">
+							<?php if ( $foto2 ) : ?>
+							<img class="fs-teamcard__alt" src="<?php echo esc_url( $foto2 ); ?>" alt="" aria-hidden="true" width="800" height="1000" loading="lazy" decoding="async">
+							<?php endif; ?>
+						<?php else : ?>
+							<div class="fs-teamcard__avatar" aria-hidden="true"><?php echo esc_html( $initialen ); ?></div>
+						<?php endif; ?>
+					</div>
+					<div class="fs-teamcard__body">
+						<?php echo fs_el( 'h3', $name ); ?>
+						<?php echo fs_el( 'p', $rolle, 'class="fs-teamcard__names"' ); ?>
+						<p class="fs-teamcard__meta">
+							<?php if ( '' !== trim( $ort ) ) : ?><span><?php echo fs_icon( 'map-pin', 14 ); ?> <?php echo esc_html( $ort ); ?></span><?php endif; ?>
+							<?php if ( '' !== trim( $kl ) ) : ?><span><?php echo fs_icon( 'award', 14 ); ?> <?php echo esc_html( $kl ); ?></span><?php endif; ?>
+						</p>
+					</div>
+				</article>
+				<?php endforeach; ?>
+			</div>
+			<p class="fs-center fs-mt-8" data-fs-team-empty hidden><?php echo esc_html( $d['empty'] ); ?></p>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
+ * FOTO-GALERIE
+ *
+ * Liest die Bilder live aus der Mediathek statt aus einer Handauswahl im
+ * Editor: wer 73 Bilder einzeln in einen Block zieht, macht diese Arbeit bei
+ * jeder Änderung erneut. Maßgeblich ist der Namenspräfix - ein Bild, das als
+ * edi-galerie-fahrstunde-012 hochgeladen wird, erscheint ohne weiteres Zutun
+ * unter "Fahrstunde".
+ *
+ * Solange nichts freigegeben ist, bleibt die Mediathek leer und der Block
+ * blendet sich aus. Er erzwingt nichts - die Frage, welche Aufnahmen gezeigt
+ * werden dürfen, entscheidet sich beim Hochladen, nicht hier.
+ * ---------------------------------------------------------------------- */
+function fs_render_galerie( $a ) {
+	$d = fs_attrs( $a, array(
+		'eyebrow'    => '',
+		'heading'    => '',
+		'subtitle'   => '',
+		'batch'      => '24',
+		'kategorien' => array(),
+	) );
+
+	$kats  = fs_rows( $d['kategorien'], 2 );
+	$batch = max( 4, (int) $d['batch'] );
+	if ( ! $kats ) { return ''; }
+
+	$bilder = array();
+	foreach ( $kats as $kat ) {
+		list( $label, $prefix ) = $kat;
+		$prefix = sanitize_title( $prefix );
+		if ( '' === $prefix ) { continue; }
+
+		// Anhänge über den Namenspräfix holen. Mehr als 200 je Kategorie wäre
+		// für eine Website-Galerie ohnehin zu viel.
+		$posts = get_posts( array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => 'image',
+			'post_status'    => 'inherit',
+			'posts_per_page' => 200,
+			'orderby'        => 'name',
+			'order'          => 'ASC',
+			'name__like'     => 'edi-galerie-' . $prefix . '-',
+			'no_found_rows'  => true,
+		) );
+		foreach ( $posts as $post ) {
+			// name__like kennt WordPress nicht als Standardfilter - deshalb
+			// hier noch einmal prüfen, statt einem Zufallstreffer zu trauen.
+			if ( 0 !== strpos( $post->post_name, 'edi-galerie-' . $prefix . '-' ) ) { continue; }
+			$url = wp_get_attachment_image_url( $post->ID, 'large' );
+			if ( ! $url ) { continue; }
+			$bilder[] = array(
+				'kat'  => $prefix,
+				'url'  => $url,
+				'full' => wp_get_attachment_image_url( $post->ID, 'full' ),
+				'alt'  => (string) get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
+			);
+		}
+	}
+	if ( ! $bilder ) { return ''; }
+
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light" data-fs-galerie data-batch="<?php echo esc_attr( $batch ); ?>">
+		<div class="fs-container">
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] )
+				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
+
+			<?php if ( count( $kats ) > 1 ) : ?>
+			<div class="fs-galfilter" role="group" aria-label="Galerie filtern">
+				<button type="button" class="fs-pill is-active" data-kat="">Alle</button>
+				<?php foreach ( $kats as $kat ) : ?>
+				<button type="button" class="fs-pill" data-kat="<?php echo esc_attr( sanitize_title( $kat[1] ) ); ?>"><?php echo esc_html( $kat[0] ); ?></button>
+				<?php endforeach; ?>
+			</div>
+			<?php endif; ?>
+
+			<div class="fs-galgrid" data-fs-gal-grid>
+				<?php foreach ( $bilder as $i => $b ) : ?>
+				<button type="button" class="fs-galitem" data-kat="<?php echo esc_attr( $b['kat'] ); ?>"
+					data-full="<?php echo esc_url( $b['full'] ); ?>"
+					<?php echo $i >= $batch ? ' hidden' : ''; ?>>
+					<img src="<?php echo esc_url( $b['url'] ); ?>" alt="<?php echo esc_attr( $b['alt'] ); ?>" loading="lazy" decoding="async">
+				</button>
+				<?php endforeach; ?>
+			</div>
+
+			<?php if ( count( $bilder ) > $batch ) : ?>
+			<div class="fs-center fs-mt-8">
+				<button type="button" class="fs-btn fs-btn--primary" data-fs-gal-more>Weitere Bilder laden</button>
+			</div>
+			<?php endif; ?>
+		</div>
+
+		<div class="fs-lightbox" data-fs-lightbox hidden role="dialog" aria-modal="true" aria-label="Bildansicht">
+			<button type="button" class="fs-lightbox__close" data-fs-lb-close aria-label="Schließen"><?php echo fs_icon( 'x', 24 ); ?></button>
+			<button type="button" class="fs-lightbox__nav fs-lightbox__nav--prev" data-fs-lb-prev aria-label="Vorheriges Bild"><?php echo fs_icon( 'chevron-left', 28 ); ?></button>
+			<img data-fs-lb-img src="" alt="">
+			<button type="button" class="fs-lightbox__nav fs-lightbox__nav--next" data-fs-lb-next aria-label="Nächstes Bild"><?php echo fs_icon( 'chevron-right', 28 ); ?></button>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}

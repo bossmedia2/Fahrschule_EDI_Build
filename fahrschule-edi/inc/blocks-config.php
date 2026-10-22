@@ -84,6 +84,56 @@ function fahrschule_blocks_config() {
 			),
 		),
 
+		/* ---- Team & Galerie ---- */
+		'fahrschule/fahrlehrer-finder' => array(
+			'title' => 'Fahrlehrer-Finder', 'description' => 'Filterbares Team-Raster nach Standort, Klasse und Fahrlehrerin. Fotos kommen über edi-team-<slug> aus der Mediathek.',
+			'icon' => 'groups', 'keywords' => array( 'team', 'fahrlehrer', 'filter', 'standort' ),
+			'render' => 'fs_render_fahrlehrer_finder', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Team',
+			'fields' => array(
+				'eyebrow'  => $t( 'Unser Team', 'Eyebrow', 'text' ),
+				'heading'  => $t( 'Finden Sie Ihren Fahrlehrer', 'Überschrift', 'text' ),
+				'subtitle' => $t( 'Filtern Sie nach Standort und Führerscheinklasse.', 'Untertitel', 'textarea' ),
+				'empty'    => $t( 'Für diese Auswahl ist gerade niemand hinterlegt.', 'Text, wenn kein Treffer', 'text' ),
+				'people'   => $rep( array(
+					array( 'Aslan', 'aslan', 'Gelsenkirchen', 'A, B', 'Leiter & Fahrlehrer' ),
+					array( 'Yalcin', 'yalcin', 'Duisburg', 'A, B, BE', 'Leiter & Fahrlehrer' ),
+					array( 'Adis', 'adis', 'Gelsenkirchen', 'A', 'Fahrlehrer' ),
+					array( 'Ali Ihsan', 'ali-ihsan', 'Gelsenkirchen', 'B, BE', 'Fahrlehrer' ),
+					array( 'Baris', 'baris', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
+					array( 'Birol', 'birol', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
+					array( 'Fergan', 'fergan', 'Gelsenkirchen', 'A, B', 'Fahrlehrer' ),
+					array( 'Nebahat', 'nebahat', 'Gelsenkirchen', 'B', 'Fahrlehrerin' ),
+					array( 'Ramazan', 'ramazan', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
+					array( 'Sakit', 'sakit', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
+					array( 'Ömer', 'oemer', 'Duisburg', 'B', 'Fahrlehrer' ),
+					array( 'Rahel', 'rahel', 'Duisburg', 'B, BE', 'Fahrlehrerin' ),
+					array( 'Tammam', 'tammam', 'Duisburg', 'B, BE', 'Fahrlehrer' ),
+					array( 'Devran', 'devran', 'Essen', 'B', 'Fahrlehrer' ),
+					array( 'Mustafa', 'mustafa', 'Essen', 'B', 'Fahrlehrer' ),
+					array( 'Abdullah', 'abdullah', '', 'B', 'Fahrlehrer' ),
+					array( 'Mesut', 'mesut', '', 'B', 'Fahrlehrer' ),
+				), 'Fahrlehrer', array( 'Name', 'Dateiname (edi-team-…)', 'Standort', 'Klassen (B, BE, A)', 'Rolle' ) ),
+			),
+		),
+		'fahrschule/galerie' => array(
+			'title' => 'Foto-Galerie', 'description' => 'Liest live aus der Mediathek nach Namenspräfix edi-galerie-<kategorie>-. Mit Kategoriefilter und Lightbox.',
+			'icon' => 'format-gallery', 'keywords' => array( 'galerie', 'fotos', 'bilder', 'lightbox' ),
+			'render' => 'fs_render_galerie', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Galerie',
+			'fields' => array(
+				'eyebrow'    => $t( 'Einblicke', 'Eyebrow', 'text' ),
+				'heading'    => $t( 'Fahrschule edi in Bildern', 'Überschrift', 'text' ),
+				'subtitle'   => $t( '', 'Untertitel', 'textarea' ),
+				'batch'      => $t( '24', 'Bilder je Nachladeschritt', 'text' ),
+				'kategorien' => $rep( array(
+					array( 'Fahrstunde', 'fahrstunde' ),
+					array( 'Fuhrpark', 'fuhrpark' ),
+					array( 'Theorie', 'theorie' ),
+					array( 'Team', 'team' ),
+					array( 'Standort', 'standort' ),
+				), 'Kategorie', array( 'Beschriftung', 'Präfix (edi-galerie-…)' ) ),
+			),
+		),
+
 		/* ---- Global / Header / Footer ---- */
 		'fahrschule/navigation' => array(
 			'title' => 'Navigation', 'description' => 'Fixierte Kopfzeile mit Logo, Menü & Standorte-Dropdown.',

@@ -305,6 +305,117 @@
 			fsOpenCookieBanner();
 		} );
 
+		/* ---------- Fahrlehrer-Finder ----------
+		 * Ohne JavaScript bleiben schlicht alle Karten sichtbar - die
+		 * Filterleiste ist dann wirkungslos, aber nichts ist unerreichbar. */
+		document.querySelectorAll( '[data-fs-team]' ).forEach( function ( sec ) {
+			var ort      = sec.querySelector( '[data-fs-team-ort]' );
+			var klasse   = sec.querySelector( '[data-fs-team-klasse]' );
+			var weiblich = sec.querySelector( '[data-fs-team-weiblich]' );
+			var grid     = sec.querySelector( '[data-fs-team-grid]' );
+			var leer     = sec.querySelector( '[data-fs-team-empty]' );
+			if ( ! grid ) { return; }
+			var cards = [].slice.call( grid.querySelectorAll( '.fs-teamcard' ) );
+
+			function apply() {
+				var vo = ort ? ort.value : '';
+				var vk = klasse ? klasse.value : '';
+				var vw = weiblich ? weiblich.checked : false;
+				var sichtbar = 0;
+				cards.forEach( function ( c ) {
+					var kl = ( c.getAttribute( 'data-klassen' ) || '' )
+						.split( ',' ).map( function ( x ) { return x.trim(); } );
+					var ok = ( ! vo || c.getAttribute( 'data-ort' ) === vo )
+						&& ( ! vk || kl.indexOf( vk ) !== -1 )
+						&& ( ! vw || '1' === c.getAttribute( 'data-weiblich' ) );
+					c.hidden = ! ok;
+					if ( ok ) { sichtbar++; }
+				} );
+				if ( leer ) { leer.hidden = sichtbar > 0; }
+			}
+			on( ort, 'change', apply );
+			on( klasse, 'change', apply );
+			on( weiblich, 'change', apply );
+		} );
+
+		/* ---------- Foto-Galerie mit Lightbox ---------- */
+		document.querySelectorAll( '[data-fs-galerie]' ).forEach( function ( sec ) {
+			var grid  = sec.querySelector( '[data-fs-gal-grid]' );
+			var more  = sec.querySelector( '[data-fs-gal-more]' );
+			var box   = sec.querySelector( '[data-fs-lightbox]' );
+			var bild  = sec.querySelector( '[data-fs-lb-img]' );
+			if ( ! grid ) { return; }
+
+			var batch   = parseInt( sec.getAttribute( 'data-batch' ), 10 ) || 24;
+			var items   = [].slice.call( grid.querySelectorAll( '.fs-galitem' ) );
+			var kat     = '';
+			var gezeigt = batch;
+			var offen   = -1;
+			var letzterFokus = null;
+
+			function passend() {
+				return items.filter( function ( i ) {
+					return ! kat || i.getAttribute( 'data-kat' ) === kat;
+				} );
+			}
+			function zeichnen() {
+				var liste = passend();
+				items.forEach( function ( i ) { i.hidden = true; } );
+				liste.slice( 0, gezeigt ).forEach( function ( i ) { i.hidden = false; } );
+				if ( more ) { more.hidden = liste.length <= gezeigt; }
+			}
+			sec.querySelectorAll( '.fs-galfilter .fs-pill' ).forEach( function ( b ) {
+				on( b, 'click', function () {
+					sec.querySelectorAll( '.fs-galfilter .fs-pill' ).forEach( function ( x ) {
+						x.classList.remove( 'is-active' );
+					} );
+					b.classList.add( 'is-active' );
+					kat = b.getAttribute( 'data-kat' ) || '';
+					gezeigt = batch;
+					zeichnen();
+				} );
+			} );
+			on( more, 'click', function () { gezeigt += batch; zeichnen(); } );
+
+			function oeffnen( idx ) {
+				var liste = passend().filter( function ( i ) { return ! i.hidden; } );
+				if ( ! liste.length || ! box || ! bild ) { return; }
+				offen = ( idx + liste.length ) % liste.length;
+				var el = liste[ offen ];
+				bild.src = el.getAttribute( 'data-full' ) || '';
+				var img = el.querySelector( 'img' );
+				bild.alt = img ? img.alt : '';
+				box.hidden = false;
+				document.body.style.overflow = 'hidden';
+				var close = box.querySelector( '[data-fs-lb-close]' );
+				if ( close ) { close.focus(); }
+			}
+			function schliessen() {
+				if ( ! box ) { return; }
+				box.hidden = true;
+				document.body.style.overflow = '';
+				if ( letzterFokus ) { letzterFokus.focus(); }
+			}
+			items.forEach( function ( it ) {
+				on( it, 'click', function () {
+					letzterFokus = it;
+					var liste = passend().filter( function ( i ) { return ! i.hidden; } );
+					oeffnen( liste.indexOf( it ) );
+				} );
+			} );
+			on( sec.querySelector( '[data-fs-lb-close]' ), 'click', schliessen );
+			on( sec.querySelector( '[data-fs-lb-prev]' ), 'click', function () { oeffnen( offen - 1 ); } );
+			on( sec.querySelector( '[data-fs-lb-next]' ), 'click', function () { oeffnen( offen + 1 ); } );
+			on( box, 'click', function ( e ) { if ( e.target === box ) { schliessen(); } } );
+			on( document, 'keydown', function ( e ) {
+				if ( ! box || box.hidden ) { return; }
+				if ( 'Escape' === e.key )     { schliessen(); }
+				if ( 'ArrowLeft' === e.key )  { oeffnen( offen - 1 ); }
+				if ( 'ArrowRight' === e.key ) { oeffnen( offen + 1 ); }
+			} );
+			zeichnen();
+		} );
+
 		/* ---------- Fade-Up beim Scrollen ---------- */
 		var faders = document.querySelectorAll( '.fs-fade-up' );
 		if ( 'IntersectionObserver' in window ) {

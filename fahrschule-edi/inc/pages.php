@@ -457,6 +457,7 @@ function fahrschule_page_map() {
 			'pdf'   => 'f9',
 			'desc'  => 'Das Team der Fahrschule edi: engagierte Fahrlehrer und Mitarbeiter mit langjähriger Erfahrung an drei Standorten im Ruhrgebiet.',
 			'blocks' => array(
+				array( 'fahrschule/fahrlehrer-finder', array() ),
 				array( 'fahrschule/about-team', array( 'head' => '0' ) ),
 				array( 'fahrschule/team-spirit', array() ),
 			),

@@ -835,3 +835,59 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 
 /* Team-Foto (falls in der Medien-Registry hinterlegt) */
 .fs-teamcard__photo { aspect-ratio: 1/1; width: 100%; object-fit: cover; }
+
+/* ==========================================================================
+   FAHRLEHRER-FINDER
+   ========================================================================== */
+.fs-teamfilter { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-bottom: 2.5rem; }
+.fs-teamfilter select {
+  background: var(--c-card); color: var(--c-card-text);
+  border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+  padding: .6rem 1rem; font-family: inherit; font-size: .95rem;
+}
+.fs-teamfilter__check { display: inline-flex; align-items: center; gap: .5rem; color: var(--c-text); font-size: .95rem; }
+.fs-teamfilter__check input { width: 1.1rem; height: 1.1rem; accent-color: var(--fs-brand-strong); }
+.fs-teamgrid { display: grid; gap: 1.5rem; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 768px)  { .fs-teamgrid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .fs-teamgrid { grid-template-columns: repeat(4, 1fr); } }
+.fs-teamcard { overflow: hidden; border-radius: var(--fs-radius-lg); border: 1px solid var(--c-card-border); background: var(--c-card); }
+.fs-teamcard[hidden] { display: none; }
+.fs-teamcard__photo { position: relative; aspect-ratio: 4/5; overflow: hidden; background: var(--fs-tint); }
+.fs-teamcard__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Zweitfoto als Wechselbild. Fehlt es, passiert schlicht nichts. */
+.fs-teamcard__alt { position: absolute; inset: 0; opacity: 0; transition: opacity .3s ease; }
+.fs-teamcard:hover .fs-teamcard__alt, .fs-teamcard:focus-within .fs-teamcard__alt { opacity: 1; }
+.fs-teamcard__meta { display: flex; flex-wrap: wrap; gap: .75rem; color: var(--c-card-text); font-size: .85rem; margin: .5rem 0 0; }
+.fs-teamcard__meta span { display: inline-flex; align-items: center; gap: .3rem; }
+
+/* ==========================================================================
+   FOTO-GALERIE
+   ========================================================================== */
+.fs-galfilter { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-bottom: 2rem; }
+.fs-galgrid { display: grid; gap: .75rem; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 768px)  { .fs-galgrid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .fs-galgrid { grid-template-columns: repeat(4, 1fr); } }
+.fs-galitem {
+  padding: 0; border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+  overflow: hidden; background: var(--fs-tint); aspect-ratio: 1/1; cursor: pointer;
+}
+.fs-galitem[hidden] { display: none; }
+.fs-galitem img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+.fs-galitem:hover img, .fs-galitem:focus-visible img { transform: scale(1.06); }
+
+.fs-lightbox {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.92); padding: 2rem;
+}
+.fs-lightbox[hidden] { display: none; }
+.fs-lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--fs-radius); }
+.fs-lightbox__close, .fs-lightbox__nav {
+  position: absolute; background: var(--fs-brand-strong); color: var(--fs-light);
+  border: 2px solid var(--fs-light); border-radius: 9999px;
+  width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.fs-lightbox__close { top: 1.5rem; right: 1.5rem; }
+.fs-lightbox__nav--prev { left: 1.5rem; }
+.fs-lightbox__nav--next { right: 1.5rem; }
+.fs-lightbox__nav { top: 50%; transform: translateY(-50%); }
+.fs-lightbox__close:hover, .fs-lightbox__nav:hover { background: var(--fs-brand); }

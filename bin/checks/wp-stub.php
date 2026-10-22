@@ -68,6 +68,9 @@ function wp_remote_post($u,$a=[]){return ['response'=>['code'=>200],'body'=>''];
 function is_wp_error($t){return false;}
 function wp_get_attachment_url($id){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function wp_get_attachment_image_src($id,$s='full'){return ['/wp-content/uploads/stub-'.$id.'.jpg',1200,800];}
+function get_posts($a=[]){return [];}            // leere Mediathek im Test
+function wp_get_attachment_image_url($id,$s='full'){return '/wp-content/uploads/stub-'.$id.'.jpg';}
+function get_post_meta($id,$k='',$single=false){return $single?'':[];}
 function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($p=null){return false;}
 function get_permalink($p=null){return home_url('/stub/');}
 function get_the_title($p=null){return 'Stub-Titel';} function get_the_content($m=null){return '';}

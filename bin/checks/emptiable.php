@@ -51,6 +51,10 @@ if(count($emptyEl)>14) echo "   ... +".(count($emptyEl)-14)." weitere\n";
 $repBad = [];
 foreach($cfg as $name=>$c){
   if(empty($c['fields'])) continue;
+  /* Dieselbe Ausnahme wie oben: Bloecke, deren Ausgabe an externen Daten
+     haengt (die Galerie liest die Mediathek, die im Test leer ist), geben
+     unabhaengig vom Feldwert nichts aus - daran laesst sich nichts messen. */
+  if(!empty($c['may_be_empty'])) continue;
   foreach($c['fields'] as $key=>$f){
     if(($f['control']??'')!=='repeater') continue;
     $cols  = max(1, count($f['columns'] ?? []));
