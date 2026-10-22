@@ -565,7 +565,10 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* Karte in der Kartenfarbe der Fläche (vorher Pink auf Pink – Namen kaum lesbar); nur das Initialen-Feld bleibt kräftig. */
 .fs-teamcard { position: relative; overflow: hidden; border-radius: var(--fs-radius-xl); background: var(--c-card); border: 1px solid var(--c-card-border); transition: border-color .3s; }
 .fs-teamcard:hover { border-color: var(--c-accent); }
-.fs-teamcard__avatar { aspect-ratio: 1/1; background: var(--fs-brand-strong); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; font-weight: 800; color: var(--fs-light); }
+/* Platzhalter, solange kein Foto in der Mediathek liegt: füllt den Bildbereich
+   vollständig aus. Mit aspect-ratio 1/1 blieb in der 4:5-Kachel ein toter
+   Streifen unter der Initiale stehen. */
+.fs-teamcard__avatar { width: 100%; height: 100%; background: var(--fs-brand-strong); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; font-weight: 800; color: var(--fs-light); }
 .fs-teamcard__body { padding: 1.5rem; }
 .fs-teamcard__body h2, .fs-teamcard__body h3 { color: var(--c-heading); font-weight: 700; font-size: 1.125rem; }
 .fs-teamcard__body p { color: var(--c-text); font-size: .875rem; }

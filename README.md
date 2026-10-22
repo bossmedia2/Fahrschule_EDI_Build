@@ -13,11 +13,45 @@ Fahrlehrerfachschule edi (Duisburg, Essen, Gelsenkirchen).
 | `bin/build-zip.sh` | Baut die Auslieferungs-ZIPs nach `dist/`. |
 | `bin/gate.sh` | Prüfkette: Lint, Smoke-Test, Referenzen, Farben, Kontrast, Layout, ZIP-Größe. |
 | `bin/checks/` | Die Einzelprüfungen, die `gate.sh` aufruft. |
+| `fahrschule-edi/patterns/` | Start-Patterns für den Muster-Dialog beim Seitenanlegen. |
 | `docs/` | Projektdokumentation. Wird **nicht** mit ausgeliefert. |
 
 Blöcke werden nicht je Verzeichnis angelegt, sondern aus **einem** Array
 (`fahrschule-edi/inc/blocks-config.php`) per `foreach` registriert — siehe
 `fahrschule_register_blocks_and_patterns()` in `functions.php`.
+
+## Seitenvorlagen
+
+Beim Anlegen einer Seite erscheint unter *Seiten-Attribute → Vorlage* eine
+Auswahl; der Muster-Dialog füllt die Seite anschließend mit editierbarem
+Block-Markup.
+
+| Vorlage | Datei | Ergänzt automatisch |
+|---|---|---|
+| Übersicht / Landingpage | `page-uebersicht.php` | Abschluss-Banner |
+| Bereich | `page-bereich.php` | Karten aller untergeordneten Seiten |
+| Kurs / Führerscheinklasse | `page-kurs.php` | Geschwisterklassen + Anmeldung |
+
+Der gemeinsame Rumpf steht in `inc/template-parts.php`. Die Hierarchie kommt
+aus `inc/pages.php`: wer eine Klassenseite anlegt und ihr `parent` setzt,
+bekommt Karte, Menüeintrag und Brotkrume ohne weiteres Zutun.
+
+## Editierbarkeit
+
+Jedes Feld lässt sich im Editor leeren — der zugehörige Abschnitt verschwindet
+dann im Frontend restlos, statt eine leere Überschrift zu hinterlassen. Ein
+Knopf stellt die Vorgabe wieder her. Listen (Führerscheinklassen, Team,
+Kennzahlen) sind Wiederholfelder mit Hinzufügen, Löschen und Sortieren.
+
+> **Regel für Rendercode:** Felder nie direkt ausgeben, sondern über `fs_el()`,
+> `fs_wrap()`, `fs_has()` und `fs_button()` aus `inc/helpers.php`. Nur so fällt
+> mit dem Wert auch sein Element weg. `bin/checks/emptiable.php` erzwingt das.
+
+## Bilder
+
+Das Theme liefert **keine** Fotos mit. `fs_media()` schlägt sie über ihren
+Dateinamen in der Mediathek nach — Datei nach Schema hochladen genügt, siehe
+`docs/assets_image_list.md`. Fehlt ein Bild, blendet sich der Block aus.
 
 ## Build
 
