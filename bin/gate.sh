@@ -44,7 +44,7 @@ smoke=$(php "$ROOT/bin/checks/smoke.php" "$THEME" 2>&1); rc=$?
 echo "$smoke" | grep -E "^TOTAL|FATAL|EMPTY|notice/warning" | sed 's/^/  /'
 echo "$smoke" | grep -qE "FATAL|!! " && rc=1
 echo "$smoke" | tail -40 | grep -E "^(home|[a-z-]+) +/" >/dev/null || true
-pages_ok=$(echo "$smoke" | grep -cE "^[a-z-]+ +/.* OK$")
+pages_ok=$(echo "$smoke" | grep -cE "^[a-z0-9-]+ +/.* OK$")
 echo "  ok: $pages_ok Seiten vollständig gerendert"
 check "$rc" "Smoke-Test"
 

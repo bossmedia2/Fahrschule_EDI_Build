@@ -2,6 +2,10 @@
 /* Minimal WordPress stub so the theme's render callbacks can be executed
    outside a real WP install.  Only enough to smoke-test HTML output. */
 define('ABSPATH', __DIR__.'/');
+// Rueckgabetyp-Konstanten, die WordPress in wp-includes/constants.php setzt.
+if(!defined('OBJECT')) define('OBJECT','OBJECT');
+if(!defined('ARRAY_A')) define('ARRAY_A','ARRAY_A');
+if(!defined('ARRAY_N')) define('ARRAY_N','ARRAY_N');
 $GLOBALS['__actions']=[]; $GLOBALS['__filters']=[];
 function add_action($h,$c,$p=10,$a=1){ $GLOBALS['__actions'][$h][]=$c; }
 function remove_action($h,$c,$p=10){ }
@@ -16,6 +20,10 @@ function esc_url($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
 function esc_url_raw($s){return (string)$s;}
 function esc_textarea($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
 function wp_kses_post($s){return $s;}
+function sanitize_title($s,$f='',$c='save'){ $s=strtolower(remove_accents_stub((string)$s));
+  $s=preg_replace('/[^a-z0-9\s\-_]/','',$s); $s=preg_replace('/[\s_]+/','-',$s);
+  return trim(preg_replace('/-+/','-',$s),'-') ?: $f; }
+function remove_accents_stub($s){ return strtr($s, ['ä'=>'ae','ö'=>'oe','ü'=>'ue','ß'=>'ss','Ä'=>'ae','Ö'=>'oe','Ü'=>'ue']); }
 function sanitize_key($s){return preg_replace('/[^a-z0-9_\-]/','',strtolower((string)$s));}
 function sanitize_text_field($s){return trim(strip_tags((string)$s));}
 function sanitize_textarea_field($s){return trim(strip_tags((string)$s));}

@@ -29,22 +29,21 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /** Zentrale Liste aller Medien. Werte: URL (string) oder Attachment-ID (int). */
 function fahrschule_media_map() {
-	$local = get_template_directory_uri() . '/assets/images/';
 
 	return apply_filters( 'fahrschule_media', array(
 
 		/* --- Marke (lokal, aus der alten Seite extrahiert) --- */
-		'logo'          => $local . 'logo-edi.webp',
-		'logo_certqua'  => $local . 'logo-certqua.webp',
+		'logo'          => 'edi-logo',
+		'logo_certqua'  => 'edi-partner-certqua',
 		// Trat auf jeder Seite der alten Website neben logo_certqua auf -
 		// vermutlich eine lokale Kooperation/Partnerschaft (Standort
 		// Gelsenkirchen). Noch ohne eigenen Platz im neuen Theme, siehe
 		// SYSTEM-REPORT.md.
-		'logo_schalke'  => $local . 'logo-schalke.svg',
+		'logo_schalke'  => 'edi-partner-schalke',
 
 		/* --- Videos: noch keine eigenen Dateien vorhanden --- */
-		'video_hero'    => '',
-		'video_team'    => '',
+		'video_hero'    => 'edi-video-hero',
+		'video_team'    => 'edi-video-team',
 
 		/* --- Standorte ---
 		 * Essen und Gelsenkirchen sind über die alte Seite eindeutig
@@ -53,25 +52,25 @@ function fahrschule_media_map() {
 		 * lag in der Bestandsaufnahme kein Originalfoto vor (die alte
 		 * Seite nutzte dort einen Elementor-Bildschnitt ohne
 		 * wiederverwendbaren Dateinamen) - bleibt extern. */
-		'loc_duisburg'      => '',
-		'loc_essen'         => $local . 'loc-essen.webp',
-		'loc_gelsenkirchen' => $local . 'loc-gelsenkirchen.webp',
+		'loc_duisburg'      => 'edi-standort-duisburg',
+		'loc_essen'         => 'edi-standort-essen',
+		'loc_gelsenkirchen' => 'edi-standort-gelsenkirchen',
 
 		/* --- Fuhrpark (lokal) --- */
-		'fleet_pkw'      => $local . 'fleet-pkw.webp',
-		'fleet_lkw'      => $local . 'fleet-lkw.webp',
-		'fleet_motorrad' => $local . 'fleet-motorrad.webp',
-		'fleet_bus'      => $local . 'fleet-bus.webp',
+		'fleet_pkw'      => 'edi-fuhrpark-pkw',
+		'fleet_lkw'      => 'edi-fuhrpark-lkw',
+		'fleet_motorrad' => 'edi-fuhrpark-motorrad',
+		'fleet_bus'      => 'edi-fuhrpark-bus',
 
 		/* --- Räumlichkeiten (lokal) --- */
-		'fac_klassenraum' => $local . 'fac-klassenraum.webp',
-		'fac_empfang'     => $local . 'fac-empfang.webp',
-		'fac_buero'       => $local . 'fac-buero.webp',
+		'fac_klassenraum' => 'edi-raum-klassenraum',
+		'fac_empfang'     => 'edi-raum-empfang',
+		'fac_buero'       => 'edi-raum-buero',
 
 		/* --- Absolventen: noch keine eigenen Fotos vorhanden --- */
-		'grad_auto'     => '',
-		'grad_jung'     => '',
-		'grad_motorrad' => '',
+		'grad_auto'     => 'edi-galerie-absolventen-001',
+		'grad_jung'     => 'edi-galerie-absolventen-002',
+		'grad_motorrad' => 'edi-galerie-absolventen-003',
 
 		/* --- Team: noch keine Fotos vorhanden ---------------------------------
 		 * Das PDF (Abschnitt F9) sieht je Gruppe Fotos vor: Büro &
@@ -110,11 +109,84 @@ function fs_media( $key, $fallback = '' ) {
 	}
 	$value = $map[ $key ];
 
+	// Ausdrückliche Attachment-ID.
 	if ( is_numeric( $value ) ) {
 		$url = wp_get_attachment_url( (int) $value );
 		return $url ? $url : $fallback;
 	}
-	return (string) $value;
+	$value = (string) $value;
+
+	// Ausdrückliche URL oder absoluter Pfad.
+	if ( 0 === strpos( $value, 'http' ) || 0 === strpos( $value, '/' ) ) {
+		return $value;
+	}
+
+	// Sonst ist der Wert ein Dateinamen-Schlüssel, der in der Mediathek
+	// nachgeschlagen wird - siehe fs_media_by_slug().
+	return fs_media_by_slug( $value, $fallback );
+}
+
+/**
+ * Bild über seinen Dateinamen auflösen.
+ *
+ * WordPress leitet aus dem Dateinamen den Slug des Anhangs ab. Genau den
+ * schlägt das Theme nach: wer eine Datei nach Schema in die Mediathek lädt,
+ * sieht sie an ihrem Platz, ohne sie irgendwo zuzuordnen. Erst wenn in der
+ * Mediathek nichts liegt, greift eine gleichnamige Datei im Theme; gibt es
+ * auch die nicht, bleibt der Wert leer und der Block blendet sich aus.
+ *
+ * Die Trefferliste wird je Aufruf zwischengespeichert - eine Seite fragt
+ * dieselben Schlüssel mehrfach ab.
+ *
+ * @param string $slug     Dateiname ohne Endung, z. B. 'edi-kurs-klasse-b'.
+ * @param string $fallback Rückgabe, wenn nichts gefunden wird.
+ */
+function fs_media_by_slug( $slug, $fallback = '' ) {
+	static $cache = array();
+
+	$slug = sanitize_title( $slug );
+	if ( '' === $slug ) { return $fallback; }
+	if ( isset( $cache[ $slug ] ) ) { return $cache[ $slug ] ? $cache[ $slug ] : $fallback; }
+
+	$url = '';
+
+	// 1) Mediathek - der Weg, den der Kunde selbst bedienen kann.
+	$attachment = get_page_by_path( $slug, OBJECT, 'attachment' );
+	if ( $attachment ) {
+		$url = (string) wp_get_attachment_url( $attachment->ID );
+	}
+
+	// 2) Mitgeliefertes Bild im Theme (Logo, Partnerlogos, Favicons).
+	if ( '' === $url ) {
+		foreach ( array( 'webp', 'jpg', 'png', 'svg' ) as $ext ) {
+			if ( file_exists( get_template_directory() . '/assets/images/' . $slug . '.' . $ext ) ) {
+				$url = get_template_directory_uri() . '/assets/images/' . $slug . '.' . $ext;
+				break;
+			}
+		}
+	}
+
+	$cache[ $slug ] = $url;
+	return $url ? $url : $fallback;
+}
+
+/**
+ * Bild einer Kurs-/Klassenseite.
+ *
+ * Der Teil nach 'edi-kurs-' ist exakt der Seiten-Slug. Eine neue Klassenseite
+ * braucht damit keinen Eintrag in der Registry: Seite anlegen, Bild nach
+ * Schema hochladen, fertig.
+ *
+ * @param string $page_slug Seiten-Slug, leer = aktuelle Seite.
+ */
+function fs_media_kurs( $page_slug = '' ) {
+	if ( '' === $page_slug ) {
+		$key  = fahrschule_current_key();
+		$map  = fahrschule_page_map();
+		$page_slug = ( $key && isset( $map[ $key ]['slug'] ) ) ? $map[ $key ]['slug'] : '';
+	}
+	if ( '' === $page_slug ) { return ''; }
+	return fs_media_by_slug( 'edi-kurs-' . $page_slug );
 }
 
 /** Prüft, ob ein Medium hinterlegt ist (z. B. für Team-Fotos mit Initialen-Fallback). */

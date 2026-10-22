@@ -53,16 +53,26 @@ for p in (os.path.join(theme,'assets/js/frontend.js'), os.path.join(theme,'asset
     if os.path.exists(p): blob += rd(p)
 # Direkte Pfade ...
 refs = set(re.findall(r"assets/(?:images|css|js|fonts)/[A-Za-z0-9_.\-]+", blob))
-# ... und die per Verkettung gebauten Medien-Dateinamen aus inc/media.php
+# ... und die Medien-Registry. Deren Werte sind seit Oktober 2026 keine
+# Dateinamen mehr, sondern Schlüssel, die fs_media_by_slug() zuerst in der
+# Mediathek und erst danach im Theme sucht. Ein Schlüssel darf also ohne
+# mitgelieferte Datei dastehen - die Datei lädt der Kunde hoch. Umgekehrt
+# gilt weiterhin: eine Datei im Theme, die kein Schlüssel anspricht, ist tot.
 media = rd(os.path.join(theme, 'inc/media.php'))
 refs |= {"assets/images/" + m for m in re.findall(r"\$local\s*\.\s*'([A-Za-z0-9_.\-]+)'", media)}
+# Wichtig: ein Schlüssel DARF ohne Datei im Theme dastehen - dann kommt das
+# Bild aus der Mediathek. Die Kandidaten gehören deshalb NICHT in die Menge
+# der Pflichtdateien, sondern nur in die der erlaubten.
+slug_keys  = set(re.findall(r"=>\s*'(edi-[a-z0-9\-]+)'", media))
+slug_files = {f"assets/images/{slug}.{ext}"
+              for slug in slug_keys for ext in ('webp', 'jpg', 'png', 'svg')}
 refs |= {"assets/images/" + m for m in re.findall(r"'(favicon-\d+\.webp)'", rd(os.path.join(theme,'functions.php')))}
 # fonts.css darf fehlende Schriftdateien nennen: functions.php prüft mit file_exists()
 dead = sorted(r for r in refs if r not in ondisk and not r.endswith('.woff2'))
 if dead: fail("Asset referenziert, aber nicht vorhanden: " + ", ".join(dead))
 else:    ok(f"{len(refs)} referenzierte Assets, alle vorhanden")
 imgs = sorted(x for x in ondisk if x.startswith('assets/images/'))
-orph = [i for i in imgs if i not in refs]
+orph = [i for i in imgs if i not in refs and i not in slug_files]
 if orph:
     kb = sum(os.path.getsize(os.path.join(theme, i)) for i in orph) / 1024
     fail(f"Bild liegt im Theme, wird aber nirgends referenziert ({kb:.0f} KB): " + ", ".join(orph))
