@@ -1,85 +1,64 @@
-# Fahrschule edi — WordPress-Theme (B2C)
+# Fahrschule edi — WordPress-Block-Theme (B2C)
 
-Hybrides WordPress-Theme (Classic-Templates + `theme.json` v3) mit zentral
-registrierten Gutenberg-Blöcken und Block-Patterns für die Fahrschule &
-Fahrlehrerfachschule edi (Duisburg, Essen, Gelsenkirchen).
+Block-Theme (Full Site Editing, `theme.json` v3) für die Fahrschule &
+Fahrlehrerfachschule edi (Duisburg, Essen, Gelsenkirchen) mit 49 zentral
+registrierten, dynamischen Gutenberg-Blöcken.
 
 ## Aufbau
 
 | Pfad | Inhalt |
 |---|---|
-| `fahrschule-edi/` | Das Theme. Wird zu `dist/fahrschule-edi.zip` gepackt. |
-| `edi-integrationen/` | Optionales Begleit-Plugin (Odoo-Lead-Webhook, Matomo). |
-| `bin/build-zip.sh` | Baut die Auslieferungs-ZIPs nach `dist/`. |
-| `bin/gate.sh` | Prüfkette: Lint, Smoke-Test, Referenzen, Farben, Kontrast, Layout, ZIP-Größe. |
-| `bin/checks/` | Die Einzelprüfungen, die `gate.sh` aufruft. |
-| `fahrschule-edi/patterns/` | Start-Patterns für den Muster-Dialog beim Seitenanlegen. |
-| `docs/` | Projektdokumentation. Wird **nicht** mit ausgeliefert. |
-
-Blöcke werden nicht je Verzeichnis angelegt, sondern aus **einem** Array
-(`fahrschule-edi/inc/blocks-config.php`) per `foreach` registriert — siehe
-`fahrschule_register_blocks_and_patterns()` in `functions.php`.
-
-## Seitenvorlagen
-
-Beim Anlegen einer Seite erscheint unter *Seiten-Attribute → Vorlage* eine
-Auswahl; der Muster-Dialog füllt die Seite anschließend mit editierbarem
-Block-Markup.
-
-| Vorlage | Datei | Ergänzt automatisch |
-|---|---|---|
-| Übersicht / Landingpage | `page-uebersicht.php` | Abschluss-Banner |
-| Bereich | `page-bereich.php` | Karten aller untergeordneten Seiten |
-| Kurs / Führerscheinklasse | `page-kurs.php` | Geschwisterklassen + Anmeldung |
-
-Der gemeinsame Rumpf steht in `inc/template-parts.php`. Die Hierarchie kommt
-aus `inc/pages.php`: wer eine Klassenseite anlegt und ihr `parent` setzt,
-bekommt Karte, Menüeintrag und Brotkrume ohne weiteres Zutun.
-
-## Editierbarkeit
-
-Jedes Feld lässt sich im Editor leeren — der zugehörige Abschnitt verschwindet
-dann im Frontend restlos, statt eine leere Überschrift zu hinterlassen. Ein
-Knopf stellt die Vorgabe wieder her. Listen (Führerscheinklassen, Team,
-Kennzahlen) sind Wiederholfelder mit Hinzufügen, Löschen und Sortieren.
-
-> **Regel für Rendercode:** Felder nie direkt ausgeben, sondern über `fs_el()`,
-> `fs_wrap()`, `fs_has()` und `fs_button()` aus `inc/helpers.php`. Nur so fällt
-> mit dem Wert auch sein Element weg. `bin/checks/emptiable.php` erzwingt das.
-
-## Bilder
-
-Das Theme liefert **keine** Fotos mit. `fs_media()` schlägt sie über ihren
-Dateinamen in der Mediathek nach — Datei nach Schema hochladen genügt, siehe
-`docs/assets_image_list.md`. Fehlt ein Bild, blendet sich der Block aus.
-
-## Build
-
-```bash
-bin/gate.sh        # Prüfkette; bricht beim ersten Fehler ab
-bin/build-zip.sh   # -> dist/fahrschule-edi.zip, dist/edi-integrationen.zip
-```
-
-Das Theme-ZIP muss unter 2 MB bleiben; `build-zip.sh` bricht sonst ab.
+| `fahrschule-edi/` | Das Theme → `dist/fahrschule-edi.zip` (unter 2 MB) |
+| `fahrschule-edi/templates/`, `parts/` | Block-Vorlagen und Header/Footer – bearbeitbar unter *Design → Editor* |
+| `fahrschule-edi/inc/blocks-config.php` | **ein** Array beschreibt alle Blöcke; `functions.php` registriert sie per `foreach` |
+| `fahrschule-edi/inc/pages.php` | Seiten-Registry: URLs, Navigation, Vorlage, Inhalt bei der Seitenanlage |
+| `fahrschule-edi/inc/pdf-texts.php` · `inc/seo.php` | Kundentexte (PDF) · Stammdaten (NAP, Geschäftsführung, Zeiten) |
+| `edi-integrationen/` | Begleit-Plugin: Formulare in Contact Form 7, WP Job Manager, Matomo |
+| `bin/gate.sh` · `bin/checks/` | Prüfkette (siehe unten) |
+| `bin/edi-bilder.py` | benennt den Bildordner nach dem Mediathek-Schema um |
+| `docs/` | Dokumentation (wird nicht ausgeliefert) |
 
 ## Installation
 
-*Design → Themes → Theme hinzufügen → Theme hochladen* → `dist/fahrschule-edi.zip`.
-Das Begleit-Plugin ist optional und nur für Odoo/Matomo nötig; ohne es
-versenden die Formulare weiterhin per `wp_mail()`.
+Kurzfassung, ausführlich in `docs/SETUP.md`, Abschnitt 0:
 
-## Farbsystem (Kurzfassung)
+1. **Plugins** installieren und aktivieren: Contact Form 7, Flamingo,
+   WP Job Manager, dann `dist/edi-integrationen.zip`. Das Begleit-Plugin
+   legt die Formulare und die Stellenkategorien an.
+2. **Theme** hochladen und aktivieren: *Design → Themes →
+   Theme hochladen*, `dist/fahrschule-edi.zip`. Die Seiten entstehen samt
+   Inhalt und Vorlage.
+3. **Bilder** mit `bin/edi-bilder.py` umbenennen und nur aus `umbenannt/`
+   importieren. Siehe `docs/assets_image_list.md`.
 
-Pink / Weiß / Dunkelakzent. Die Rohfarben stehen ausschließlich im
-`:root`-Block von `assets/css/main.css`. Komponenten benutzen nie die
-Rohfarben, sondern die Kontextvariablen `--c-text`, `--c-heading`,
-`--c-accent`, `--c-card*`, `--c-btn-*`, die jede Fläche (`.fs-surface-*`)
-neu belegt.
+Ohne die Plugins läuft das Theme weiter: Es nutzt dann eingebaute Formulare
+und zeigt keine Stellen. Ein Hinweis im Backend nennt, was fehlt.
 
-> **Regel:** Wer an einer Komponente ein eigenes `background:` setzt, muss die
-> Kontextvariablen gleich mit neu belegen. Sonst erbt die Komponente die
-> Textfarben der *umgebenden* Fläche — genau daraus entstanden die
-> Weiß-auf-Weiß- und Dunkel-auf-Dunkel-Fehler, die `bin/checks/contrast.mjs`
-> jetzt dauerhaft abfängt.
+## Regeln für Code
 
-Details: `docs/FARBSYSTEM.md`.
+- **Farben** nur über Kontext-Tokens `--c-*`, nie `--fs-*` in einem
+  Kontext. Prüfung: `bin/checks/tokens.py`. Details: `docs/FARBSYSTEM.md`.
+- **Felder** nie direkt ausgeben, sondern über `fs_el()`, `fs_wrap()`,
+  `fs_has()`. Ein geleertes Feld lässt dann nichts zurück; geprüft von
+  `bin/checks/emptiable.php`.
+- **Eine Quelle je Tatsache:**
+  - Seiten in `fahrschule_page_map()`;
+  - Blöcke in `fahrschule_blocks_config()`;
+  - Medien in `fahrschule_media_map()`;
+  - Texte in `inc/pdf-texts.php`;
+  - Stammdaten in `inc/seo.php`;
+  - Zeiten in `fahrschule_location_hours_text()`.
+- **Kein erfundener Inhalt:** Leer ist besser. `refs.py` sperrt früher
+  entfernte, unbelegte Behauptungen.
+- **Keine Abrufe bei Dritten ohne Einwilligung:** Die Browserprüfung fängt
+  jede externe Anfrage ab.
+
+## Prüfen und bauen
+
+```bash
+bin/gate.sh                 # volle Prüfkette inkl. Browser (Playwright)
+php bin/docs-tabellen.php   # Block-/Seitentabelle in docs/BLOCKS-PATTERNS.md erneuern
+bin/build-zip.sh            # -> dist/fahrschule-edi.zip, dist/edi-integrationen.zip
+```
+
+Änderungen: `CHANGELOG.md`.

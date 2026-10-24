@@ -10,8 +10,31 @@ er auf die drei bestehenden Fachdokumente:
 - **BLOCKS-PATTERNS.md** – jeder Block einzeln mit Feldern, Icons, Zielseite
 - **SEO-UND-AUDIT.md** – der ursprüngliche Code-Audit und die SEO-Grundlagen im Detail
 
-Stand: laufende Weiterentwicklung (Farbwelt-Umbau, Altseiten-Auswertung, Formulare/Odoo/
-Matomo, siehe Abschnitt 1–3 unten).
+Stand: Theme 3.0.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung der Runde 4 in
+Abschnitt 0; die Abschnitte 1–3 beschreiben die Komponenten im heutigen Zustand,
+Änderungsverlauf in `CHANGELOG.md`.
+
+---
+
+## 0. Stand 3.0 auf einen Blick
+
+- **Block-Theme:** Header, Footer und 19 Vorlagen sind unter *Design → Editor*
+  bearbeitbar. Kein PHP-Template mehr neben `templates/`.
+- **Seiteninhalt:** Die Seitenanlage schreibt ihn als Block-Markup.
+- **Klassen:** 15 Klassenseiten, die 14 aus PDF F3 plus B96. Seitenleiste
+  „Kurzdaten“; jede Zahl mit Quelle, Unbelegtes leer.
+- **Startseite:** zwölf Abschnitte nach Briefing, kein PDF-Abschnitt doppelt.
+- **Formulare:** Contact Form 7 + Flamingo über das Begleit-Plugin; eingebauter
+  Rückfall ohne CF7.
+- **Stellenanzeigen:** WP Job Manager, Karriereseite.
+- **Frühere CRM-Anbindung:** entfernt (siehe `CHANGELOG.md`).
+- **Farben:** Menüzustände über Kontext-Tokens; Prüfung auf jeder Seite in
+  jedem Zustand.
+- **Ohne Beleg:** Zahlen und Superlative entfernt; der Gate sperrt sie.
+- **Nicht geprüft:** eine echte WordPress-Installation. Die Prüfkette bildet
+  `template-canvas`, CF7 und WP Job Manager nach. Site-Editor, Mailversand
+  und Flamingo-Eingang sind an einer Testinstallation noch abzunehmen
+  (SETUP.md, Abschnitt 8).
 
 ---
 
@@ -59,8 +82,10 @@ verloren. Jetzt (`inc/forms.php`, neu):
   `/anmeldung/`): dieselbe Sicherheitslogik, zusätzlich Pflicht-Checkbox zur
   Datenschutzerklärung (`fs_privacy`), Standort-Auswahl steuert die Zieladresse,
   Rückmeldung über `?fs_kontakt=ok|error`.
-- Beide Handler rufen optional `fahrschule_odoo_send_lead()` auf (s. 1.4) – ohne das
-  companion-plugin läuft der Versand unverändert nur per E-Mail weiter.
+- **Seit 3.0 ist das der Rückfall:** Mit Contact Form 7 und dem Begleit-Plugin laufen
+  alle Formulare über CF7 (s. 1.4), `inc/forms.php` greift nur ohne CF7. Beide
+  Einwilligungen (Datenschutz, Art. 8 DSGVO) sind Pflicht; die Empfänger kommen aus
+  den Stammdaten.
 
 ### 1.4 Companion-Plugin `edi-integrationen` (neu, diese Runde)
 
@@ -68,9 +93,12 @@ Eigenständiges Plugin (`/edi-integrationen/`, Repo-Root neben dem Theme), nach 
 Prinzip wie beim Schwesterprojekt KAZ: Aussehen bleibt im Theme, Anbindungen an fremde
 Systeme leben im Plugin, damit ein späterer Theme-Wechsel sie nicht stillschweigend abschaltet.
 
-- **Odoo-Lead-Webhook** (`inc/odoo.php`): JSON-POST an eine hinterlegte Webhook-URL,
-  optionaler Bearer-Token, fire-and-forget (blockiert nie den Formular-Versand). Ohne
-  hinterlegte URL: no-op.
+- **Formulare** (`inc/formulare.php`): legt Kontakt, Anmeldung, Schnellanmeldung und
+  Bewerbung in Contact Form 7 an, setzt den Empfänger beim Senden aus den Stammdaten
+  (Standort → Standortadresse, sonst info@), Standort- und Klassenliste live aus
+  Stammdaten/PDF, Honeypot statt reCAPTCHA. Flamingo speichert die Einsendungen.
+- **Stellen** (`inc/stellen.php`): legt die Kategorien für WP Job Manager an; die
+  Anzeige übernehmen die Theme-Blöcke `jobs` und `stelle`.
 - **Matomo-Statistik** (`inc/matomo.php`): Einbindung nur bei hinterlegter URL + Site-ID.
   Standardmäßig „cookielos" (keine Tracking-Cookies, Do-Not-Track wird respektiert) plus
   Opt-out-Baustein (`[edi_matomo_optout]`, automatisch auf der Datenschutzseite eingebunden,
@@ -255,11 +283,11 @@ Korrektur ausgeschlossen ist.
 
 | Medium | Aktueller Stand |
 |---|---|
-| 3× Team-Foto je Gruppe (Büro & Ansprechpartner, Geschäftsleitung, Dozenten & Ausbilder) | Fehlt – zeigt Initialen-Platzhalter statt Fremdfoto |
+| Personenfotos (`edi-team-<vorname>`, Zweitfoto `-b`) | über `bin/edi-bilder.py` umbenennen und importieren; bis dahin Initialen |
 | Standortfoto Duisburg | Extern (Prototyp-Speicher) – kein Originalfoto in der Bestandsaufnahme vorhanden |
 | Hero-Video, Team-Video | Extern (Prototyp-Speicher) |
 | 3× Absolventenfoto | Extern (Prototyp-Speicher) |
-| 6× Instagram-Kachel | Unsplash-Stockfotos (Platzhalter) |
+| 6× Instagram-Kachel | leer, Block blendet sich aus (keine Stockfotos) |
 | Geist-Schriftdateien (`geist-400.woff2`, `geist-700.woff2`) | Fehlen noch – Lizenz-Download nötig (SIL Open Font License, selbst hostbar); bis dahin greift automatisch der System-Font-Stack |
 
 Sobald echtes Material vorliegt: Dateien in die Mediathek hochladen, Schlüssel/ID in
@@ -268,15 +296,11 @@ Codeeingriff nötig.
 
 ### 3.2 Offene API-Anbindungen (companion-plugin edi-integrationen)
 
-- **Odoo-Webhook-URL + API-Key** – aktuell leer (Einstellungen → edi-integrationen). Die
-  Anbindung ist **ungetestet gegen eine echte Odoo-Instanz**, mangels Zugangsdaten – vor
-  dem produktiven Einsatz einmal mit der echten Webhook-URL gegenprüfen (z. B. über
-  webhook.site als Zwischenstopp).
 - **Matomo-URL + Site-ID** – aktuell leer, keine Statistik-Erfassung, bis beides
   hinterlegt ist.
 - Beide Formulare (Standort-Schnellanmeldung, allgemeines Kontaktformular) funktionieren
   bereits vollständig **ohne** diese Anbindungen – E-Mail-Versand ist und bleibt der
-  verlässliche Hauptkanal, Odoo/Matomo sind rein additiv.
+  verlässliche Hauptkanal, Matomo ist rein additiv.
 
 ### 3.3 Bewusste Architekturentscheidungen, die eine spätere Prüfung verdienen
 

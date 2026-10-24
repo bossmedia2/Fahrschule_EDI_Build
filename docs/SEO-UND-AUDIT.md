@@ -1,5 +1,9 @@
 # SEO-Grundlage, robots.txt & Code-Audit
 
+> **Historischer Bericht (Theme 1.x).** Seit 3.0 ist das Theme ein Block-Theme: Die hier
+> genannten PHP-Vorlagen (`page.php`, `front-page.php`, `404.php`, `index.php`) sind durch
+> `templates/*.html` ersetzt. Aktueller Stand: `BLOCKS-PATTERNS.md`, `SYSTEM-REPORT.md`.
+
 Ergänzung zum Theme **Fahrschule edi**. Dieses Dokument beschreibt (1) die
 gefundenen und behobenen Code-Probleme, (2) das neue SEO-Fundament und
 (3) die robots.txt-Strategie.

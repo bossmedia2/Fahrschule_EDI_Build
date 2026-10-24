@@ -78,6 +78,10 @@ check "$rc" "Editierbarkeit"
 step "Struktur: Seitenvorlagen, Start-Patterns, Hierarchie"
 python3 -I "$ROOT/bin/checks/structure.py" "$ROOT"; check $? "Struktur"
 
+# --- 4d --------------------------------------------------------------------
+step "Doku: Block- und Seitentabelle aktuell"
+php "$ROOT/bin/docs-tabellen.php" --pruefen 2>/dev/null; check $? "Doku-Tabellen"
+
 # --- 5 ---------------------------------------------------------------------
 if [ "$SKIP_BROWSER" -eq 0 ]; then
 	step "Browser: Navigationslayout, Zoom, Kontrast, Fokusring"

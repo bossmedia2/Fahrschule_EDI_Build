@@ -1,3 +1,76 @@
+# Einrichtung und Live-Checkliste
+
+Abschnitt 0 beschreibt die Einrichtung von Theme 3.0 (Block-Theme). Die
+Abschnitte 1–9 sind die manuelle Checkliste für die Live-Instanz.
+
+---
+
+## 0. Einrichtung Theme 3.0
+
+### 0.1 Plugins (nicht im Theme-ZIP)
+
+| Plugin | wofür | ohne es |
+|---|---|---|
+| Contact Form 7 | alle Formulare | eingebaute Formulare (Kontakt, Schnellanmeldung) per `wp_mail()`; Bewerbung nur per E-Mail-Hinweis |
+| Flamingo | speichert jede Einsendung im Backend | Einsendungen nur als E-Mail |
+| WP Job Manager | Stellenanzeigen | Karriereseite zeigt den Leer-Text |
+| edi-integrationen (`dist/edi-integrationen.zip`) | legt die vier CF7-Formulare und die Stellenkategorien an, setzt Empfänger aus den Stammdaten, Matomo | wie ohne CF7 |
+
+Reihenfolge:
+1. Contact Form 7, Flamingo und WP Job Manager installieren.
+2. Danach edi-integrationen aktivieren. Beim Aktivieren legt es an:
+   - die Formulare Kontakt, Anmeldung, Schnellanmeldung und Bewerbung;
+   - die Stellenkategorien Fahrlehrer, Büro & Ansprechpartner, Quereinstieg & Ausbildung.
+
+Unter *Einstellungen → edi-integrationen* sind die Formulare verlinkt.
+
+**WP-Job-Manager-Assistent:** Seiten für das Einreichen von Stellen und das
+Arbeitgeber-Dashboard **nicht** anlegen lassen. Die Fahrschule schreibt
+Stellen im Backend aus (*Job Listings → Neu*). Angezeigt werden sie unter
+`/ueber-uns/karriere/`, jede Stelle hat eine eigene URL.
+
+**Formulare – was eingebaut ist:**
+- **Empfänger:** kommt aus `inc/seo.php`. Wählt jemand einen Standort,
+  geht die Mail an diesen Standort, sonst an `info@`. Im Formular steht
+  keine Adresse.
+- **Spamschutz:** Honeypot, ohne reCAPTCHA oder andere Drittanbieter.
+- **Einwilligungen:** Pflicht-Häkchen für Datenschutz und für Minderjährige
+  (Art. 8 DSGVO) auf allen Formularen.
+- **Bewerbung:** PDF bis 10 MB als Mailanhang. Die Stelle (Titel und ID)
+  wird mitgeschickt.
+
+### 0.2 Theme
+
+1. *Design → Themes → Theme hochladen* → `dist/fahrschule-edi.zip` → aktivieren.
+2. Beim Aktivieren entstehen alle Seiten der Registry samt Inhalt (Block-Markup)
+   und Vorlage. Bestehende Seiten werden nicht überschrieben; Seiten aus
+   Installationen vor 3.0 mit leerem Inhalt füllt der erste Admin-Aufruf
+   (Abschnitt 8).
+3. Header, Footer und Vorlagen bearbeiten: *Design → Editor*.
+
+### 0.3 Bilder
+
+`bin/edi-bilder.py` im Bildordner ausführen und nur `umbenannt/` importieren.
+Vorher die Slug-Prüfung aus `umbenannt/bericht.txt` laufen lassen.
+Einzelheiten: `docs/assets_image_list.md`.
+
+### 0.4 Vor dem Livegang beim Kunden zu klären
+
+- [ ] **Klasse B96** steht nicht in der Kunden-PDF (F3) – wird sie angeboten?
+- [ ] **Kurzdaten der Klassenseiten:** Werte aus FeV/FahrschAusbO (Mindestalter,
+      Theorie, Pflichtfahrten) und Richtpreise aus dem ursprünglichen Build
+      bestätigen lassen (Quellen als Kommentar in `inc/pages.php`). Leere Felder
+      sind Absicht – nichts ohne Beleg.
+- [ ] **Datenschutzerklärung:**
+  - [ ] Absatz zu OpenStreetMap ergänzen (Karte auf den Standortseiten, lädt erst
+        nach Klick oder Einwilligung);
+  - [ ] Absatz zu Contact Form 7/Flamingo (gespeicherte Einsendungen) ergänzen;
+  - [ ] Absatz zu Bewerbungsdaten ergänzen.
+- [ ] **Einwilligungen** für Fotos mit Minderjährigen (Bild-Briefing).
+- [ ] **Vollständige Namen** der Fahrlehrer, Standort von Abdullah und Mesut.
+
+---
+
 # Live-Instanz – Sicherheits-Checkliste (manuell, noch offen)
 
 > **Wichtiger Hinweis:** Diese Session hatte zu keinem Zeitpunkt Zugriff auf die
@@ -133,27 +206,28 @@ dieser Sektionen `data-pdf-section="F1"` … `"F10"`.
 | PDF | Label · Überschrift | Startseite | Unterseite | Block (`fahrschule/…`) |
 |---|---|---|---|---|
 | F1 | Startseite / Hero · Fahrschule edi – Mit Kompetenz zum Führerschein | Hero, alle vier Absätze | – | `video-hero` |
-| F2 | Über uns · Ihre Fahrschule im Ruhrgebiet | vollständig | /ueber-uns/ | `about-intro` |
-| F3 | Führerscheinklassen · Unsere Führerscheinklassen | Teaser | /fuehrerscheinklassen/ | `license-overview` |
+| F2 | Über uns · Ihre Fahrschule im Ruhrgebiet | Anriss | /ueber-uns/ | `about-intro` |
+| F3 | Führerscheinklassen · Unsere Führerscheinklassen | vier Kacheln (Label, Überschrift, Klassen) | /fuehrerscheinklassen/ | `license-overview` |
 | F4 | Unsere Leistungen · Alles rund um den Führerschein aus einer Hand | Teaser | /leistungen/ | `services` |
 | F5 | Berufskraftfahrer · Ausbildung & Weiterbildung für Berufskraftfahrer | Teaser | /berufskraftfahrer/ | `professional-drivers` |
 | F6 | ASF & FES · Aufbauseminare und Punkteabbau | Teaser | /asf-fes/ | `seminars` |
 | F7 | Moderne Ausbildung · Lernen mit moderner Technik | Teaser | /moderne-ausbildung/ | `modern-training` |
-| F8 | Standorte · Unsere Standorte | vollständig | /standorte/, /anmeldung/; Adressen auch auf den drei Standortseiten | `locations` |
+| F8 | Standorte · Unsere Standorte | kompakt (ohne Fotos/Absatz) | /standorte/; kompakt auf /kontakt/, /anmeldung/ | `locations` |
 | F9 | Unser Team · Persönlich. Geduldig. Erfahren. | Teaser | /ueber-uns/team/ | `about-team` |
-| F10 | Anmeldung · Jetzt bei der Fahrschule edi anmelden | Abschluss | /anmeldung/ | `anmeldung` |
+| F10 | Anmeldung · Jetzt bei der Fahrschule edi anmelden | vollständig (Abschluss) | /anmeldung/: nur Seitenkopf + Formular | `anmeldung` |
 
-Teaser = Label, Überschrift und erster Satz des Abschnitts (wortgleich) plus Link
-auf die Unterseite. Auf den Unterseiten zeigt der Seitenkopf Label und Überschrift
+Teaser/Anriss = Label, Überschrift und erster Satz bzw. Absatz des Abschnitts
+(wortgleich) plus Link auf die Unterseite. Kein Abschnitt steht voll auf
+Startseite und Unterseite zugleich (geprüft von `bin/checks/startseite.py`). Auf den Unterseiten zeigt der Seitenkopf Label und Überschrift
 (Schlüssel `pdf` in `inc/pages.php`), der Block darunter läuft mit `head = 0`
 ohne doppelte Überschrift. Die Platzierungsangabe „Startseite / Hero" und die
 Foto-Hinweise „(Fotos)" werden nicht als Text ausgegeben.
 
-**Weiterhin vorhanden, aber kein PDF-Abschnitt** (jeweils nach den
-PDF-Abschnitten; mit dem Kunden klären, ob sie bleiben sollen): Team Spirit
-(Startseite, Team-Seite), Kundenbewertungen (blenden sich ohne echte Einträge
-aus), CTA „Bereit für Ihren Führerschein?" mit Zahlen (30+, 5000+, 3 Standorte,
-5 Sprachen) am Ende vieler Unterseiten, Zeitleiste und Philosophie (Über uns),
+**Weiterhin vorhanden, aber kein PDF-Abschnitt** (mit dem Kunden klären, ob
+sie bleiben sollen): Vertrauensleiste (Startseite), Team Spirit (Team-Seite),
+Bewertungen (Google-Link, keine Zitate), CTA „Bereit für Ihren Führerschein?"
+mit belegten Zahlen (Jahre seit Gründung 1993, Zahl der Standorte) am Ende
+vieler Unterseiten, Zeitleiste und Philosophie (Über uns),
 Flotte & Einrichtungen (Moderne Ausbildung), Preise & Rechner,
 Theorieunterricht, Fahrlehrerausbildung, FAQ, Erfahrungen, Standort-
 Detailseiten (Hero-Texte, Rechner, Entfernung).
@@ -161,26 +235,27 @@ Detailseiten (Hero-Texte, Rechner, Entfernung).
 **Text ändern:** Wortlaut in `inc/pdf-texts.php` anpassen – wirkt auf
 Startseite, Unterseite und Editor-Vorgabe zugleich.
 
-## 8. Theme-Update einspielen, Seiten mit eigenem Editor-Inhalt prüfen
+## 8. Update auf 3.0 (Block-Theme): Seiteninhalte prüfen
 
-- [ ] Theme `fahrschule-edi` in Version 1.1.0 einspielen.
-- [ ] Unter **Seiten** jede Seite prüfen, deren Editor **nicht leer** ist. Dort hat
-      der Editor-Inhalt Vorrang vor der Registry (`page.php`). Blöcke, die über ein
-      Pattern eingefügt oder im Editor bearbeitet wurden, speichern ihre Texte im
-      Seiteninhalt und zeigen weiterhin den **alten** Wortlaut. Abhilfe: Block
-      entfernen und neu einfügen (übernimmt die neuen Standardwerte) oder den
-      Seiteninhalt leeren, damit wieder die Registry greift. Die alte Fassung bleibt
-      unter „Revisionen" erhalten.
-- [ ] Startseite und je eine Unterseite aus der Tabelle oben ansehen: Hero mit vier
-      Absätzen, Teaser, Seitenkopf mit Label + Überschrift, Abschnitt ohne doppelte
-      Überschrift.
-- **Warum:** Die neuen Texte stecken im Theme-Code. Was im Editor gespeichert ist,
-  liegt dagegen in der Datenbank der Live-Instanz – darauf hatte diese Session
-  keinen Zugriff.
+Bis 2.x rendert das Theme leere Seiten zur Laufzeit aus der Registry. Ab 3.0
+rendert die Block-Vorlage den Seiteninhalt (`post_content`).
+
+- [ ] Theme 3.0.0 einspielen und einmal das Backend aufrufen. Die Migration
+      (`fahrschule_migrate_content()`) füllt jede Registry-Seite mit **leerem**
+      Inhalt und setzt ihre Vorlage. Seiten **mit** Inhalt bleiben unangetastet.
+- [ ] Unter **Seiten** jede Seite mit eigenem Inhalt öffnen. Die Vorlage liefert
+      jetzt Seitenkopf, Brotkrumen und je nach Typ Handlungsaufruf,
+      Bereichskacheln oder Standorte. Stehen diese Blöcke zusätzlich im
+      Inhalt, erscheinen sie doppelt – dann im Inhalt entfernen.
+- [ ] Jeder Seite die passende Vorlage geben (Seite → Vorlage); welche, steht in
+      `docs/BLOCKS-PATTERNS.md`, Abschnitt 4.
+- [ ] *Design → Editor* öffnen: Header, Footer und je eine Vorlage ansehen.
+- **Warum:** Was im Editor gespeichert ist, liegt in der Datenbank der
+  Live-Instanz – darauf hatte keine Session Zugriff.
 
 ## 9. Cache leeren
 
-- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=1.1.0`
+- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.0.0`
       ausgeliefert (Browser laden die geänderte `main.css` damit automatisch), ein
       Page-Cache würde aber weiter das alte HTML zeigen.
 
@@ -197,7 +272,7 @@ Startseite, Unterseite und Editor-Vorgabe zugleich.
 | 5 | `readme.html` löschen, `Options -Indexes`, `.md`-Dateien schützen | ⬜ Nein – erfordert Server-Zugriff |
 | 6 | `DISABLE_WP_CRON` + echter Server-Cronjob | ⬜ Nein – erfordert Server-Zugriff |
 | 7 | „Discourage indexing" in Produktion ausgeschaltet prüfen | ⬜ Nein – erfordert Live-Zugriff |
-| 8 | Theme 1.1.0 einspielen, Seiten mit eigenem Editor-Inhalt auf alte Texte prüfen | ⬜ Nein – erfordert Live-Zugriff |
+| 8 | Theme 3.0.0 einspielen, Migration auslösen, Seiten mit eigenem Inhalt auf Doppelungen prüfen | ⬜ Nein – erfordert Live-Zugriff |
 | 9 | Page-Cache/CDN leeren | ⬜ Nein – erfordert Live-Zugriff |
 
 Theme-seitig bereits umgesetzt (siehe `inc/security.php`): XML-RPC deaktiviert,
