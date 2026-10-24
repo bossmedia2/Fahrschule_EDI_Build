@@ -33,13 +33,80 @@ erst lokal umbenennen, dann einmal importieren, sonst hängt WordPress `-1` an.
 | Fuhrpark | `edi-fuhrpark-<art>` | `edi-fuhrpark-motorrad` |
 | Räumlichkeiten | `edi-raum-<name>` | `edi-raum-klassenraum` |
 | Hero | `edi-hero-<nr>` | `edi-hero-1` |
-| Galerie | `edi-galerie-<kategorie>-<nnn>` | `edi-galerie-fahrstunde-012` |
+| Galerie | `edi-galerie-<nnn>` oder `edi-galerie-<kategorie>-<nnn>` | `edi-galerie-012`, `edi-galerie-fuhrpark-012` |
 | Teilen-Vorschau | `edi-og.jpg` | 1200×630 |
 
 **Kursbilder laufen automatisch.** Der Teil nach `edi-kurs-` ist exakt der
 Seiten-Slug. `/klasse-b` sucht `edi-kurs-klasse-b`, `/klasse-b197` sucht
 `edi-kurs-klasse-b197`. Eine neue Klassenseite braucht damit keinen Eintrag
 unten — Seite anlegen, Bild hochladen, fertig.
+
+**Warum `-b` und nicht `-2` für das Zweitfoto:** WordPress hängt selbst `-2`
+an, wenn ein Slug schon belegt ist. Ein versehentlich doppelt hochgeladenes
+Porträt erschiene dann still als Wechselbild. `-b` erzeugt WordPress nie.
+
+**Galerie:** Der Galerie-Block zeigt jedes Bild, dessen Slug mit
+`edi-galerie-` beginnt, ohne Eintrag im Code. Eine Kategorie
+(`edi-galerie-fuhrpark-012`) ist optional. Die Filter-Pillen erscheinen nur für
+Kategorien, die tatsächlich Bilder haben. Unkategorisierte Bilder stehen
+unter „Alle“.
+
+---
+
+## Umbenennen mit `bin/edi-bilder.py`
+
+Das Skript benennt den Bildordner nach diesem Schema um. Es liegt im Repository
+unter `bin/` und braucht nur Python 3; für `--verkleinern` zusätzlich Pillow.
+
+```
+cd "<Bildordner>"
+python3 /pfad/zu/bin/edi-bilder.py                # nur umbenennen
+python3 /pfad/zu/bin/edi-bilder.py --verkleinern  # zusätzlich lange Kante 2560 px
+```
+
+| Datei im Ordner | wird zu | Hinweis |
+|---|---|---|
+| `Fahrschule Edi <Name> Fahrlehrer <Ort> <Klassen>_wp.jpg` | `edi-team-<vorname>.jpg`, zweites Foto `-b` | Standort und Klassen stehen in `zuordnung.csv`, nicht im Namen |
+| `Fahrschule edi <nr>_wp.jpg`, `Fs edi <nr>_wp.jpg` | `edi-galerie-<nnn>.jpg` | Quellnummer = Galerienummer, stabil über mehrere Läufe |
+| `Fahrschule edi _wp.jpg` (ohne Nummer) | `edi-galerie-901.jpg` ff. | im Bericht genannt |
+| `KAZ …` | – | übersprungen, anderes Projekt |
+| `FFs …` / `FFS …` | – | übersprungen, Fahrlehrerfachschule, nicht die edi-Fahrschule |
+| `iStock …` | – | ausgeschlossen, Lizenz ungeklärt |
+| `edi-…` | – | schon nach Schema, übersprungen |
+
+**Das Skript …**
+
+- **kopiert nur.** Die Originale bleiben, alles landet in `umbenannt/`. Der
+  Ordner `Umbenannt ` (großes U, Leerzeichen am Ende) wird weder gelesen noch
+  beschrieben.
+- **ist idempotent.** Ein zweiter Lauf legt nichts doppelt an. Eine Zieldatei
+  mit anderem Inhalt überschreibt es nicht, sondern meldet sie.
+- **verträgt die realen Schreibvarianten:**
+  - Tippfehler `Fahrehrer`, `Fahrlhererin`, `fahrlehrer`
+  - Doppelpunkte in den Klassen: `B:BE` → B, BE; `B:E` → BE
+  - Komma oder Bindestrich als Trenner
+  - `Ali Ihsan` als zweiter Vorname, `(Apo)` als Rufname, `Ömer . 2`
+  - Mac-Umlaute (NFD); Namensvergleiche laufen über NFC
+- **übersetzt Standortkürzel:** GE, DU, Essen. Ohne Kürzel bleibt der Standort
+  leer, das Skript rät nicht.
+- **schreibt `umbenannt/zuordnung.csv`** mit den Spalten
+  `zielname;quelldatei;person;rolle;klassen;standort;hinweis`. Darin trägt man
+  die Galerie-Motive für `edi-fuhrpark-*`, `edi-raum-*`, `edi-standort-*` und
+  `edi-kurs-*` von Hand nach. Die CSV ist zugleich Nachweis, falls jemand
+  seine Einwilligung widerruft.
+- **schreibt `umbenannt/bericht.txt`.** Er enthält:
+  - die Anzahl je Gruppe und alles Nicht-Zugeordnete;
+  - Lücken in der Nummernreihe und Ausreißer (`446` → vermutlich 46);
+  - eine Prüfschleife, ob die Slugs in der Mediathek frei sind;
+  - die kopierbare `wp media import`-Zeile.
+- **verkleinert mit `--verkleinern`:**
+  - wendet die EXIF-Drehung an, kodiert neu und verwirft dabei die EXIF-Daten
+    (Kamera, ggf. GPS);
+  - behält das Original, wenn die neue Datei größer wäre.
+
+Geprüft wird das Skript im Gate (`bin/checks/test_edi_bilder.py`) an einem
+nachgebauten Ordner mit allen oben genannten Sonderfällen, zweimal
+hintereinander.
 
 ---
 
@@ -122,5 +189,8 @@ Diese Punkte liegen außerhalb des Themes und blockieren sonst die Bebilderung:
   Fehlen sie, fehlen Bilder für genau die Seiten, die edi von einer reinen
   Pkw-Fahrschule unterscheiden.
 - **Tippfehler in den Dateinamen** (`Fahrehrer`, `Fahrlhererin`) und
-  Doppelpunkte in Klassenangaben vor dem Import korrigieren – sonst wandern
-  sie über die automatische Alt-Text-Erzeugung auf die Website.
+  Doppelpunkte in Klassenangaben: Das erledigt `bin/edi-bilder.py`. Deshalb nur
+  die Dateien aus `umbenannt/` importieren, nie die Originale, sonst wandern
+  die Tippfehler über die automatische Titel-Erzeugung auf die Website.
+- **Nummer 446:** vermutlich ein Tippfehler für 46. Das Skript übernimmt die
+  Nummer unverändert und meldet sie; ob umbenannt wird, entscheidet ihr.

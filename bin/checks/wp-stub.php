@@ -68,7 +68,36 @@ function wp_remote_post($u,$a=[]){return ['response'=>['code'=>200],'body'=>''];
 function is_wp_error($t){return false;}
 function wp_get_attachment_url($id){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function wp_get_attachment_image_src($id,$s='full'){return ['/wp-content/uploads/stub-'.$id.'.jpg',1200,800];}
-function get_posts($a=[]){return [];}            // leere Mediathek im Test
+function remove_filter($h,$c,$p=10){ if(empty($GLOBALS['__filters'][$h])) return false; foreach($GLOBALS['__filters'][$h] as $i=>$cb){ if($cb===$c){ unset($GLOBALS['__filters'][$h][$i]); return true; } } return false; }
+/* Minimaler $wpdb: prepare() quotet wie das Original, esc_like() maskiert
+   die LIKE-Jokerzeichen. Genug, um die erzeugte WHERE-Klausel auszuwerten. */
+class FS_Stub_WPDB { public $posts='wp_posts';
+  public function esc_like($t){ return addcslashes($t,'_%\\'); }
+  public function prepare($q,...$args){ $i=0; return preg_replace_callback('/%[sd]/',function($m)use(&$i,$args){ $v=$args[$i++]; return $m[0]==='%d'?(int)$v:"'".addslashes($v)."'"; },$q); } }
+$GLOBALS['wpdb']=new FS_Stub_WPDB();
+/* Mediathek im Test: leer, außer ein Prüfschritt legt $GLOBALS['__attachments']
+   an (Liste von post_name). Ein posts_where-Filter wird wirklich angewendet:
+   die LIKE-Klausel auf post_name wird ausgewertet - so prüft der Test auch
+   das erzeugte SQL-Muster, nicht nur die PHP-Seite. */
+function get_posts($a=[]){
+  $names=$GLOBALS['__attachments']??[]; if(!$names || ($a['post_type']??'')!=='attachment') return [];
+  if(($a['suppress_filters']??true)===false){
+    $where=apply_filters('posts_where','');
+    if(preg_match_all("/post_name LIKE '((?:[^'\\\\]|\\\\.)*)'/",$where,$mm)){
+      foreach($mm[1] as $like){
+        $like=stripslashes($like);
+        $re='';$n=strlen($like);
+        for($i=0;$i<$n;$i++){ $c=$like[$i];
+          if($c==='\\' && $i+1<$n){ $re.=preg_quote($like[++$i],'/'); }
+          elseif($c==='%'){ $re.='.*'; } elseif($c==='_'){ $re.='.'; } else { $re.=preg_quote($c,'/'); } }
+        $names=array_values(array_filter($names,fn($x)=>preg_match('/^'.$re.'$/',$x)));
+      }
+    }
+  }
+  sort($names);
+  $out=[]; foreach(array_slice($names,0,$a['posts_per_page']??10) as $i=>$nm){ $out[]=new WP_Post(['ID'=>1000+$i,'post_name'=>$nm,'post_type'=>'attachment']); }
+  return $out;
+}
 function wp_get_attachment_image_url($id,$s='full'){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function get_post_meta($id,$k='',$single=false){return $single?'':[];}
 function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($p=null){return false;}

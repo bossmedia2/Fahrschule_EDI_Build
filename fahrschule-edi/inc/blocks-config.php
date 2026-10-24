@@ -116,7 +116,7 @@ function fahrschule_blocks_config() {
 			),
 		),
 		'fahrschule/galerie' => array(
-			'title' => 'Foto-Galerie', 'description' => 'Liest live aus der Mediathek nach Namenspräfix edi-galerie-<kategorie>-. Mit Kategoriefilter und Lightbox.',
+			'title' => 'Foto-Galerie', 'description' => 'Zeigt live alle Mediathek-Bilder mit Namen edi-galerie-*. Optional nach Kategorie (edi-galerie-<kategorie>-<nr>) filterbar; Filter erscheinen nur für belegte Kategorien. Mit Lightbox.',
 			'icon' => 'format-gallery', 'keywords' => array( 'galerie', 'fotos', 'bilder', 'lightbox' ),
 			'render' => 'fs_render_galerie', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Galerie',
 			'fields' => array(

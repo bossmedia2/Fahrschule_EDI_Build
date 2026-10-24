@@ -2106,6 +2106,34 @@ function fs_render_fahrlehrer_finder( $a ) {
  * blendet sich aus. Er erzwingt nichts - die Frage, welche Aufnahmen gezeigt
  * werden dürfen, entscheidet sich beim Hochladen, nicht hier.
  * ---------------------------------------------------------------------- */
+/**
+ * Alle Anhänge mit Slug edi-galerie-*, nach Name sortiert.
+ *
+ * WP_Query kennt keinen Präfixfilter auf post_name (name__like gibt es
+ * nicht - früher holte die Galerie deshalb die ersten 200 Anhänge und
+ * filterte nachträglich, in großen Mediatheken fielen Bilder heraus).
+ * Der posts_where-Filter hängt nur für diese eine Abfrage an.
+ */
+function fs_galerie_anhaenge() {
+	$where = static function ( $sql ) {
+		global $wpdb;
+		return $sql . $wpdb->prepare( " AND {$wpdb->posts}.post_name LIKE %s", $wpdb->esc_like( 'edi-galerie-' ) . '%' );
+	};
+	add_filter( 'posts_where', $where );
+	$posts = get_posts( array(
+		'post_type'        => 'attachment',
+		'post_mime_type'   => 'image',
+		'post_status'      => 'inherit',
+		'posts_per_page'   => 500,
+		'orderby'          => 'name',
+		'order'            => 'ASC',
+		'no_found_rows'    => true,
+		'suppress_filters' => false, // sonst greift posts_where bei get_posts() nicht
+	) );
+	remove_filter( 'posts_where', $where );
+	return $posts;
+}
+
 function fs_render_galerie( $a ) {
 	$d = fs_attrs( $a, array(
 		'eyebrow'    => '',
@@ -2117,39 +2145,32 @@ function fs_render_galerie( $a ) {
 
 	$kats  = fs_rows( $d['kategorien'], 2 );
 	$batch = max( 4, (int) $d['batch'] );
-	if ( ! $kats ) { return ''; }
+
+	// Kategorie-Präfixe; die Galerie zeigt aber auch Bilder ohne Kategorie
+	// (edi-galerie-012, so benennt sie bin/edi-bilder.py).
+	$prefixe = array();
+	foreach ( $kats as $kat ) {
+		$p = sanitize_title( $kat[1] );
+		if ( '' !== $p ) { $prefixe[ $p ] = $kat[0]; }
+	}
 
 	$bilder = array();
-	foreach ( $kats as $kat ) {
-		list( $label, $prefix ) = $kat;
-		$prefix = sanitize_title( $prefix );
-		if ( '' === $prefix ) { continue; }
-
-		// Anhänge über den Namenspräfix holen. Mehr als 200 je Kategorie wäre
-		// für eine Website-Galerie ohnehin zu viel.
-		$posts = get_posts( array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'image',
-			'post_status'    => 'inherit',
-			'posts_per_page' => 200,
-			'orderby'        => 'name',
-			'order'          => 'ASC',
-			'name__like'     => 'edi-galerie-' . $prefix . '-',
-			'no_found_rows'  => true,
-		) );
-		foreach ( $posts as $post ) {
-			// name__like kennt WordPress nicht als Standardfilter - deshalb
-			// hier noch einmal prüfen, statt einem Zufallstreffer zu trauen.
-			if ( 0 !== strpos( $post->post_name, 'edi-galerie-' . $prefix . '-' ) ) { continue; }
-			$url = wp_get_attachment_image_url( $post->ID, 'large' );
-			if ( ! $url ) { continue; }
-			$bilder[] = array(
-				'kat'  => $prefix,
-				'url'  => $url,
-				'full' => wp_get_attachment_image_url( $post->ID, 'full' ),
-				'alt'  => (string) get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
-			);
+	$genutzt = array();
+	foreach ( fs_galerie_anhaenge() as $post ) {
+		$url = wp_get_attachment_image_url( $post->ID, 'large' );
+		if ( ! $url ) { continue; }
+		$rest = substr( $post->post_name, strlen( 'edi-galerie-' ) );
+		$kat  = '';
+		if ( preg_match( '/^([a-z0-9-]+?)-\d+$/', $rest, $m ) && isset( $prefixe[ $m[1] ] ) ) {
+			$kat = $m[1];
+			$genutzt[ $kat ] = true;
 		}
+		$bilder[] = array(
+			'kat'  => $kat,
+			'url'  => $url,
+			'full' => wp_get_attachment_image_url( $post->ID, 'full' ),
+			'alt'  => (string) get_post_meta( $post->ID, '_wp_attachment_image_alt', true ),
+		);
 	}
 	if ( ! $bilder ) { return ''; }
 
@@ -2160,11 +2181,12 @@ function fs_render_galerie( $a ) {
 				. fs_el( 'h2', $d['heading'] )
 				. fs_el( 'p', $d['subtitle'] ), 'class="fs-head"' ); ?>
 
-			<?php if ( count( $kats ) > 1 ) : ?>
+			<?php // Filter nur, wenn es kategorisierte Bilder gibt - eine Pille ohne Treffer wäre eine Sackgasse.
+			if ( $genutzt ) : ?>
 			<div class="fs-galfilter" role="group" aria-label="Galerie filtern">
 				<button type="button" class="fs-pill is-active" data-kat="">Alle</button>
-				<?php foreach ( $kats as $kat ) : ?>
-				<button type="button" class="fs-pill" data-kat="<?php echo esc_attr( sanitize_title( $kat[1] ) ); ?>"><?php echo esc_html( $kat[0] ); ?></button>
+				<?php foreach ( $prefixe as $p => $label ) : if ( empty( $genutzt[ $p ] ) ) { continue; } ?>
+				<button type="button" class="fs-pill" data-kat="<?php echo esc_attr( $p ); ?>"><?php echo esc_html( $label ); ?></button>
 				<?php endforeach; ?>
 			</div>
 			<?php endif; ?>
@@ -2173,6 +2195,7 @@ function fs_render_galerie( $a ) {
 				<?php foreach ( $bilder as $i => $b ) : ?>
 				<button type="button" class="fs-galitem" data-kat="<?php echo esc_attr( $b['kat'] ); ?>"
 					data-full="<?php echo esc_url( $b['full'] ); ?>"
+					aria-label="<?php echo esc_attr( 'Bild vergrößern: ' . ( '' !== $b['alt'] ? $b['alt'] : 'Foto ' . ( $i + 1 ) ) ); ?>"
 					<?php echo $i >= $batch ? ' hidden' : ''; ?>>
 					<img src="<?php echo esc_url( $b['url'] ); ?>" alt="<?php echo esc_attr( $b['alt'] ); ?>" loading="lazy" decoding="async">
 				</button>

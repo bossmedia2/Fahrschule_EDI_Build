@@ -1,4 +1,6 @@
 <?php
+// Ausgabeverzeichnis; ohne FS_OUT ins Temp-Verzeichnis, nie in den Wurzelordner.
+$FS_OUT = getenv('FS_OUT') ?: sys_get_temp_dir();
 error_reporting(E_ALL); ini_set('display_errors','stderr');
 $GLOBALS['__theme'] = $argv[1];
 $GLOBALS['__blocks']=[]; $GLOBALS['__patterns']=[];
@@ -40,7 +42,7 @@ foreach(array_keys($GLOBALS['__blocks']) as $name){
 }
 echo str_repeat("-",74)."\n";
 printf("TOTAL %d blocks, %d bytes HTML, %d with errors, %d empty\n",count($GLOBALS['__blocks']),$total,$failed,$empty);
-file_put_contents(getenv('FS_OUT').'/rendered.json', json_encode($outs));
+file_put_contents($FS_OUT.'/rendered.json', json_encode($outs));
 
 /* ---- Page-level render: build each registry page like page.php does ---- */
 echo "\n".str_repeat("=",74)."\nPAGE-LEVEL SMOKE TEST (inc/pages.php registry)\n".str_repeat("=",74)."\n";
@@ -72,11 +74,29 @@ foreach($map as $key=>$pg){
   foreach(array_unique($errs) as $e) echo "      -> $e\n";
   $pages[$key]=$html;
 }
-file_put_contents(getenv('FS_OUT').'/pages.json', json_encode($pages));
+file_put_contents($FS_OUT.'/pages.json', json_encode($pages));
 // Erwartete URL je Seite - die Browserprüfung vergleicht damit aria-current.
 $urls=[]; foreach($map as $key=>$pg){ $urls[$key]=fs_url($key); }
-file_put_contents(getenv('FS_OUT').'/urls.json', json_encode($urls));
+file_put_contents($FS_OUT.'/urls.json', json_encode($urls));
 echo "\nSEO smoke: ";
 $errs=[];
 if(function_exists('fahrschule_business_data')){ $bd=fahrschule_business_data(); echo count($bd)." business records; "; }
 echo $errs? implode(' | ',$errs) : "no errors\n";
+
+/* ---- Galerie gegen eine Test-Mediathek ----
+ * Die Namen stammen aus bin/edi-bilder.py (unkategorisiert) plus ein
+ * kategorisiertes Bild und Fremdnamen, die NICHT erscheinen dürfen. */
+echo "\nGalerie (Test-Mediathek): ";
+$GLOBALS['__attachments']=['edi-galerie-001','edi-galerie-002','edi-galerie-446','edi-galerie-fuhrpark-003',
+  'edi-team-aslan','edi-galeriex-009','xedi-galerie-010','edi-standort-duisburg'];
+$g=render_block(['blockName'=>'fahrschule/galerie','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+$GLOBALS['__attachments']=[];
+$gerr=[];
+$n=substr_count($g,'class="fs-galitem"');
+if($n!==4) $gerr[]="$n Bilder statt 4 (3 unkategorisiert + 1 Fuhrpark)";
+if(strpos($g,'data-kat="fuhrpark"')===false) $gerr[]='Fuhrpark-Filter fehlt';
+if(strpos($g,'>Fahrstunde<')!==false) $gerr[]='Filter ohne Bilder (Fahrstunde) angezeigt';
+if(substr_count($g,'aria-label="Bild vergrößern')!==4) $gerr[]='Bildknöpfe ohne zugänglichen Namen';
+$leer=render_block(['blockName'=>'fahrschule/galerie','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+if(trim($leer)!=='') $gerr[]='leere Mediathek rendert trotzdem einen Abschnitt';
+echo $gerr ? "!! ".implode(' | ',$gerr)."\n" : "ok: 4 von 8 Anhängen per Präfix, Filter nur für belegte Kategorie, leer = ausgeblendet\n";

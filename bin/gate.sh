@@ -41,7 +41,7 @@ check "$rc" "JavaScript-Syntax"
 # --- 3 ---------------------------------------------------------------------
 step "Smoke-Test: alle Blöcke und Seiten rendern"
 smoke=$(php "$ROOT/bin/checks/smoke.php" "$THEME" 2>&1); rc=$?
-echo "$smoke" | grep -E "^TOTAL|FATAL|EMPTY|notice/warning" | sed 's/^/  /'
+echo "$smoke" | grep -E "^TOTAL|FATAL|EMPTY|notice/warning|^Galerie|!! " | sed 's/^/  /'
 echo "$smoke" | grep -qE "FATAL|!! " && rc=1
 echo "$smoke" | tail -40 | grep -E "^(home|[a-z-]+) +/" >/dev/null || true
 pages_ok=$(echo "$smoke" | grep -cE "^[a-z0-9-]+ +/.* OK$")
@@ -55,6 +55,10 @@ python3 -I "$ROOT/bin/checks/refs.py" "$ROOT"; check $? "Referenzprüfung"
 # --- 4a --------------------------------------------------------------------
 step "Farbkontexte: keine Rohfarbe innerhalb eines Kontexts"
 python3 -I "$ROOT/bin/checks/tokens.py" "$ROOT"; check $? "Kontext-Tokens"
+
+# --- 4a2 -------------------------------------------------------------------
+step "Bild-Skript: nachgebauter Bildordner, zwei Läufe"
+python3 -I "$ROOT/bin/checks/test_edi_bilder.py" "$ROOT"; check $? "Bild-Skript"
 
 # --- 4b --------------------------------------------------------------------
 step "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar"
