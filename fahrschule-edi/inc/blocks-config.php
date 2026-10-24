@@ -296,7 +296,7 @@ function fahrschule_blocks_config() {
 			'fields' => array(
 				'heading'   => $t( 'Folgen Sie uns auf Instagram', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Instagram', 'Hervorgehobenes Wort', 'text' ),
-				'subtitle'  => $t( 'Erleben Sie die beste Fahrschule im Ruhrgebiet direkt in Ihrem Feed. Tipps, Erfolgsgeschichten und Behind-the-Scenes.', 'Untertitel', 'textarea' ),
+				'subtitle'  => $t( 'Einblicke in den Alltag der Fahrschule edi – Tipps und Neuigkeiten direkt in Ihrem Feed.', 'Untertitel', 'textarea' ),
 				'url'       => $t( 'https://www.instagram.com/fahrschuleedi/', 'Instagram-URL', 'url' ),
 			),
 		),
@@ -315,10 +315,10 @@ function fahrschule_blocks_config() {
 			'render' => 'fs_render_cta', 'pattern' => true, 'page' => 'Startseite',
 			'fields' => array(
 				'stats'    => $rep( array(
-					array( '30+', 'Jahre Erfahrung' ),
-					array( '5000+', 'Bestandene Prüfungen' ),
-					array( '3', 'Standorte' ),
-					array( '5', 'Sprachen' ),
+					// Nur Belegtes (harte Regel 3): Gründungsjahr und Standorte aus inc/seo.php.
+					// Hier standen zuvor „5000+ Bestandene Prüfungen“ und „5 Sprachen“ ohne Quelle.
+					array( ( (int) gmdate( 'Y' ) - (int) fahrschule_business_data()['founded'] ) . '+', 'Jahre Erfahrung' ),
+					array( (string) count( fahrschule_business_data()['locations'] ), 'Standorte' ),
 				), 'Kennzahl', array( 'Wert', 'Beschriftung' ) ),
 				'heading'   => $t( 'Bereit für Ihren Führerschein?', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Führerschein?', 'Hervorgehobenes Wort', 'text' ),
@@ -349,10 +349,11 @@ function fahrschule_blocks_config() {
 			'render' => 'fs_render_about_timeline', 'pattern' => true, 'page' => 'Über uns',
 			'fields' => array(
 				'items'    => $rep( array(
-					array( '1993', 'Gründung', 'Fahrschule edi wird mit Leidenschaft gegründet' ),
-					array( '2000er', 'Expansion', 'Eröffnung weiterer Standorte in Essen und Duisburg' ),
-					array( '2010', 'Modernisierung', 'Einführung digitaler Lernmethoden und moderner Fahrzeuge' ),
-					array( 'Heute', 'Größte im Ruhrgebiet', 'Eine der erfolgreichsten Fahrschulen mit über 10.000+ glücklichen Absolventen' ),
+					// Nur Belegtes: Gründung (inc/seo.php), heutige Standorte (PDF F8).
+					// Die Stationen 2000er/2010 und die Superlative zur Absolventenzahl
+					// hatten keine Quelle und sind entfallen.
+					array( fahrschule_business_data()['founded'], 'Gründung', 'Die Fahrschule edi wird gegründet.' ),
+					array( 'Heute', 'Drei Standorte im Ruhrgebiet', fs_aufzaehlung( array_keys( fahrschule_pdf( 'f8' )['locations'] ) ) . ' – Ausbildung für Motorrad, PKW, LKW und Bus.' ),
 				), 'Station', array( 'Jahr', 'Titel', 'Text' ) ),
 				'heading'   => $t( 'Tradition trifft Moderne', 'Überschrift', 'text' ),
 				'highlight' => $t( 'Moderne', 'Hervorgehobenes Wort', 'text' ),
@@ -390,13 +391,15 @@ function fahrschule_blocks_config() {
 
 		/* ---- Testimonials-Seite ---- */
 		'fahrschule/testimonials-hero' => array(
-			'title' => 'Testimonials – Hero', 'description' => 'Zähler-Hero „Über 10.000+ glückliche Fahrschüler“.',
+			'title' => 'Testimonials – Hero', 'description' => 'Kopf der Erfahrungen-Seite: 30+ Jahre Erfahrung seit der Gründung 1993.',
 			'icon' => 'awards', 'keywords' => array( 'testimonials', 'hero', 'zähler' ),
 			'render' => 'fs_render_testimonials_hero', 'pattern' => true, 'page' => 'Testimonials',
 			'fields' => array(
-				'heading'   => $t( 'Über 10.000+ glückliche Fahrschüler', 'Überschrift', 'text' ),
-				'highlight' => $t( '10.000+ glückliche', 'Hervorgehobenes Wort', 'text' ),
-				'subtitle'  => $t( 'Vertrauen Sie auf unsere Erfolgsbilanz und die positiven Erfahrungen unserer Absolventen', 'Untertitel', 'textarea' ),
+				// Bis 3.0 stand hier eine unbelegte Absolventenzahl (SYSTEM-REPORT 2.4);
+				// korrigiert war nur die Render-Vorgabe, nicht diese Konfiguration.
+				'heading'   => $t( 'Über 30 Jahre Erfahrung im Ruhrgebiet', 'Überschrift', 'text' ),
+				'highlight' => $t( '30 Jahre Erfahrung', 'Hervorgehobenes Wort', 'text' ),
+				'subtitle'  => $t( 'Seit 1993 begleiten wir Fahrschülerinnen und Fahrschüler in Duisburg, Essen und Gelsenkirchen zum Führerschein.', 'Untertitel', 'textarea' ),
 			),
 		),
 		'fahrschule/graduates-gallery' => array(

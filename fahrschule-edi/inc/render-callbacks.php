@@ -513,7 +513,7 @@ function fs_render_instagram_slider( $a ) {
 	$d = fs_attrs( $a, array(
 		'heading'  => 'Folgen Sie uns auf Instagram',
 		'highlight'=> 'Instagram',
-		'subtitle' => 'Erleben Sie die beste Fahrschule im Ruhrgebiet direkt in Ihrem Feed. Tipps, Erfolgsgeschichten und Behind-the-Scenes.',
+		'subtitle' => 'Einblicke in den Alltag der Fahrschule edi – Tipps und Neuigkeiten direkt in Ihrem Feed.',
 		'url'      => 'https://www.instagram.com/fahrschuleedi/',
 		'cap_1'    => 'Endlich bestanden! Herzlichen Glückwunsch an alle neuen Fahrerinnen und Fahrer.',
 		'cap_2'    => 'Moderne Fahrzeuge, moderne Ausbildung.',

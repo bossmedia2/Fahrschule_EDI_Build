@@ -133,6 +133,26 @@ for dp, dn, fn in os.walk(root):
 if blue: fail("Blau-/Teal-Farbwert im Produktionscode: " + "; ".join(blue))
 else:    ok("kein Blau-/Teal-Farbwert im Produktionscode")
 
+
+# --- Unbelegte Behauptungen (harte Regel 3) ------------------------------
+# Jede dieser Formulierungen stand schon einmal im Theme, ohne Quelle in den
+# Kundenunterlagen oder der alten Website. Kommt sie zurück, fällt der Gate.
+SPERRE = [r'10\.000', r'5\.?000\+', r'beste Fahrschule', r'Größte im Ruhrgebiet',
+          r'erfolgreichsten Fahrschulen', r'\b5 Sprachen\b', r"'5', 'Sprachen'"]
+treffer = []
+for p in php_files:
+    if '/edi-integrationen/' in p.replace(os.sep, '/') or '/fahrschule-edi/' in p.replace(os.sep, '/'):
+        src = rd(p)
+        for rx in SPERRE:
+            for m in re.finditer(rx, src):
+                line = src.count('\n', 0, m.start()) + 1
+                ctx = src.splitlines()[line - 1]
+                if '//' in ctx.split(m.group(0))[0] or ctx.strip().startswith(('*', '/*', '//')):
+                    continue   # Erwähnung im Kommentar (Historie) ist erlaubt
+                treffer.append(f"{os.path.relpath(p, root)}:{line} „{m.group(0)}“")
+if treffer: fail("unbelegte Behauptung im Theme: " + ", ".join(treffer))
+else:       ok("keine der früher entfernten unbelegten Behauptungen (10.000+, 5000+, „beste“, „Größte“ …)")
+
 print()
 if fails:
     print(f"REFERENZPRÜFUNG: {len(fails)} Fehler")
