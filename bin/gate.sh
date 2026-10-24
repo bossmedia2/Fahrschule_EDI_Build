@@ -52,6 +52,10 @@ check "$rc" "Smoke-Test"
 step "Referenzen: Blöcke, Icons, Assets, CSS-Klassen, Keyframes, Farben"
 python3 -I "$ROOT/bin/checks/refs.py" "$ROOT"; check $? "Referenzprüfung"
 
+# --- 4a --------------------------------------------------------------------
+step "Farbkontexte: keine Rohfarbe innerhalb eines Kontexts"
+python3 -I "$ROOT/bin/checks/tokens.py" "$ROOT"; check $? "Kontext-Tokens"
+
 # --- 4b --------------------------------------------------------------------
 step "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar"
 php "$ROOT/bin/checks/emptiable.php" "$THEME" 2>&1 | grep -E "^(Textfelder|  ok|  FEHLER|Wiederholfelder|LEERBARKEIT)" | sed 's/^/  /'

@@ -173,50 +173,126 @@ for (const f of pages) {
   await collect('gescrollt');
 }
 
-/* 3b) Aufgeklappte Menüs.
+/* 3b) Aufgeklappte Menüs - auf JEDER Seite.
  * Diese Zustände hatten bis Oktober 2026 kein Prüfschritt erfasst, und genau
- * darin steckte ein Fehler: das Flyout hat einen eigenen weißen Hintergrund,
- * las aber das --c-text der Leiste, das am Seitenanfang weiß ist - weiße
- * Schrift auf weißem Menü. Im Ruhezustand ist das Flyout visibility:hidden
- * und opacity:0, wird von scanText() also übersprungen. Es muss geöffnet
- * werden, sonst sieht die Prüfung es nie.
- * Die Navigation ist auf allen Seiten derselbe Block, eine Seite genügt. */
-await page.goto('file://' + dir + '/home.html');
-await page.addStyleTag({ content: NOANIM });
-for (const bar of ['oben', 'gescrollt']) {
-  await page.evaluate((scrolled) => {
-    const n = document.querySelector('.fs-nav');
-    if (n) n.classList.toggle('is-scrolled', scrolled);
-    document.querySelectorAll('.fs-nav__drop').forEach(d => d.classList.add('is-open'));
-  }, bar === 'gescrollt');
-  await page.waitForTimeout(60);
-  await collect('Flyout offen, Leiste ' + bar);
+ * darin steckten zwei Fehler: erst weiße Schrift auf weißem Flyout, danach der
+ * aktive Eintrag (weiß auf --c-border, 1,65:1). Der zweite war nur auf der
+ * Seite sichtbar, deren Eintrag aktiv ist - eine Prüfung über home.html
+ * allein sieht ihn nie. Deshalb hier jede Seite mit ihrem eigenen Kontext:
+ * Flyouts offen, Leiste oben und gescrollt, dazu der Mauszeiger auf dem
+ * aktiven Eintrag (Hover darf die Aktiv-Farben nicht zerstören). */
+const urls = JSON.parse(fs.readFileSync(dir + '/urls.json', 'utf8'));
+const ariaBad = [];
+// aria-current gehört an jeden Menülink auf die geöffnete Seite - und nur dorthin.
+const checkAria = async (f, where) => {
+  const key = f.replace(/\.html$/, '');
+  const want = urls[key];
+  if (!want) return;
+  const r = await page.evaluate(([want, where]) => {
+    const out = [];
+    for (const a of document.querySelectorAll(where + ' a[href]')) {
+      if (a.matches('.fs-btn, .fs-nav__logo')) continue;
+      const cur = a.getAttribute('aria-current') === 'page';
+      const hit = a.getAttribute('href') === want;
+      if (cur !== hit) out.push((cur ? 'aria-current auf fremdem Link ' : 'aria-current fehlt an ') + a.getAttribute('href') + ' "' + a.textContent.trim() + '"');
+    }
+    return out;
+  }, [want, where]);
+  for (const x of r) ariaBad.push(`${f} [${where}] ${x}`);
+};
+let activeSeen = 0, drawerActiveSeen = 0;
+/* Nichts Lesbares unter der fixierten Leiste: Brotkrumen und Seitentitel
+ * müssen am Seitenanfang unterhalb der Leiste beginnen. Auf Seiten ohne
+ * Seitenkopf lagen die Brotkrumen bis Oktober 2026 verdeckt darunter. */
+const covered = [];
+const checkCovered = async (f, w) => {
+  const r = await page.evaluate(() => {
+    const nav = document.querySelector('.fs-nav__inner'); if (!nav) return [];
+    const bottom = nav.getBoundingClientRect().bottom;
+    return [...document.querySelectorAll('main .fs-crumbs ol, main h1')]
+      .filter(e => e.offsetParent && e.getBoundingClientRect().top < bottom - 1)
+      .map(e => e.tagName.toLowerCase() + '.' + (e.parentElement.className || '') + ' top=' + Math.round(e.getBoundingClientRect().top) + ' < Leiste ' + Math.round(bottom));
+  });
+  for (const x of r) covered.push(`${f} @${w}px: ${x}`);
+};
+for (const f of pages) {
+  await page.goto('file://' + dir + '/' + f);
+  await page.addStyleTag({ content: NOANIM });
+  await checkCovered(f, 1440);
+  await checkAria(f, '.fs-nav');
+  await checkAria(f, '.fs-drawer');
+  for (const bar of ['oben', 'gescrollt']) {
+    await page.evaluate((scrolled) => {
+      const n = document.querySelector('.fs-nav');
+      if (n) n.classList.toggle('is-scrolled', scrolled);
+      document.querySelectorAll('.fs-nav__drop').forEach(d => d.classList.add('is-open'));
+    }, bar === 'gescrollt');
+    await page.waitForTimeout(40);
+    await collect('Flyout offen, Leiste ' + bar + ', ' + f);
+    const act = page.locator('.fs-nav__menu a[aria-current="page"]');
+    if (await act.count()) {
+      activeSeen++;
+      // Nur das Flyout mit dem aktiven Eintrag offen lassen - alle zugleich
+      // offen überdecken sich, der Mauszeiger träfe ein fremdes Menü.
+      await page.evaluate(() => document.querySelectorAll('.fs-nav__drop').forEach(d =>
+        d.classList.toggle('is-open', !!d.querySelector('.fs-nav__menu a[aria-current="page"]'))));
+      await page.waitForTimeout(30);
+      await act.first().hover({ timeout: 5000 });
+      await page.waitForTimeout(30);
+      await collect('Flyout offen, Maus auf aktivem Eintrag, Leiste ' + bar + ', ' + f);
+      await page.mouse.move(1, 999);
+    }
+  }
 }
+if (ariaBad.length) for (const x of ariaBad) fail(x);
+else ok(`aria-current: auf ${pages.length} Seiten genau an den Links zur geöffneten Seite (Flyout und Schubfach)`);
+if (!activeSeen) fail('kein einziger aktiver Flyout-Eintrag gefunden – Seitenkontext im Smoke-Test kaputt?');
 
-/* 3c) Schmale Breite. Burger und Schubfach sind ab 1240px display:none und
- * werden von den Durchläufen oben nie erfasst. Beide Zustände der Leiste
- * zählen: der ursprüngliche P0 war ein Burger, der erst auf der hinterlegten
- * Leiste unsichtbar wurde - bei 1440px ist er gar nicht da, oben auf der
- * Seite steht er auf Pink und fällt nicht auf. */
+/* 3c) Schmale Breite, ebenfalls je Seite. Burger und Schubfach sind ab
+ * 1240px display:none und werden von den Durchläufen oben nie erfasst.
+ * Beide Zustände der Leiste zählen: der ursprüngliche P0 war ein Burger, der
+ * erst auf der hinterlegten Leiste unsichtbar wurde. Im Schubfach steht der
+ * aktive Eintrag in der serverseitig geöffneten Gruppe. */
 await page.setViewportSize({ width: 390, height: 800 });
-await page.goto('file://' + dir + '/home.html');
-await page.addStyleTag({ content: NOANIM });
-await page.waitForTimeout(40);
-await collect('schmal, Leiste oben');
-await page.evaluate(() => document.querySelector('.fs-nav')?.classList.add('is-scrolled'));
-await page.waitForTimeout(40);
-await collect('schmal, Leiste gescrollt');
-await page.evaluate(() => {
-  document.querySelector('.fs-nav')?.classList.remove('is-scrolled');
-  document.querySelector('.fs-drawer')?.classList.add('is-open');
-  document.querySelector('.fs-drawer-overlay')?.classList.add('is-open');
-  document.querySelectorAll('[data-fs-sub]').forEach(x => x.classList.add('is-open'));
-});
-await page.waitForTimeout(60);
-await collect('mobiles Menü offen');
+for (const f of pages) {
+  await page.goto('file://' + dir + '/' + f);
+  await page.addStyleTag({ content: NOANIM });
+  await page.waitForTimeout(30);
+  await checkCovered(f, 390);
+  if (f === 'home.html') {
+    await collect('schmal, Leiste oben');
+    await page.evaluate(() => document.querySelector('.fs-nav')?.classList.add('is-scrolled'));
+    await page.waitForTimeout(30);
+    await collect('schmal, Leiste gescrollt');
+    await page.evaluate(() => document.querySelector('.fs-nav')?.classList.remove('is-scrolled'));
+  }
+  // Über den echten Burger öffnen - so wie ein Mensch es tut.
+  await page.click('[data-fs-burger]');
+  await page.waitForTimeout(60);
+  await collect('mobiles Menü offen, ' + f);
+  const act = page.locator('.fs-drawer a[aria-current="page"]');
+  if (await act.count()) {
+    drawerActiveSeen++;
+    if (!(await act.first().isVisible())) fail(`${f}: aktiver Eintrag im Schubfach ist nicht sichtbar (Gruppe zu?)`);
+    else {
+      await act.first().hover({ timeout: 5000 });
+      await page.waitForTimeout(30);
+      await collect('mobiles Menü, Finger auf aktivem Eintrag, ' + f);
+    }
+  }
+  if (f === 'home.html') {
+    await page.evaluate(() => document.querySelectorAll('[data-fs-sub]').forEach(x => x.classList.add('is-open')));
+    await page.waitForTimeout(40);
+    await collect('mobiles Menü, alle Gruppen offen');
+  }
+}
+if (covered.length) for (const x of covered) fail('verdeckt von der Leiste: ' + x);
+else ok(`Brotkrumen und Seitentitel auf ${pages.length} Seiten unterhalb der fixierten Leiste (390 und 1440px)`);
+if (!drawerActiveSeen) fail('kein einziger aktiver Eintrag im Schubfach gefunden');
+else ok(`Schubfach: ${drawerActiveSeen} Seiten mit sichtbarem aktivem Eintrag, Flyout: ${activeSeen} Zustände mit aktivem Eintrag gemessen`);
 await page.setViewportSize({ width: 1440, height: 1000 });
 
-if (!seen.size) ok(`keine Kontrastverstöße auf ${pages.length} Seiten – Leiste oben und gescrollt, Flyout und mobiles Menü geöffnet`);
+if (!seen.size) ok(`keine Kontrastverstöße auf ${pages.length} Seiten – Leiste oben und gescrollt, Flyout und Schubfach je Seite geöffnet`);
 for (const [, v] of [...seen].sort((a, b) => a[1].r - b[1].r)) {
   if (v.kind === 'Text') fail(`${v.r}:1 (nötig ${v.need}:1) [${v.state}] ${v.sel} "${v.txt}" – ${v.color} auf ${v.bg}`);
   else                   fail(`${v.r}:1 (nötig 3:1) [${v.state}] ${v.sel} – Füllung ${v.fill}, Rand ${v.border} auf ${v.bg}`);
@@ -262,6 +338,8 @@ const fr = await page.evaluate(new Function(HELPERS + `
   const out=[];
   for(const surf of ['fs-surface-brand','fs-surface-light','fs-ctx-light','fs-ctx-deep']){
     const box=document.createElement('div'); box.className=surf;
+    // Kontextsätze ohne eigene Fläche (ctx-light/-deep) tragen sie hier selbst - wie die Komponenten, die sie einbinden.
+    box.style.background='var(--c-bg)';
     document.body.appendChild(box); box.appendChild(probe);
     probe.focus();
     const cs=getComputedStyle(probe);

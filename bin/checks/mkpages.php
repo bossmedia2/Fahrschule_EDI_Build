@@ -26,10 +26,14 @@ $tpl = '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'
 foreach ( $pages as $key => $html ) {
 	// Theme-URL auf den lokalen Pfad biegen, damit Bilder wirklich laden.
 	$html = str_replace( '/wp-content/themes/fahrschule-edi/assets/', 'assets/', $html );
-	$html = preg_replace(
-		'#(</nav>\s*<div class="fs-drawer-overlay".*?</div>\s*</div>)#s',
-		'$1<main id="content">', $html, 1
-	) . '</main>';
+	// Die Marke setzt smoke.php hinter die Navigation. Früher suchte hier ein
+	// Regex das erste "</div></div>" nach dem Overlay - das lag im Schubfach,
+	// <main> landete mitten darin und verbog dessen Layout in der Prüfung.
+	if ( false === strpos( $html, '<!--fs-main-->' ) ) {
+		fwrite( STDERR, "  FEHLER: $key ohne <!--fs-main--> Marke\n" );
+		exit( 1 );
+	}
+	$html = str_replace( '<!--fs-main-->', '<main id="content">', $html ) . '</main>';
 	file_put_contents( $out . '/' . $key . '.html', sprintf( $tpl, htmlspecialchars( $key ), $html ) );
 }
 echo "  ok: " . count( $pages ) . " Seiten gerendert nach $out\n";

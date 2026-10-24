@@ -53,6 +53,7 @@ foreach($map as $key=>$pg){
   fs_stub_set_page($pg['slug'], $pg['title'] ?? ($pg['menu'] ?? $key), $key==='home');
   try{
     $html .= render_block(['blockName'=>'fahrschule/navigation','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+    $html .= '<!--fs-main-->'; // Grenze Kopf/Inhalt für mkpages.php
     // Wie page.php: Seitenkopf, ausser die Seite bringt ihren eigenen Hero mit.
     $first = $pg['blocks'][0][0] ?? '';
     if($key!=='home' && !in_array($first,['fahrschule/location-hero','fahrschule/testimonials-hero','fahrschule/video-hero'],true)){
@@ -72,6 +73,9 @@ foreach($map as $key=>$pg){
   $pages[$key]=$html;
 }
 file_put_contents(getenv('FS_OUT').'/pages.json', json_encode($pages));
+// Erwartete URL je Seite - die Browserprüfung vergleicht damit aria-current.
+$urls=[]; foreach($map as $key=>$pg){ $urls[$key]=fs_url($key); }
+file_put_contents(getenv('FS_OUT').'/urls.json', json_encode($urls));
 echo "\nSEO smoke: ";
 $errs=[];
 if(function_exists('fahrschule_business_data')){ $bd=fahrschule_business_data(); echo count($bd)." business records; "; }

@@ -42,6 +42,17 @@
   --c-btn-bg:        var(--fs-light);
   --c-btn-text:      var(--fs-brand-deep);
   --c-btn-bg-hover:  var(--fs-tint);
+  /* Zustände in Menüs/Listen: aktiver Eintrag und Hover. Jeder Kontextsatz
+     unten belegt sie neu - Menüs lesen nie die Basis-Palette direkt. */
+  --c-active-bg:     var(--fs-light);
+  --c-active-text:   var(--fs-brand-deep);
+  --c-hover-bg:      var(--fs-brand-strong);
+  --c-hover-text:    var(--fs-light);
+  /* Fokusring: Kern + Saum, auf hellen Flächen getauscht. */
+  --c-focus-ring:    var(--fs-light);
+  --c-focus-halo:    var(--fs-brand-deep);
+  /* Formularfelder sind auf jeder Fläche weiß. */
+  --c-field-bg:      var(--fs-light);
 
   --fs-radius:      0.5rem;
   --fs-radius-lg:   0.75rem;
@@ -66,7 +77,10 @@
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(109,13,69,.25);
   --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
-  color: var(--fs-light);
+  --c-active-bg: var(--fs-light); --c-active-text: var(--fs-brand-deep);
+  --c-hover-bg: var(--fs-brand-strong); --c-hover-text: var(--fs-light);
+  --c-focus-ring: var(--fs-light); --c-focus-halo: var(--fs-brand-deep);
+  color: var(--c-text);
 }
 .fs-surface-light {
   background: var(--fs-rose);
@@ -77,7 +91,10 @@
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(138,18,69,.25);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
-  color: var(--fs-on-light);
+  --c-active-bg: var(--fs-tint); --c-active-text: var(--fs-heading);
+  --c-hover-bg: var(--fs-brand-strong); --c-hover-text: var(--fs-light);
+  --c-focus-ring: var(--fs-brand-deep); --c-focus-halo: var(--fs-light);
+  color: var(--c-text);
 }
 
 /* --------------------------------------------------------------------------
@@ -99,13 +116,18 @@
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(138,18,69,.25);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
+  --c-active-bg: var(--fs-tint); --c-active-text: var(--fs-heading);
+  --c-hover-bg: var(--fs-brand-strong); --c-hover-text: var(--fs-light);
+  --c-focus-ring: var(--fs-brand-deep); --c-focus-halo: var(--fs-light);
 }
 .fs-ctx-deep,
 .fs-drawer,
 .fs-cta-band,
 .fs-distance__out,
 .fs-loccalc__total,
-.fs-ig__post {
+.fs-ig__post,
+.fs-crumbs,
+.fs-darktesti {
   --c-bg: var(--fs-brand-strong);
   --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-tint);
   --c-border: rgba(255,255,255,.35);
@@ -113,10 +135,14 @@
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(109,13,69,.25);
   --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
+  /* Hover auf dunkler Fläche: heller Schleier statt zweiter Pinkstufe. */
+  --c-active-bg: var(--fs-light); --c-active-text: var(--fs-brand-deep);
+  --c-hover-bg: rgba(255,255,255,.14); --c-hover-text: var(--fs-light);
+  --c-focus-ring: var(--fs-light); --c-focus-halo: var(--fs-brand-deep);
 }
 /* Karten schalten den Kontext erneut um (heller Block auf farbiger Fläche). */
 .fs-card, .fs-value, .fs-philo, .fs-teaser, .fs-faq__item, .fs-calc, .fs-stat,
-.fs-quote, .fs-feature, .fs-teamcard, .fs-darktesti, .fs-classlist__cat,
+.fs-quote, .fs-feature, .fs-teamcard, .fs-classlist__cat,
 .fs-locform, .fs-distance, .fs-legal__card, .fs-anmeldung,
 .fs-calc__result, .fs-contactform {
   background: var(--c-card);
@@ -129,6 +155,9 @@
   /* Buttons in Karten gefüllt in der Kartenakzentfarbe – sonst stünde auf
      pinker Fläche ein weißer Button auf weißer Karte (unsichtbar). */
   --c-btn-bg: var(--c-card-accent); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--c-card-heading);
+  --c-active-bg: var(--fs-tint); --c-active-text: var(--c-card-heading);
+  --c-hover-bg: var(--c-card-accent); --c-hover-text: var(--fs-light);
+  --c-focus-ring: var(--fs-brand-deep); --c-focus-halo: var(--fs-light);
 }
 
 /* ---------- Reset / Base ---------- */
@@ -272,8 +301,9 @@ ul { margin: 0; padding: 0; list-style: none; }
    Flyout weiter nach rechts über FAQ/Kontakt zu legen. */
 .fs-nav__drop:last-of-type .fs-nav__menu { left: auto; right: 0; }
 .fs-nav__menu a { display: block; padding: .75rem 1rem; color: var(--c-text); }
-.fs-nav__menu a:hover, .fs-nav__menu a:focus-visible { color: var(--fs-light); background: var(--fs-brand-strong); }
-.fs-nav__menu a[aria-current="page"] { background: var(--c-border); color: var(--fs-light); }
+.fs-nav__menu a:hover, .fs-nav__menu a:focus-visible { color: var(--c-hover-text); background: var(--c-hover-bg); }
+/* Aktiver Eintrag steht nach dem Hover und behält seine Farben auch unter dem Mauszeiger. */
+.fs-nav__menu a[aria-current="page"] { color: var(--c-active-text); background: var(--c-active-bg); font-weight: 600; box-shadow: inset 3px 0 0 var(--c-accent); }
 .fs-nav__menu a:first-child { border-radius: var(--fs-radius) var(--fs-radius) 0 0; }
 .fs-nav__menu a:last-child { border-radius: 0 0 var(--fs-radius) var(--fs-radius); }
 .fs-nav__actions { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
@@ -297,14 +327,16 @@ ul { margin: 0; padding: 0; list-style: none; }
   overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
 }
 .fs-drawer__group { border-bottom: 1px solid var(--c-border); padding-bottom: .75rem; }
-.fs-drawer__toggle { width: 100%; justify-content: space-between; display: flex !important; font-weight: 600; }
+.fs-drawer__toggle { width: 100%; justify-content: space-between; display: flex !important; font-weight: 600; padding: .3rem 0; }
 .fs-drawer__toggle svg { transition: transform .3s; }
 .fs-drawer__group:has(.fs-drawer__sub.is-open) .fs-drawer__toggle svg { transform: rotate(180deg); }
 .fs-drawer__link { font-weight: 600; }
 .fs-drawer__actions { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: .75rem; }
 .fs-drawer.is-open { transform: none; }
 .fs-drawer a:not(.fs-btn), .fs-drawer button:not(.fs-btn) { color: var(--c-text); font-size: 1.05rem; background: none; border: 0; text-align: left; display: inline-flex; align-items: center; gap: .4rem; }
-.fs-drawer a:hover { color: var(--c-heading); }
+.fs-drawer a:not(.fs-btn):hover, .fs-drawer button:not(.fs-btn):hover { color: var(--c-hover-text); background: var(--c-hover-bg); }
+.fs-drawer a[aria-current="page"]:not(.fs-btn) { color: var(--c-active-text); background: var(--c-active-bg); font-weight: 600; }
+.fs-drawer__sub a, .fs-drawer__link { padding: .3rem .5rem; margin-left: -.5rem; border-radius: var(--fs-radius); }
 .fs-drawer__sub { margin-top: .75rem; padding-left: 1rem; border-left: 2px solid var(--fs-brand-accent); display: none; flex-direction: column; gap: .5rem; }
 .fs-drawer__sub.is-open { display: flex; }
 @media (min-width: 1240px) { .fs-drawer, .fs-drawer-overlay { display: none !important; } }
@@ -591,10 +623,10 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-locform::after { bottom: -1rem; right: -1rem; }
 .fs-locform h2, .fs-locform h3 { color: var(--c-heading); font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
 .fs-locform input, .fs-locform select {
-  width: 100%; background: var(--fs-light); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+  width: 100%; background: var(--c-field-bg); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
   padding: .75rem 1rem; color: var(--c-card-text); margin-bottom: 1rem; font-family: inherit; font-size: .95rem;
 }
-.fs-locform input::placeholder { color: var(--fs-brand-strong); }
+.fs-locform input::placeholder { color: var(--c-accent); }
 .fs-locform input:focus, .fs-locform select:focus { outline: none; border-color: var(--c-accent); }
 .fs-contactform {
   border: 1px solid var(--c-card-border); border-radius: var(--fs-radius-lg);
@@ -603,7 +635,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-field { margin-bottom: 1.25rem; }
 .fs-contactform label { display: block; font-weight: 600; margin-bottom: .4rem; color: var(--c-card-heading); }
 .fs-contactform input, .fs-contactform select, .fs-contactform textarea {
-  width: 100%; background: var(--fs-light); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+  width: 100%; background: var(--c-field-bg); border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
   padding: .7rem 1rem; color: var(--c-card-text); font-family: inherit; font-size: .95rem;
 }
 .fs-contactform textarea { min-height: 8rem; resize: vertical; }
@@ -617,10 +649,10 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-locimg__cap { position: absolute; inset: auto 0 0 0; padding: 1.5rem; background: var(--fs-scrim); }
 .fs-locimg__cap h3 { color: var(--fs-light); font-size: 1.5rem; font-weight: 800; }
 .fs-locimg__cap p { color: var(--c-text); }
-.fs-darktesti { background: var(--fs-brand-strong); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; transition: border-color .3s; }
+.fs-darktesti { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 2rem; transition: border-color .3s; }
 .fs-darktesti:hover { border-color: var(--c-accent); }
 .fs-darktesti p { color: var(--c-text); }
-.fs-darktesti .name { color: var(--fs-light); font-weight: 600; }
+.fs-darktesti .name { color: var(--c-heading); font-weight: 600; }
 
 /* Distanz-/Slider-Rechner */
 .fs-distance { max-width: 42rem; margin-inline: auto; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; }
@@ -635,11 +667,11 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 
 /* Location Calculator (dunkler Verlauf) */
 .fs-loccalc { border-top: 1px solid var(--c-border); padding-block: 4rem; }
-.fs-loccalc h2 { font-size: clamp(2rem,5vw,2.5rem); font-weight: 800; color: var(--fs-light); text-align: center; margin-bottom: 1rem; }
+.fs-loccalc h2 { font-size: clamp(2rem,5vw,2.5rem); font-weight: 800; color: var(--c-heading); text-align: center; margin-bottom: 1rem; }
 .fs-loccalc__lead { text-align: center; color: var(--c-text); max-width: 42rem; margin: 0 auto 3rem; }
 .fs-loccalc__grid { max-width: 48rem; margin-inline: auto; display: grid; gap: 2rem; grid-template-columns: 1fr; }
 @media (min-width:768px){ .fs-loccalc__grid { grid-template-columns: repeat(2,1fr);} }
-.fs-loccalc label { display: block; color: var(--fs-light); font-weight: 600; margin-bottom: 1rem; }
+.fs-loccalc label { display: block; color: var(--c-heading); font-weight: 600; margin-bottom: 1rem; }
 .fs-loccalc .fs-pill.is-active { box-shadow: 0 8px 20px -8px rgba(109,13,69,.35); }
 .fs-loccalc__total { background: var(--fs-brand-strong); border: 2px solid var(--fs-brand-accent); border-radius: var(--fs-radius-lg); padding: 2rem; text-align: center; }
 .fs-loccalc__total .big { font-size: 3rem; font-weight: 800; color: var(--c-accent); }
@@ -708,18 +740,13 @@ body.fs-cookie-open .fs-tiktok { display: none; }
    auf Pink wie auf Weiß sichtbar — mindestens einer der beiden Ringe steht
    immer im Kontrast zum Untergrund. */
 :focus-visible {
-  outline: 3px solid var(--fs-light);
+  outline: 3px solid var(--c-focus-ring);
   outline-offset: 2px;
-  box-shadow: 0 0 0 6px var(--fs-brand-deep);
+  box-shadow: 0 0 0 6px var(--c-focus-halo);
   border-radius: 2px;
 }
-/* Auf hellen Flächen die Rollen tauschen: dunkler Kern, heller Saum. */
-.fs-surface-light :focus-visible, .fs-ctx-light :focus-visible,
-.fs-nav.is-scrolled :focus-visible, .fs-cookiebanner :focus-visible,
-.fs-card :focus-visible, .fs-footer :focus-visible {
-  outline-color: var(--fs-brand-deep);
-  box-shadow: 0 0 0 6px var(--fs-light);
-}
+/* Auf hellen Flächen tauschen Kern und Saum - das regeln die Kontextsätze
+   über --c-focus-ring/--c-focus-halo, hier steht keine Einzelfarbe mehr. */
 
 /* ==========================================================================
    UNTERSEITEN: Seitenkopf, Breadcrumbs, Themen-Teaser
@@ -738,9 +765,12 @@ body.fs-cookie-open .fs-tiktok { display: none; }
   max-width: 46rem; margin: 1rem auto 0;
 }
 
-.fs-crumbs { background: var(--c-card); padding: .65rem 0; font-size: .85rem; }
+.fs-crumbs { background: var(--c-bg); color: var(--c-text); padding: .65rem 0; font-size: .85rem; }
+/* Ohne Seitenkopf (Standort-, Erfahrungsseiten) stehen die Brotkrumen ganz
+   oben und rutschen sonst unter die fixierte Leiste (Höhe 5rem). */
+.fs-crumbs:first-child { padding-top: calc(5rem + .65rem); }
 .fs-crumbs ol { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
-.fs-crumbs li { display: flex; align-items: center; gap: .4rem; color: var(--c-heading); }
+.fs-crumbs li { display: flex; align-items: center; gap: .4rem; color: var(--c-text); }
 .fs-crumbs li + li::before { content: "›"; color: var(--c-accent); }
 .fs-crumbs a { color: var(--c-text); }
 .fs-crumbs a:hover { color: var(--c-accent); text-decoration: underline; }
@@ -818,16 +848,8 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* Das Flyout ist immer hell, unabhängig vom Zustand der Leiste. */
 .fs-nav__menu { background: var(--fs-light); border: 1px solid rgba(109,13,69,.15); }
 .fs-nav__menu a { color: var(--c-text); }
-.fs-drawer { background: var(--fs-brand-strong); color: var(--fs-light); }
-.fs-drawer a:not(.fs-btn), .fs-drawer button:not(.fs-btn) { color: var(--fs-light); }
-.fs-drawer a:not(.fs-btn):hover, .fs-drawer button:not(.fs-btn):hover { color: var(--fs-tint); }
+.fs-drawer { color: var(--c-text); }
 
-/* Breadcrumbs */
-.fs-crumbs { background: var(--fs-brand-strong); color: var(--fs-light); }
-.fs-crumbs li, .fs-crumbs [aria-current="page"] span { color: var(--fs-light); }
-.fs-crumbs a { color: var(--fs-light); }
-.fs-crumbs a:hover { color: var(--fs-tint); }
-.fs-crumbs li + li::before { color: var(--fs-tint); }
 
 /* Sterne-Bewertung */
 .fs-stars { color: var(--c-accent); }

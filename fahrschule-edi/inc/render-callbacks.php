@@ -51,7 +51,7 @@ function fs_render_navigation( $a ) {
 						?>
 						<div class="fs-nav__drop">
 							<?php if ( $parent_key ) : ?>
-								<a class="fs-nav__toplink<?php echo $is_active ? ' is-active' : ''; ?>" href="<?php echo esc_url( fs_url( $parent_key ) ); ?>">
+								<a class="fs-nav__toplink<?php echo $is_active ? ' is-active' : ''; ?>" href="<?php echo esc_url( fs_url( $parent_key ) ); ?>"<?php echo $parent_key === $current ? ' aria-current="page"' : ''; ?>>
 									<?php echo esc_html( $group['label'] ); ?> <?php echo fs_icon( 'chevron-down', 16 ); ?>
 								</a>
 							<?php else : ?>
@@ -87,24 +87,27 @@ function fs_render_navigation( $a ) {
 	<div class="fs-drawer" id="fs-drawer" data-fs-drawer>
 		<?php $gi = 0; foreach ( $groups as $gkey => $group ) :
 			if ( empty( $grouped[ $gkey ] ) ) { continue; }
-			$gi++; ?>
+			$gi++;
+			// Gruppe der geöffneten Seite steht im Schubfach gleich offen.
+			$sub_open = ( $group['parent'] && $group['parent'] === $current ) || isset( $grouped[ $gkey ][ $current ] ); ?>
 			<div class="fs-drawer__group">
-				<button type="button" class="fs-drawer__toggle" data-fs-subtoggle aria-expanded="false" aria-controls="fs-sub-<?php echo (int) $gi; ?>">
+				<button type="button" class="fs-drawer__toggle" data-fs-subtoggle aria-expanded="<?php echo $sub_open ? 'true' : 'false'; ?>" aria-controls="fs-sub-<?php echo (int) $gi; ?>">
 					<?php echo esc_html( $group['label'] ); ?> <?php echo fs_icon( 'chevron-down', 16 ); ?>
 				</button>
-				<div class="fs-drawer__sub" id="fs-sub-<?php echo (int) $gi; ?>" data-fs-sub>
-					<?php if ( $group['parent'] ) : ?>
-						<a href="<?php echo esc_url( fs_url( $group['parent'] ) ); ?>">Übersicht</a>
+				<div class="fs-drawer__sub<?php echo $sub_open ? ' is-open' : ''; ?>" id="fs-sub-<?php echo (int) $gi; ?>" data-fs-sub>
+					<?php // "Übersicht" nur, wenn die Elternseite nicht ohnehin als Eintrag der Gruppe erscheint.
+					if ( $group['parent'] && ! isset( $grouped[ $gkey ][ $group['parent'] ] ) ) : ?>
+						<a href="<?php echo esc_url( fs_url( $group['parent'] ) ); ?>"<?php echo $group['parent'] === $current ? ' aria-current="page"' : ''; ?>>Übersicht</a>
 					<?php endif; ?>
 					<?php foreach ( $grouped[ $gkey ] as $k => $pg ) : ?>
-						<a href="<?php echo esc_url( fs_url( $k ) ); ?>"><?php echo esc_html( $pg['menu'] ); ?></a>
+						<a href="<?php echo esc_url( fs_url( $k ) ); ?>"<?php echo $k === $current ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $pg['menu'] ); ?></a>
 					<?php endforeach; ?>
 				</div>
 			</div>
 		<?php endforeach; ?>
 
 		<?php foreach ( $singles as $k => $pg ) : ?>
-			<a class="fs-drawer__link" href="<?php echo esc_url( fs_url( $k ) ); ?>"><?php echo esc_html( $pg['menu'] ); ?></a>
+			<a class="fs-drawer__link" href="<?php echo esc_url( fs_url( $k ) ); ?>"<?php echo $k === $current ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $pg['menu'] ); ?></a>
 		<?php endforeach; ?>
 
 		<div class="fs-drawer__actions">

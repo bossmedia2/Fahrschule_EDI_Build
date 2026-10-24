@@ -1,8 +1,12 @@
 # Farbsystem – Fahrschule edi
 
-Vollständige Übersicht aller Farb-Variablen, der Flächen-Logik und der
-Kontrastnachweise. Ergebnis der Vereinheitlichung: **keine Farbverläufe,
-keine Glaseffekte, 13 Basisfarben, alle Text/Hintergrund-Paare WCAG-AA-konform.**
+Stand Theme 3.0.0 (Oktober 2026). Übersicht der Rohpalette, der
+Kontext-Tokens, der Flächen und der Kontrastnachweise. Grundsatz: **Pink, Rosé
+und Weiß, keine Blautöne, keine Verläufe, alle Text/Hintergrund-Paare
+WCAG-AA-konform – nachgemessen vom Gate, nicht geschätzt.**
+
+Abschnitt 1 und 4–8 dokumentieren die Geschichte des Systems. Den aktuellen
+Stand beschreiben Abschnitt 2 und 3.
 
 ---
 
@@ -32,84 +36,121 @@ Komponente je nach Platzierung unterschiedlich einfärbten.
 
 ---
 
-## 2. Das neue System: Flächen bestimmen die Textfarbe
+## 2. Das System: Flächen bestimmen die Textfarbe
 
-Statt Farben pro Komponente festzulegen, definiert die **Fläche** (Surface)
-ihren Hintergrund *und* die dazu passenden Textfarben. Komponenten erben diese
-über Kontext-Variablen und sind dadurch in jedem Umfeld automatisch lesbar.
+Die **Fläche** legt ihren Hintergrund *und* die passenden Text- und
+Zustandsfarben fest. Komponenten lesen nur die Kontext-Tokens (`--c-*`) und sind
+dadurch in jedem Umfeld lesbar.
 
 ```
-Basis-Palette  (12 feste Farbwerte, --fs-*)
+Rohpalette     (--fs-*, nur in :root definiert)
       ↓
-Flächen        (.fs-surface-brand | -light | -baby)  belegen --c-* neu
+Kontextsätze   (.fs-surface-brand | .fs-surface-light | .fs-ctx-light | .fs-ctx-deep)
+               belegen alle --c-* neu
       ↓
-Komponenten    nutzen ausschließlich --c-*  (nie die Basis-Palette)
+Komponenten    lesen ausschließlich --c-*
       ↓
 Karten         schalten den Kontext erneut um (heller Block auf farbiger Fläche)
 ```
 
-> **Stand nach dem Phase-1-Umbau** (Abschnitt 8): keine dunkle/blaue Fläche
-> mehr. Die ursprüngliche dunkle Fläche (`.fs-surface-dark`, Navy `#0a192f`)
-> ist entfernt; an ihrer Stelle gibt es `.fs-surface-baby` – eine **helle**
-> vierte Fläche in einem sanften Blauton aus dem echten EDI-Logo.
+### Die Regel, an der das System bricht – und ihre Prüfung
 
-### Basis-Palette (`--fs-*`)
+Wer innerhalb eines Kontexts eine Rohfarbe schreibt (`color: var(--fs-light)`),
+setzt Weiß fest, egal wie die Fläche darunter aussieht. Daraus entstanden bis
+Oktober 2026 vier Weiß-auf-Weiß-Fehler. Der letzte war der aktive
+Flyout-Eintrag: Weiß auf `--c-border`, 1,65 : 1, sichtbar nur auf der Seite,
+deren Eintrag aktiv ist.
+
+`bin/checks/tokens.py` läuft im Gate und bricht ab, sobald eine
+Farbdeklaration (`color`, `background`, `border-color`, `outline-color`, `fill`,
+`stroke`) mit `--fs-light`, `--fs-brand*`, `--fs-rose` oder `--fs-tint` in einer
+Regel steht, deren Selektor in einem Kontext-Container liegt. Container sind
+alle Selektoren, die `--c-text` setzen. Die Prüfung leitet sie aus dem
+Stylesheet ab, eine Handliste gibt es nicht.
+
+Erlaubt bleiben:
+- der Hintergrund des Containers selbst, denn er *ist* die Fläche;
+- Custom-Property-Definitionen.
+
+Wer eine neue Farbe braucht, legt ein neues `--c-*`-Token in `:root` an und
+belegt es in **jedem** Kontextsatz.
+
+Ergänzend misst `bin/checks/browser.mjs` gerendert, auf **jeder** Seite:
+- Flyouts offen, mit Leiste oben und gescrollt;
+- den Mauszeiger auf dem aktiven Eintrag;
+- das Schubfach bei 390 px, über den echten Burger geöffnet;
+- `aria-current`: Es steht genau an den Menülinks zur geöffneten Seite.
+
+### Rohpalette (`--fs-*`)
 
 | Variable | Wert | Verwendung |
 |---|---|---|
 | `--fs-brand` | `#d12487` | Signatur-Hintergrund (Kundenvorgabe) |
-| `--fs-brand-accent` | `#e62775` | Akzentflächen, Icons, Rahmen – **nie** kleiner Text |
-| `--fs-brand-strong` | `#b81d5e` | Button-Füllung, Akzenttext auf hellem Grund, zweite dunkle UI-Stufe |
-| `--fs-brand-deep` | `#6d0d45` | Text/Füllung auf hellen Pinkflächen, dunkelste UI-Stufe |
-| `--fs-heading` | `#8a1245` | Überschriften auf hellem Grund |
-| `--fs-light` | `#ffffff` | helle Fläche |
-| `--fs-tint` | `#fdeaf3` | zarte Pinkfläche (Karten auf Hell), Hover-Akzent auf dunklen UI-Elementen |
-| `--fs-baby` | `#deecf6` | sanfte Fläche aus dem Logo-Blau (Abschnitt 8) |
-| `--fs-baby-accent` | `#257fc2` | echtes Logo-Blau – Icons/Rahmen auf Baby-Blau, **nie** kleiner Text |
-| `--fs-on-light` | `#3a3a44` | Fließtext auf Hell und auf Baby-Blau |
+| `--fs-brand-accent` | `#e62775` | Akzent für Flächen, Icons, Rahmen – nie Text |
+| `--fs-brand-strong` | `#b81d5e` | Button-Füllung, Akzenttext auf Hell, dunkle Fläche |
+| `--fs-brand-deep` | `#6d0d45` | tiefe Variante: Text auf Weiß, Fokussaum |
+| `--fs-heading` | `#8a1245` | Überschriften auf Hell |
+| `--fs-light` | `#ffffff` | Karte, Button, Formularfeld, Flyout |
+| `--fs-rose` | `#fbdce9` | helle Sektionsfläche |
+| `--fs-tint` | `#fdeaf3` | zarter Akzent: Karten auf Pink, aktiver Eintrag |
+| `--fs-on-light` | `#3a3a44` | Fließtext auf Hell |
 | `--fs-scrim` | `rgba(0,0,0,.55)` | einheitlicher Abdunkler über Fotos |
 
-### Kontext-Variablen (`--c-*`, 13 Stück)
+### Kontext-Tokens (`--c-*`, 22 Stück)
 
-`--c-bg` · `--c-text` · `--c-heading` · `--c-accent` · `--c-border`
-`--c-card` · `--c-card-text` · `--c-card-heading` · `--c-card-accent` · `--c-card-border`
-`--c-btn-bg` · `--c-btn-text` · `--c-btn-bg-hover`
+| Gruppe | Tokens |
+|---|---|
+| Fläche | `--c-bg` · `--c-text` · `--c-heading` · `--c-accent` · `--c-border` |
+| Karte | `--c-card` · `--c-card-text` · `--c-card-heading` · `--c-card-accent` · `--c-card-border` |
+| Knopf | `--c-btn-bg` · `--c-btn-text` · `--c-btn-bg-hover` |
+| Zustände (neu 3.0.0) | `--c-active-bg` · `--c-active-text` · `--c-hover-bg` · `--c-hover-text` |
+| Fokus (neu 3.0.0) | `--c-focus-ring` · `--c-focus-halo` |
+| Formular (neu 3.0.0) | `--c-field-bg` |
 
-### Die vier Flächen
+### Die Kontextsätze
 
-| Klasse | Hintergrund | Text | Überschrift | Akzent | Karte |
+| Satz | gilt für | Fläche | Text | aktiver Eintrag | Hover |
 |---|---|---|---|---|---|
-| `.fs-surface-brand` | `#d12487` | Weiß | Weiß | Weiß | Weiß, Text `#3a3a44` |
-| `.fs-surface-light` | `#ffffff` | `#3a3a44` | `#8a1245` | `#b81d5e` | `#fdeaf3` |
-| `.fs-surface-baby` | `#deecf6` | `#3a3a44` | `#8a1245` | `#257fc2` | Weiß, Text `#3a3a44` |
+| `:root` / `.fs-surface-brand` | Seitengrund, Pinksektionen, `.fs-loccalc` | `#d12487` | Weiß | `#6d0d45` auf Weiß | Weiß auf `#b81d5e` |
+| `.fs-surface-light` | Rosé-Sektionen, Footer | `#fbdce9` | `#3a3a44` | `#8a1245` auf `#fdeaf3` | Weiß auf `#b81d5e` |
+| `.fs-ctx-light` | Flyout, gescrollte Leiste, Cookie-Banner | Weiß | `#3a3a44` | `#8a1245` auf `#fdeaf3` | Weiß auf `#b81d5e` |
+| `.fs-ctx-deep` | Schubfach, Brotkrumen, CTA-Band, Ergebnisfelder, Instagram, Bewertungskarte | `#b81d5e` | Weiß | `#6d0d45` auf Weiß | Weiß auf heller Schleier |
+| Karten-Sammelregel | `.fs-card`, `.fs-teaser`, Formulare … | `--c-card` | `--c-card-text` | `--c-card-heading` auf `#fdeaf3` | Weiß auf Kartenakzent |
 
-> **Hinweis zur Brand-Fläche:** Auf `#d12487` erreicht selbst reines Weiß nur
-> 4,87 : 1. Damit ist AA erfüllt, aber ohne Reserve – deshalb gibt es dort
-> bewusst **nur eine Textfarbe** (Weiß). Eine „gedämpfte" Stufe wäre nicht mehr
-> konform. Für längere Fließtexte sind die hellen Flächen die bessere Wahl.
+Der aktive Eintrag steht im CSS **nach** dem Hover und behält seine Farben
+deshalb auch unter dem Mauszeiger.
 
 ---
 
-## 3. Kontrastnachweis (aus dem CSS ausgelesen, nicht geschätzt)
+## 3. Kontrastnachweis (aus den Werten berechnet, im Gate gerendert nachgemessen)
 
-| Fläche | Element | Kontrast | AA |
+| Kontext | Element | Paar | Kontrast |
 |---|---|---|---|
-| **brand** | Fließtext / Überschrift / Akzent | 4,87 : 1 | ✓ |
-| brand | Karten-Text | 11,24 : 1 | ✓ |
-| brand | Karten-Überschrift | 9,32 : 1 | ✓ |
-| brand | Button-Label | 11,71 : 1 | ✓ |
-| **light** | Fließtext | 11,24 : 1 | ✓ |
-| light | Überschrift | 9,32 : 1 | ✓ |
-| light | Akzent | 6,22 : 1 | ✓ |
-| light | Karten-Akzent | 5,40 : 1 | ✓ |
-| light | Button-Label | 6,22 : 1 | ✓ |
-| **baby** | Fließtext | 9,33 : 1 | ✓ |
-| baby | Überschrift | 7,74 : 1 | ✓ |
-| baby | Karten-Text | 11,24 : 1 | ✓ |
-| baby | Button-Label | 6,22 : 1 | ✓ |
+| brand | Text, Überschrift | `#ffffff` auf `#d12487` | 4,87 : 1 |
+| brand | Karten-Text | `#3a3a44` auf `#fdeaf3` | 9,76 : 1 |
+| brand | Karten-Überschrift | `#8a1245` auf `#fdeaf3` | 8,10 : 1 |
+| brand | Button-Label, aktiver Eintrag | `#6d0d45` auf `#ffffff` | 11,71 : 1 |
+| brand | Hover-Eintrag | `#ffffff` auf `#b81d5e` | 6,22 : 1 |
+| light (Rosé) | Fließtext | `#3a3a44` auf `#fbdce9` | 8,84 : 1 |
+| light (Rosé) | Überschrift | `#8a1245` auf `#fbdce9` | 7,33 : 1 |
+| light (Rosé) | Akzent | `#b81d5e` auf `#fbdce9` | 4,89 : 1 |
+| light (Rosé) | Karten-Text | `#3a3a44` auf `#ffffff` | 11,24 : 1 |
+| ctx-light | Text | `#3a3a44` auf `#ffffff` | 11,24 : 1 |
+| ctx-light | Überschrift | `#8a1245` auf `#ffffff` | 9,32 : 1 |
+| light, ctx-light | aktiver Eintrag | `#8a1245` auf `#fdeaf3` | 8,10 : 1 |
+| alle hellen | Button-Label, Hover-Eintrag | `#ffffff` auf `#b81d5e` | 6,22 : 1 |
+| ctx-deep | Text | `#ffffff` auf `#b81d5e` | 6,22 : 1 |
+| ctx-deep | Akzent | `#fdeaf3` auf `#b81d5e` | 5,40 : 1 |
+| ctx-deep | aktiver Eintrag | `#6d0d45` auf `#ffffff` | 11,71 : 1 |
+| ctx-deep | Hover-Eintrag | `#ffffff` auf `#c23d75` (Schleier 14 %) | 4,98 : 1 |
+| Karte | Akzent | `#b81d5e` auf `#fdeaf3` | 5,40 : 1 |
 
-**21 von 21 Paaren erfüllen WCAG 2.1 AA (≥ 4,5 : 1).** Details zur
-Baby-Fläche und zur Entfernung der dunklen Fläche: Abschnitt 8.
+> **Brand-Fläche:** Auf `#d12487` erreicht selbst reines Weiß nur 4,87 : 1.
+> Das erfüllt AA, aber ohne Reserve. Deshalb gibt es dort **nur eine
+> Textfarbe**. Für längere Fließtexte sind die Rosé-Flächen die bessere Wahl.
+
+Fokusring (SC 1.4.11, ≥ 3 : 1, vom Gate gemessen): brand 4,87 · light 9,21 ·
+ctx-light 11,71 · ctx-deep 6,22.
 
 ---
 
