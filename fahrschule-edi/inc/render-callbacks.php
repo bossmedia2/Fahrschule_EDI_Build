@@ -307,11 +307,16 @@ function fs_render_locations( $a ) {
 		'heading'  => $f8['headline'],
 		'subtitle' => $f8['paragraphs'][0],
 		'head'     => '1',
+		'kompakt'  => '0',
 	) );
+	// Kompakt (Startseite, Kontakt): ohne Fotos und Absatz, je Karte ein Link
+	// auf die Standortseite. Voll steht F8 nur auf /standorte/.
+	$kompakt = '1' === (string) $d['kompakt'];
+	if ( $kompakt ) { $d['subtitle'] = ''; }
 	$photos = array( 'Duisburg' => 'loc_duisburg', 'Gelsenkirchen' => 'loc_gelsenkirchen', 'Essen' => 'loc_essen' );
 	$hx     = fahrschule_pdf_show_head( $d ) ? 'h3' : 'h2'; // Gliederung ohne Sprung h1 -> h3
 	ob_start(); ?>
-	<section class="fs-section fs-surface-light" data-pdf-section="F8">
+	<section class="fs-section <?php echo $kompakt ? 'fs-surface-brand' : 'fs-surface-light'; ?>" <?php echo $kompakt ? 'data-pdf-teaser' : 'data-pdf-section'; ?>="F8">
 		<div class="fs-container fs-z">
 			<div class="fs-head">
 				<?php if ( fahrschule_pdf_show_head( $d ) ) : ?>
@@ -324,14 +329,20 @@ function fs_render_locations( $a ) {
 				<?php /* Reihenfolge, Adressen, Telefon und E-Mail wie in PDF-Abschnitt F8. */ ?>
 				<?php foreach ( $f8['locations'] as $city => $loc ) : ?>
 				<article class="fs-card fs-card--glass fs-fade-up">
+					<?php if ( ! $kompakt && fs_has_media( $photos[ $city ] ) ) : ?>
 					<div class="fs-loc__img"><img src="<?php echo esc_url( fs_media( $photos[ $city ] ) ); ?>" alt="Fahrschule edi Standort <?php echo esc_attr( $city ); ?> – Außenansicht" width="600" height="400" loading="lazy" decoding="async"></div>
+					<?php endif; ?>
 					<div class="fs-card__body">
 						<<?php echo $hx; ?> class="fs-loc__title"><?php echo esc_html( $city ); ?></<?php echo $hx; ?>>
 						<div class="fs-loc__line"><?php echo fs_icon( 'map-pin', 20 ); ?><span><?php echo esc_html( $loc['street'] ); ?><br><?php echo esc_html( $loc['zip'] ); ?></span></div>
 						<div class="fs-loc__line"><?php echo fs_icon( 'phone', 20 ); ?><span class="fs-visually-hidden">Telefon:</span> <a href="tel:<?php echo esc_attr( fs_tel( $loc['phone'] ) ); ?>"><?php echo esc_html( $loc['phone'] ); ?></a></div>
 						<div class="fs-loc__line"><?php echo fs_icon( 'mail', 20 ); ?><span class="fs-visually-hidden">E-Mail:</span> <a href="mailto:<?php echo esc_attr( $loc['email'] ); ?>"><?php echo esc_html( $loc['email'] ); ?></a></div>
 						<div class="fs-loc__line"><?php echo fs_icon( 'clock', 20 ); ?><span><?php echo fs_nl2br( fahrschule_location_hours_text( $city ) ); ?></span></div>
+						<?php if ( $kompakt ) : ?>
+						<a class="fs-btn fs-btn--primary fs-btn--block fs-mt-6" href="<?php echo esc_url( fs_url( sanitize_key( $city ) ) ); ?>">Zum Standort <?php echo esc_html( $city ); ?></a>
+						<?php else : ?>
 						<a class="fs-btn fs-btn--primary fs-btn--block fs-mt-6" href="<?php echo esc_url( fs_url( 'kontakt' ) ); ?>">Kontakt</a>
+						<?php endif; ?>
 					</div>
 				</article>
 				<?php endforeach; ?>
@@ -449,6 +460,7 @@ function fs_render_testimonials( $a ) {
 		'heading'  => 'Kundenbewertungen',
 		'subtitle' => 'Lesen Sie, was unsere zufriedenen Fahrschüler über uns berichten',
 		'reviews_url' => 'https://www.google.com/search?q=Fahrschule+edi+Duisburg+Bewertungen',
+		'flaeche'  => 'light',
 	) );
 	/*
 	 * Bewusst leer: Hier standen zuvor vier weitere erfundene Namen und
@@ -462,7 +474,7 @@ function fs_render_testimonials( $a ) {
 	$t = array();
 
 	ob_start(); ?>
-	<section class="fs-section fs-surface-light">
+	<section class="fs-section <?php echo 'brand' === $d['flaeche'] ? 'fs-surface-brand' : 'fs-surface-light'; ?>">
 		<div class="fs-container fs-z">
 			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
 				. fs_el( 'h2', $d['heading'] )
@@ -1721,7 +1733,7 @@ function fs_render_page_hero( $a ) {
 	}
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
 	ob_start(); ?>
-	<section class="fs-pagehero fs-surface-brand"<?php echo $pdf_id ? ' data-pdf-section="' . esc_attr( $pdf_id ) . '"' : ''; ?>>
+	<section class="fs-pagehero fs-surface-brand"<?php echo $pdf_id ? ' data-pdf-head="' . esc_attr( $pdf_id ) . '"' : ''; ?>>
 		<div class="fs-container fs-z">
 			<?php if ( $d['eyebrow'] ) : ?><?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?><?php endif; ?>
 			<?php echo fs_el( 'h1', '', '', $heading ); ?>
@@ -1741,21 +1753,25 @@ function fs_render_page_teasers( $a ) {
 		'eyebrow'  => '',
 		'heading'  => '',
 		'subtitle' => '',
+		'seiten'   => array(),
+		'flaeche'  => 'brand',
 	) );
 	/* Seite => Icon. Label, Überschrift und erster Satz kommen wortgleich aus
 	   dem PDF-Abschnitt der jeweiligen Unterseite (kein eigener Teasertext).
 	   Jeder Teaser steht für einen eigenen Abschnitt – daher h2 statt h3. */
-	$teasers = array(
-		'klassen'            => 'award',
-		'leistungen'         => 'check-circle',
-		'berufskraftfahrer'  => 'truck',
-		'asf-fes'            => 'shield',
-		'moderne-ausbildung' => 'zap',
-		'team'               => 'users',
-	);
+	$teasers = array();
+	foreach ( fs_rows( $d['seiten'], 2 ) as $row ) {
+		$teasers[ sanitize_key( $row[0] ) ] = $row[1] ? $row[1] : 'arrow-right';
+	}
 	$map = fahrschule_page_map();
+	$teasers = array_filter( $teasers, static function ( $icon, $key ) use ( $map ) {
+		return ! empty( $map[ $key ]['pdf'] );
+	}, ARRAY_FILTER_USE_BOTH );
+	if ( ! $teasers ) { return ''; }
+	// Ein oder zwei Teaser stehen zentriert statt links im Viererraster.
+	$cols = count( $teasers ) < 3 ? ' fs-teasers--wenige' : ' fs-teasers--3';
 	ob_start(); ?>
-	<section class="fs-section fs-surface-brand">
+	<section class="fs-section <?php echo 'light' === $d['flaeche'] ? 'fs-surface-light' : 'fs-surface-brand'; ?>">
 		<div class="fs-container fs-z">
 			<?php if ( $d['eyebrow'] || $d['heading'] || $d['subtitle'] ) : ?>
 			<div class="fs-head">
@@ -1764,11 +1780,11 @@ function fs_render_page_teasers( $a ) {
 				<?php if ( $d['subtitle'] ) : ?><?php echo fs_el( 'p', $d['subtitle'] ); ?><?php endif; ?>
 			</div>
 			<?php endif; ?>
-			<div class="fs-teasers fs-teasers--3">
+			<div class="fs-teasers<?php echo esc_attr( $cols ); ?>">
 				<?php foreach ( $teasers as $key => $icon ) :
 					$pdf = ( isset( $map[ $key ]['pdf'] ) ) ? fahrschule_pdf( $map[ $key ]['pdf'] ) : array();
 					if ( ! $pdf ) { continue; } ?>
-				<a class="fs-teaser" href="<?php echo esc_url( fs_url( $key ) ); ?>" data-pdf-section="<?php echo esc_attr( $pdf['id'] ); ?>">
+				<a class="fs-teaser" href="<?php echo esc_url( fs_url( $key ) ); ?>" data-pdf-teaser="<?php echo esc_attr( $pdf['id'] ); ?>">
 					<span class="fs-teaser__ico"><?php echo fs_icon( $icon, 24 ); ?></span>
 					<span class="fs-eyebrow"><?php echo esc_html( $pdf['label'] ); ?></span>
 					<h2><?php echo esc_html( $pdf['headline'] ); ?></h2>
@@ -2376,6 +2392,139 @@ function fs_render_karte( $a ) {
 					</div>
 				</div>
 			</div>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
+ * STARTSEITE: Vertrauensleiste, Klassen-Kacheln, Seiten-Anriss
+ * ---------------------------------------------------------------------- */
+function fs_render_vertrauensleiste( $a ) {
+	$d = fs_attrs( $a, array( 'items' => array() ) );
+	$items = fs_rows( $d['items'], 3 );
+	if ( ! $items ) { return ''; }
+	ob_start(); ?>
+	<section class="fs-trustbar fs-ctx-deep" aria-label="Auf einen Blick">
+		<div class="fs-container">
+			<ul class="fs-trustbar__list">
+				<?php foreach ( $items as $it ) :
+					list( $icon, $text, $logo ) = $it;
+					if ( '' === trim( $text ) ) { continue; } ?>
+				<li>
+					<?php if ( '' !== trim( $logo ) && fs_has_media( $logo ) ) : ?>
+						<img src="<?php echo esc_url( fs_media( $logo ) ); ?>" alt="" width="64" height="26" loading="lazy" decoding="async">
+					<?php else : ?>
+						<?php echo fs_icon( $icon ? $icon : 'check-circle', 20 ); ?>
+					<?php endif; ?>
+					<span><?php echo esc_html( $text ); ?></span>
+				</li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/** Vorgabe der Klassen-Kacheln aus PDF F3 (Gruppen und Klassen). */
+function fs_klassen_kacheln_vorgabe() {
+	$ziel = array(
+		'Motorrad' => array( '@motorrad', 'zap' ),
+		'PKW'      => array( '@pkw', 'award' ),
+		'LKW'      => array( '@lkw-bus', 'truck' ),
+		'Bus'      => array( '@lkw-bus', 'users' ),
+	);
+	$rows = array();
+	foreach ( fahrschule_pdf( 'f3' )['groups'] as $gruppe => $klassen ) {
+		$z      = isset( $ziel[ $gruppe ] ) ? $ziel[ $gruppe ] : array( '@klassen', 'award' );
+		$rows[] = array( $gruppe, implode( ', ', $klassen ), $z[0], $z[1] );
+	}
+	return $rows;
+}
+
+function fs_render_klassen_kacheln( $a ) {
+	$d = fs_attrs( $a, array(
+		'eyebrow'    => '',
+		'heading'    => '',
+		'kacheln'    => array(),
+		'btn1_label' => 'Klassen ansehen',
+		'btn2_label' => 'Beratung',
+		'btn2_url'   => '@kontakt',
+	) );
+	$kacheln = fs_rows( $d['kacheln'], 4 );
+	if ( ! $kacheln ) { return ''; }
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light" data-pdf-teaser="F3">
+		<div class="fs-container">
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h2', $d['heading'] ), 'class="fs-head"' ); ?>
+			<div class="fs-kacheln">
+				<?php foreach ( $kacheln as $k ) :
+					list( $titel, $klassen, $link, $icon ) = $k;
+					if ( '' === trim( $titel ) ) { continue; } ?>
+				<article class="fs-card fs-kachel">
+					<div class="fs-card__body">
+						<span class="fs-teaser__ico"><?php echo fs_icon( $icon ? $icon : 'award', 24 ); ?></span>
+						<h3><?php echo esc_html( $titel ); ?></h3>
+						<?php if ( '' !== trim( $klassen ) ) : ?>
+						<p class="fs-kachel__klassen"><?php echo esc_html( implode( ' · ', preg_split( '/\s*,\s*/', trim( $klassen ) ) ) ); ?></p>
+						<?php endif; ?>
+						<div class="fs-kachel__aktionen">
+							<?php if ( fs_has( $d, 'btn1_label' ) && '' !== trim( $link ) ) : ?>
+							<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( fs_link( $link ) ); ?>"><?php echo esc_html( $d['btn1_label'] ); ?><span class="fs-visually-hidden"> – <?php echo esc_html( $titel ); ?></span></a>
+							<?php endif; ?>
+							<?php if ( fs_has( $d, 'btn2_label' ) && fs_has( $d, 'btn2_url' ) ) : ?>
+							<a class="fs-btn fs-btn--outline" href="<?php echo esc_url( fs_link( $d['btn2_url'] ) ); ?>"><?php echo esc_html( $d['btn2_label'] ); ?><span class="fs-visually-hidden"> – <?php echo esc_html( $titel ); ?></span></a>
+							<?php endif; ?>
+						</div>
+					</div>
+				</article>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * Anriss einer Unterseite. Texte wortgleich aus ihrem PDF-Abschnitt (Label,
+ * Überschrift, erster Absatz) bzw. Titel und Einleitung aus der Registry.
+ * Voll steht der Abschnitt nur auf der Unterseite - der Marker
+ * data-pdf-teaser hält das für die Doppelprüfung auseinander.
+ */
+function fs_render_seiten_anriss( $a ) {
+	$d = fs_attrs( $a, array(
+		'seite'     => '',
+		'eyebrow'   => '',
+		'heading'   => '',
+		'text'      => '',
+		'btn_label' => 'Mehr erfahren',
+		'flaeche'   => 'brand',
+	) );
+	$map = fahrschule_page_map();
+	$key = sanitize_key( $d['seite'] );
+	if ( ! isset( $map[ $key ] ) ) {
+		return fs_editor_hint( 'Seiten-Anriss', 'Im Feld „Seite“ einen Schlüssel aus der Seitenliste eintragen, z. B. ueber-uns.' );
+	}
+	$pg  = $map[ $key ];
+	$pdf = ! empty( $pg['pdf'] ) ? fahrschule_pdf( $pg['pdf'] ) : array();
+	if ( '' === $d['eyebrow'] ) { $d['eyebrow'] = $pdf ? $pdf['label'] : ''; }
+	if ( '' === $d['heading'] ) { $d['heading'] = $pdf ? $pdf['headline'] : $pg['title']; }
+	if ( '' === $d['text'] ) { $d['text'] = $pdf ? $pdf['paragraphs'][0] : ( isset( $pg['lead'] ) ? $pg['lead'] : '' ); }
+	$flaeche = 'light' === $d['flaeche'] ? 'fs-surface-light' : 'fs-surface-brand';
+	$marker  = $pdf ? ' data-pdf-teaser="' . esc_attr( $pdf['id'] ) . '"' : '';
+	ob_start(); ?>
+	<section class="fs-section <?php echo esc_attr( $flaeche ); ?>"<?php echo $marker; ?>>
+		<div class="fs-container fs-anriss">
+			<?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?>
+			<?php echo fs_el( 'h2', $d['heading'] ); ?>
+			<?php echo fs_el( 'p', $d['text'] ); ?>
+			<?php if ( fs_has( $d, 'btn_label' ) ) : ?>
+			<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( fs_url( $key ) ); ?>"><?php echo esc_html( $d['btn_label'] ); ?><span class="fs-visually-hidden">: <?php echo esc_html( $pg['menu'] ); ?></span> <?php echo fs_icon( 'arrow-right', 18 ); ?></a>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php

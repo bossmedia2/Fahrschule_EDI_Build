@@ -48,6 +48,10 @@ pages_ok=$(echo "$smoke" | grep -cE "^[a-z0-9-]+ +/.* OK$")
 echo "  ok: $pages_ok Seiten vollständig gerendert"
 check "$rc" "Smoke-Test"
 
+# --- 3b --------------------------------------------------------------------
+step "Startseite nach PDF, keine Doppelung, Stammdaten (NAP) abgeglichen"
+python3 -I "$ROOT/bin/checks/startseite.py" "$ROOT" "$WORK"; check $? "Startseite/NAP"
+
 # --- 4 ---------------------------------------------------------------------
 step "Referenzen: Blöcke, Icons, Assets, CSS-Klassen, Keyframes, Farben"
 python3 -I "$ROOT/bin/checks/refs.py" "$ROOT"; check $? "Referenzprüfung"

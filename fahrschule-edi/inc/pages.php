@@ -75,14 +75,25 @@ function fahrschule_page_map() {
 			'title' => 'Fahrschule edi – Mit Kompetenz zum Führerschein',
 			'menu'  => 'Startseite',
 			'desc'  => 'Fahrschule & Fahrlehrerfachschule edi: seit über 30 Jahren Ihr Partner zum Führerschein im Ruhrgebiet. Standorte in Duisburg, Essen und Gelsenkirchen.',
+			/* Zwölf Abschnitte in der Reihenfolge des Briefings (AP 4). Was eine
+			   eigene Unterseite hat, steht hier als Anriss (Label, Überschrift,
+			   erster Absatz wortgleich aus dem PDF) - voll nur auf der Unterseite.
+			   Pink und Rosé wechseln sich ab. */
 			'blocks' => array(
-				array( 'fahrschule/video-hero', array() ),
-				array( 'fahrschule/about-intro', array() ),
-				array( 'fahrschule/page-teasers', array() ),
-				array( 'fahrschule/locations', array() ),
-				array( 'fahrschule/team-spirit', array() ),
-				array( 'fahrschule/testimonials', array() ),
-				array( 'fahrschule/anmeldung', array() ),
+				array( 'fahrschule/video-hero', array() ),                                                    // 1  F1
+				array( 'fahrschule/vertrauensleiste', array() ),                                              // 2
+				array( 'fahrschule/klassen-kacheln', array() ),                                               // 3  F3
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'ueber-uns', 'flaeche' => 'brand' ) ),          // 4  F2
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'leistungen', 'flaeche' => 'light' ) ),         // 5  F4
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'moderne-ausbildung', 'flaeche' => 'brand' ) ), // 6  F7
+				array( 'fahrschule/page-teasers', array(                                                      // 7  F5 + F6
+					'seiten' => array( array( 'berufskraftfahrer', 'truck' ), array( 'asf-fes', 'shield' ) ), 'flaeche' => 'light',
+				) ),
+				array( 'fahrschule/locations', array( 'kompakt' => '1' ) ),                                   // 8  F8
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'team', 'flaeche' => 'light' ) ),               // 9  F9
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'theorieunterricht', 'flaeche' => 'brand' ) ),  // 10
+				array( 'fahrschule/testimonials', array( 'flaeche' => 'light' ) ),                            // 11
+				array( 'fahrschule/anmeldung', array() ),                                                     // 12 F10
 			),
 		),
 
@@ -438,8 +449,8 @@ function fahrschule_page_map() {
 			'pdf'   => 'f10',
 			'desc'  => 'Melden Sie sich jetzt bei der Fahrschule edi an. Wir beraten Sie persönlich zur passenden Führerscheinklasse.',
 			'blocks' => array(
-				/* Der Link „Fahrschule edi Anmeldung" (F10) führt hier direkt zum Formular darunter. */
-				array( 'fahrschule/anmeldung', array( 'head' => '0', 'btn_url' => '#kontaktformular' ) ),
+				/* F10 steht voll auf der Startseite; hier trägt der Seitenkopf
+				   Label und Überschrift, darunter direkt das Formular. */
 				array( 'fahrschule/contact-form', array(
 					'heading' => 'Jetzt unverbindlich anmelden',
 					'lead'    => 'Füllen Sie das Formular aus – wir melden uns kurzfristig zurück und klären alle weiteren Schritte.',

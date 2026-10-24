@@ -292,3 +292,11 @@ function fs_editor_hint( $title, $text ) {
 	if ( ! fs_is_editor_preview() ) { return ''; }
 	return '<div class="fs-editor-hint"><strong>' . esc_html( $title ) . '</strong> ' . esc_html( $text ) . '</div>';
 }
+
+/** "A, B und C" - Aufzählung für Fließtext. */
+function fs_aufzaehlung( $teile ) {
+	$teile = array_values( array_filter( array_map( 'trim', (array) $teile ), 'strlen' ) );
+	if ( count( $teile ) < 2 ) { return implode( '', $teile ); }
+	$letzt = array_pop( $teile );
+	return implode( ', ', $teile ) . ' und ' . $letzt;
+}

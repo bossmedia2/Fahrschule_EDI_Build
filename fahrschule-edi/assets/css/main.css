@@ -784,6 +784,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 @media (min-width: 640px)  { .fs-teasers { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .fs-teasers { grid-template-columns: repeat(4, 1fr); } }
 @media (min-width: 1024px) { .fs-teasers--3 { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 640px) { .fs-teasers--wenige { grid-template-columns: repeat(auto-fit, minmax(0, 22rem)); justify-content: center; } }
 .fs-teaser {
   display: flex; flex-direction: column; gap: .5rem;
   background: var(--c-card); border: 1px solid var(--c-card-border);
@@ -978,3 +979,28 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-karte__adresse { display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; color: var(--c-card-heading); }
 .fs-karte__aktionen { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: 1.25rem; }
 .fs-karte iframe { width: 100%; min-height: 22rem; border: 0; display: block; }
+
+/* ==========================================================================
+   STARTSEITE: Vertrauensleiste, Klassen-Kacheln, Seiten-Anriss
+   ========================================================================== */
+.fs-trustbar { background: var(--c-bg); color: var(--c-text); padding-block: 1.25rem; }
+.fs-trustbar__list { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem 2.5rem; margin: 0; padding: 0; list-style: none; }
+.fs-trustbar__list li { display: inline-flex; align-items: center; gap: .6rem; font-weight: 600; font-size: .95rem; color: var(--c-text); }
+.fs-trustbar__list svg { color: var(--c-accent); flex-shrink: 0; }
+.fs-trustbar__list img { height: 26px; width: auto; border-radius: 4px; background: var(--c-field-bg); padding: 2px; }
+
+.fs-kacheln { display: grid; gap: 1.25rem; grid-template-columns: 1fr; max-width: 72rem; margin-inline: auto; }
+@media (min-width: 640px) { .fs-kacheln { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .fs-kacheln { grid-template-columns: repeat(4, 1fr); } }
+.fs-kachel .fs-card__body { display: flex; flex-direction: column; gap: .6rem; height: 100%; }
+.fs-kachel h3 { color: var(--c-heading); font-size: 1.35rem; font-weight: 800; margin: 0; }
+.fs-kachel__klassen { color: var(--c-text); font-weight: 600; margin: 0; }
+.fs-kachel__aktionen { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; padding-top: .75rem; }
+
+.fs-anriss { max-width: 48rem; text-align: center; }
+.fs-anriss h2 { color: var(--c-heading); font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 800; margin: .5rem 0 1rem; }
+.fs-anriss p { color: var(--c-text); font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.75rem; }
+
+/* Lange deutsche Komposita („Führerscheinklassen“) brechen auf schmalen
+   Geräten per Silbentrennung statt an den Rand zu stoßen (html lang="de"). */
+h1, h2, h3 { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }

@@ -60,6 +60,7 @@ foreach($cfg as $name=>$c){
     $cols  = max(1, count($f['columns'] ?? []));
     $probe = 'ZZPROBEZZ';
     $row   = array_fill(0, $cols, $probe);
+    if(!empty($f['probe'])){ [$row,$probe] = $f['probe']; }   // Schlüssel-Spalten: gültige Testzeile
     $custom = $R($name,[$key=>[$row]]);
     $empty  = $R($name,[$key=>[]]);
     $base   = $R($name,[]);

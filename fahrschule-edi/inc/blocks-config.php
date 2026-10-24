@@ -59,13 +59,17 @@ function fahrschule_blocks_config() {
 	 * $columns – Spaltenbeschriftungen, in der Reihenfolge der Zeilenwerte
 	 * $rows    – Vorgabezeilen; jede Zeile ist eine Liste in Spaltenreihenfolge
 	 */
-	$rep = function ( $rows, $label, $columns ) {
+	// $probe (nur für die Prüfkette): gültige Testzeile und der Text, der dann
+	// in der Ausgabe stehen muss - für Spalten, die Schlüssel statt freien
+	// Text enthalten (eine Fantasie-Seite würde zu Recht nicht angezeigt).
+	$rep = function ( $rows, $label, $columns, $probe = null ) {
 		return array(
 			'default' => $rows,
 			'label'   => $label,
 			'control' => 'repeater',
 			'columns' => $columns,
 			'options' => array(),
+			'probe'   => $probe,
 		);
 	};
 
@@ -246,6 +250,7 @@ function fahrschule_blocks_config() {
 				'heading'  => $t( $pdf( 'f8' )['headline'], 'Überschrift', 'text' ),
 				'subtitle' => $t( $pdf( 'f8' )['paragraphs'][0], 'Untertitel', 'textarea' ),
 				'head'     => $head,
+				'kompakt'  => $t( '0', 'Darstellung', 'select', array( '0' => 'Voll (Fotos, Absatz, Kontakt-Knopf)', '1' => 'Kompakt (Link zur Standortseite)' ) ),
 			),
 		),
 		'fahrschule/team-spirit' => array(
@@ -281,6 +286,7 @@ function fahrschule_blocks_config() {
 				'eyebrow'  => $t( 'Was unsere Schüler sagen', 'Eyebrow', 'text' ),
 				'heading'  => $t( 'Kundenbewertungen', 'Überschrift', 'text' ),
 				'subtitle' => $t( 'Lesen Sie, was unsere zufriedenen Fahrschüler über uns berichten', 'Untertitel', 'textarea' ),
+				'flaeche'  => $t( 'light', 'Fläche', 'select', array( 'light' => 'Rosé', 'brand' => 'Pink' ) ),
 			),
 		),
 		'fahrschule/instagram-slider' => array(
@@ -603,6 +609,47 @@ function fahrschule_blocks_config() {
 				'suche'     => $t( '1', 'Suchfeld zeigen (1/0)', 'text' ),
 			),
 		),
+		'fahrschule/vertrauensleiste' => array(
+			'title' => 'Vertrauensleiste', 'description' => 'Schmale Leiste mit belegten Fakten unter dem Hero: Zertifizierung, Gründungsjahr, Standorte, Klassen. Jede Zeile: Icon, Text, optional Logo aus der Medien-Registry.',
+			'icon' => 'yes-alt', 'keywords' => array( 'vertrauen', 'fakten', 'zertifikat', 'leiste' ),
+			'render' => 'fs_render_vertrauensleiste', 'pattern' => true, 'page' => 'Startseite',
+			'fields' => array(
+				// Nur Belegtes: CERTQUA-Logo (alte Website), Gründungsjahr und
+				// Standorte aus inc/seo.php, Klassengruppen aus PDF F3.
+				'items' => $rep( array(
+					array( 'award', 'CERTQUA-zertifiziert', 'logo_certqua' ),
+					array( 'clock', 'Seit ' . fahrschule_business_data()['founded'] . ' im Ruhrgebiet', '' ),
+					array( 'map-pin', count( fahrschule_business_data()['locations'] ) . ' Standorte: ' . implode( ', ', array_column( fahrschule_business_data()['locations'], 'city' ) ), '' ),
+					array( 'check-circle', fs_aufzaehlung( array_keys( $pdf( 'f3' )['groups'] ) ), '' ),
+				), 'Eintrag', array( 'Icon', 'Text', 'Logo (Medien-Schlüssel, optional)' ) ),
+			),
+		),
+		'fahrschule/klassen-kacheln' => array(
+			'title' => 'Klassen-Kacheln', 'description' => 'Vier Kacheln nach PDF F3 (Motorrad, PKW, LKW, Bus) mit je zwei Knöpfen: Klassen ansehen und Beratung.',
+			'icon' => 'screenoptions', 'keywords' => array( 'klassen', 'kacheln', 'führerschein', 'startseite' ),
+			'render' => 'fs_render_klassen_kacheln', 'pattern' => true, 'page' => 'Startseite',
+			'fields' => array(
+				'eyebrow'    => $t( $pdf( 'f3' )['label'], 'Eyebrow', 'text' ),
+				'heading'    => $t( $pdf( 'f3' )['headline'], 'Überschrift', 'text' ),
+				'kacheln'    => $rep( fs_klassen_kacheln_vorgabe(), 'Kachel', array( 'Titel', 'Klassen', 'Link', 'Icon' ) ),
+				'btn1_label' => $t( 'Klassen ansehen', 'Button 1 Text (Link der Kachel)', 'text' ),
+				'btn2_label' => $t( 'Beratung', 'Button 2 Text', 'text' ),
+				'btn2_url'   => $t( '@kontakt', 'Button 2 Link', 'text' ),
+			),
+		),
+		'fahrschule/seiten-anriss' => array(
+			'title' => 'Seiten-Anriss', 'description' => 'Anriss einer Unterseite: Label, Überschrift und erster Absatz ihres PDF-Abschnitts (wortgleich) bzw. Titel und Einleitung, dazu ein Link. Leere Textfelder = aus PDF/Registry.',
+			'icon' => 'excerpt-view', 'keywords' => array( 'anriss', 'teaser', 'startseite', 'abschnitt' ),
+			'render' => 'fs_render_seiten_anriss', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Startseite',
+			'fields' => array(
+				'seite'     => $t( 'ueber-uns', 'Seite (Schlüssel, z. B. ueber-uns, team)', 'text' ),
+				'eyebrow'   => $t( '', 'Eyebrow (leer = PDF-Label)', 'text' ),
+				'heading'   => $t( '', 'Überschrift (leer = PDF/Seitentitel)', 'text' ),
+				'text'      => $t( '', 'Text (leer = erster PDF-Absatz/Einleitung)', 'textarea' ),
+				'btn_label' => $t( 'Mehr erfahren', 'Button-Text', 'text' ),
+				'flaeche'   => $t( 'brand', 'Fläche', 'select', array( 'brand' => 'Pink', 'light' => 'Rosé' ) ),
+			),
+		),
 		'fahrschule/page-teasers' => array(
 			'title' => 'Themen-Teaser', 'description' => 'Teaser der Startseite auf die Unterseiten – je Label, Überschrift und erster Satz des PDF-Abschnitts.',
 			'icon' => 'grid-view', 'keywords' => array( 'teaser', 'übersicht', 'startseite' ),
@@ -611,6 +658,11 @@ function fahrschule_blocks_config() {
 				'eyebrow'  => $t( '', 'Eyebrow (optional)', 'text' ),
 				'heading'  => $t( '', 'Überschrift (optional)', 'text' ),
 				'subtitle' => $t( '', 'Untertitel (optional)', 'textarea' ),
+				'seiten'   => $rep( array(
+					array( 'klassen', 'award' ), array( 'leistungen', 'check-circle' ), array( 'berufskraftfahrer', 'truck' ),
+					array( 'asf-fes', 'shield' ), array( 'moderne-ausbildung', 'zap' ), array( 'team', 'users' ),
+				), 'Teaser', array( 'Seite (Schlüssel, z. B. asf-fes)', 'Icon' ), array( array( 'ueber-uns', 'heart' ), '/ueber-uns/' ) ),
+				'flaeche'  => $t( 'brand', 'Fläche', 'select', array( 'brand' => 'Pink', 'light' => 'Rosé' ) ),
 			),
 		),
 		'fahrschule/instructor-training' => array(
