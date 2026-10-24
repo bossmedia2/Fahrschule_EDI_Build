@@ -64,4 +64,4 @@ fi
 echo
 echo "Einspielen: Design -> Themes -> Theme hinzufügen -> Theme hochladen"
 echo "Optional:   edi-integrationen.zip unter Plugins -> Installieren einspielen"
-echo "            (nur nötig für Odoo/Matomo-Anbindung)."
+echo "            (Formulare in Contact Form 7, WP Job Manager, Matomo)."

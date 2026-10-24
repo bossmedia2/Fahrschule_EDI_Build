@@ -68,6 +68,11 @@ function wp_remote_post($u,$a=[]){return ['response'=>['code'=>200],'body'=>''];
 function is_wp_error($t){return false;}
 function wp_get_attachment_url($id){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function wp_get_attachment_image_src($id,$s='full'){return ['/wp-content/uploads/stub-'.$id.'.jpg',1200,800];}
+function post_type_exists($t){ return isset($GLOBALS['__post_types'][$t]); }
+function taxonomy_exists($t){ return isset($GLOBALS['__taxonomies'][$t]); }
+function get_the_terms($p,$tax){ $id=is_object($p)?$p->ID:(int)$p; return $GLOBALS['__terms'][$id][$tax] ?? false; }
+function wp_list_pluck($l,$f){ return array_map(fn($x)=>is_object($x)?$x->$f:$x[$f],$l); }
+if(!function_exists('wpautop')){ function wpautop($s){ $s=trim((string)$s); return $s===''?'':'<p>'.preg_replace('/\n\s*\n/','</p><p>',$s).'</p>'; } }
 function remove_filter($h,$c,$p=10){ if(empty($GLOBALS['__filters'][$h])) return false; foreach($GLOBALS['__filters'][$h] as $i=>$cb){ if($cb===$c){ unset($GLOBALS['__filters'][$h][$i]); return true; } } return false; }
 /* Minimaler $wpdb: prepare() quotet wie das Original, esc_like() maskiert
    die LIKE-Jokerzeichen. Genug, um die erzeugte WHERE-Klausel auszuwerten. */
@@ -80,6 +85,7 @@ $GLOBALS['wpdb']=new FS_Stub_WPDB();
    die LIKE-Klausel auf post_name wird ausgewertet - so prüft der Test auch
    das erzeugte SQL-Muster, nicht nur die PHP-Seite. */
 function get_posts($a=[]){
+  if(($a['post_type']??'')==='job_listing'){ $GLOBALS['__last_query']=$a; return $GLOBALS['__jobs']??[]; }
   $names=$GLOBALS['__attachments']??[]; if(!$names || ($a['post_type']??'')!=='attachment') return [];
   if(($a['suppress_filters']??true)===false){
     $where=apply_filters('posts_where','');
@@ -99,7 +105,7 @@ function get_posts($a=[]){
   return $out;
 }
 function wp_get_attachment_image_url($id,$s='full'){return '/wp-content/uploads/stub-'.$id.'.jpg';}
-function get_post_meta($id,$k='',$single=false){return $single?'':[];}
+function get_post_meta($id,$k='',$single=false){ $v=$GLOBALS['__meta'][$id][$k]??null; return $single?($v??''):($v===null?[]:[$v]); }
 function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($p=null){return false;}
 /* Seitenkontext. Frueher lieferte get_queried_object() immer null - jede
    Seite renderte dadurch, als waere keine geoeffnet: kein aria-current, kein
@@ -112,8 +118,8 @@ function fs_stub_set_page($slug,$title,$front=false,$content=''){
   $GLOBALS['__is_front']=$front;
   $GLOBALS['__queried']=$front?null:new WP_Post(['ID'=>crc32($slug)%100000,'post_name'=>$slug,'post_title'=>$title,'post_content'=>$content]);
 }
-function get_permalink($p=null){ $q=$GLOBALS['__queried']??null; return home_url('/'.($q?$q->post_name.'/':'')); }
-function get_the_title($p=null){ $q=$GLOBALS['__queried']??null; return $q?$q->post_title:'Startseite'; } function get_the_content($m=null){return '';}
+function get_permalink($p=null){ $q=($p instanceof WP_Post)?$p:($GLOBALS['__queried']??null); return home_url('/'.($q?($q->post_type==='job_listing'?'job/':'').$q->post_name.'/':'')); }
+function get_the_title($p=null){ if($p instanceof WP_Post) return $p->post_title; $q=$GLOBALS['__queried']??null; return $q?$q->post_title:'Startseite'; } function get_the_content($m=null){return '';}
 function get_post_field($f,$p=null){return '';}
 function the_content(){} function the_excerpt(){} function the_post(){} function have_posts(){return false;}
 function the_ID(){echo '1';}

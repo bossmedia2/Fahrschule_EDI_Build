@@ -411,12 +411,27 @@ function fahrschule_page_map() {
 			'slug' => 'erfahrungen', 'template' => 'page', 'parent' => 'ueber-uns', 'nav' => 'sub', 'group' => 'ueberuns',
 			'title' => 'Erfahrungen & Bewertungen',
 			'menu'  => 'Erfahrungen',
-			'desc'  => 'Über 10.000 zufriedene Fahrschüler: Bewertungen und Erfahrungsberichte von Absolventen der Fahrschule edi im Ruhrgebiet.',
+			'desc'  => 'Bewertungen und Erfahrungsberichte von Fahrschülerinnen und Fahrschülern der Fahrschule edi im Ruhrgebiet.',
 			'blocks' => array(
 				array( 'fahrschule/testimonials-hero', array() ),
 				array( 'fahrschule/graduates-gallery', array() ),
 				array( 'fahrschule/testimonials-detailed', array() ),
 				array( 'fahrschule/instagram-slider', array() ),
+			),
+		),
+		'karriere' => array(
+			'slug' => 'karriere', 'template' => 'page', 'parent' => 'ueber-uns', 'nav' => 'sub', 'group' => 'ueberuns',
+			'title' => 'Karriere bei der Fahrschule edi',
+			'menu'  => 'Karriere',
+			'lead'  => 'Stellenangebote für Fahrlehrer, Büro und Quereinstieg – und der Weg zur Initiativbewerbung.',
+			'desc'  => 'Karriere bei der Fahrschule edi: offene Stellen in Duisburg, Essen und Gelsenkirchen und Initiativbewerbung.',
+			'blocks' => array(
+				array( 'fahrschule/jobs', array() ),
+				array( 'fahrschule/contact-form', array(
+					'art'     => 'bewerbung',
+					'heading' => 'Initiativ bewerben',
+					'lead'    => 'Keine passende Stelle dabei? Schicken Sie uns Ihre Unterlagen als PDF.',
+				) ),
 			),
 		),
 
@@ -608,6 +623,12 @@ function fs_breadcrumb_items() {
 	$post = is_singular() ? get_queried_object() : null;
 	if ( ! $post instanceof WP_Post ) { return array(); }
 	$items = array();
+	// Stellenanzeigen (WP Job Manager) gehören zur Karriereseite.
+	if ( 'job_listing' === $post->post_type && isset( $map['karriere'] ) ) {
+		for ( $cur = 'karriere'; $cur && isset( $map[ $cur ] ); $cur = $map[ $cur ]['parent'] ) {
+			array_unshift( $items, array( $map[ $cur ]['menu'], fs_url( $cur ) ) );
+		}
+	}
 	foreach ( array_reverse( get_post_ancestors( $post ) ) as $id ) {
 		$items[] = array( get_the_title( $id ), get_permalink( $id ) );
 	}

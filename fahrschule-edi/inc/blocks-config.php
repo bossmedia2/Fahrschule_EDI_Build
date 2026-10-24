@@ -593,6 +593,30 @@ function fahrschule_blocks_config() {
 				'route'   => $t( 'Route bei OpenStreetMap planen', 'Routen-Link (öffnet extern)', 'text' ),
 			),
 		),
+		'fahrschule/jobs' => array(
+			'title' => 'Stellenangebote', 'description' => 'Offene Stellen aus WP Job Manager (besetzte ausgenommen), optional nach Kategorie. Ohne Stelle: Leer-Text und Knopf zur Initiativbewerbung.',
+			'icon' => 'businessperson', 'keywords' => array( 'jobs', 'stellen', 'karriere', 'bewerbung' ),
+			'render' => 'fs_render_jobs', 'pattern' => true, 'page' => 'Karriere',
+			'fields' => array(
+				'heading'   => $t( 'Offene Stellen', 'Überschrift', 'text' ),
+				'intro'     => $t( '', 'Einleitung', 'textarea' ),
+				'anzahl'    => $t( '10', 'Anzahl (höchstens)', 'select', array( '3' => '3', '5' => '5', '10' => '10', '20' => '20', '50' => '50' ) ),
+				'kategorie' => $t( '', 'Kategorie-Filter (leer = alle; fahrlehrer, buero-ansprechpartner, quereinstieg-ausbildung)', 'text' ),
+				'btn_label' => $t( 'Zur Stelle', 'Button-Text je Stelle', 'text' ),
+				// 'zustand' (nur Prüfkette): Feld wirkt nur, wenn keine Stelle offen ist.
+				'leer'      => $t( 'Aktuell ist keine Stelle ausgeschrieben. Initiativbewerbungen sind willkommen.', 'Leer-Text (keine offene Stelle)', 'textarea' ) + array( 'zustand' => 'ohne_daten' ),
+				'initiativ' => $t( 'Initiativ bewerben', 'Text Initiativ-Knopf', 'text' ),
+				'ziel'      => $t( '#kontaktformular', 'Ziel-Link Initiativ-Knopf', 'text' ),
+			),
+		),
+		'fahrschule/stelle' => array(
+			'title' => 'Stelle (Einzelansicht)', 'description' => 'Eckdaten, Beschreibung und Bewerbungsformular einer Stellenanzeige. Steht in der Vorlage single-job_listing.',
+			'icon' => 'id', 'keywords' => array( 'stelle', 'job', 'bewerbung' ),
+			'render' => 'fs_render_stelle', 'pattern' => false, 'may_be_empty' => true, 'page' => 'Vorlagen',
+			'fields' => array(
+				'form_heading' => $t( 'Jetzt bewerben', 'Überschrift Bewerbung', 'text' ),
+			),
+		),
 		'fahrschule/fehlerseite' => array(
 			'title' => 'Fehlerseite (404)', 'description' => 'Hinweis „Seite nicht gefunden“ mit Wegen zurück und Suchfeld. Steht in der Vorlage 404.',
 			'icon' => 'warning', 'keywords' => array( '404', 'fehler', 'nicht gefunden' ),

@@ -8,11 +8,7 @@
  * Schnellanmeldung weiterhin - die Website verliert nie ihre Formulare.
  * Sicher: Nonce-Check + Honeypot + beide Einwilligungen (Datenschutz,
  * Art. 8 DSGVO). Leitet zurück mit ?fs_schnell= bzw. ?fs_kontakt=ok|error.
- *
- * Optionaler Zusatzkanal: ist das companion-plugin edi-integrationen aktiv,
- * geht dieselbe Anfrage zusätzlich als Lead an Odoo (fahrschule_odoo_send_lead()).
- * Ohne das Plugin läuft der Versand unverändert nur über wp_mail() – siehe
- * den function_exists()-Aufruf unten.
+
  *
  * @package Fahrschule_Edi
  */
@@ -87,16 +83,6 @@ function fahrschule_handle_schnellanmeldung() {
 
 	$ok = wp_mail( $to, $subject, $body, $headers );
 
-	// Zusatzkanal CRM: optionales companion-plugin edi-integrationen.
-	if ( function_exists( 'fahrschule_odoo_send_lead' ) ) {
-		fahrschule_odoo_send_lead( 'schnellanmeldung', array(
-			'name'    => $name,
-			'email'   => $email,
-			'telefon' => $phone,
-			'stadt'   => $stadt,
-			'klasse'  => $klasse_text,
-		) );
-	}
 
 	wp_safe_redirect( add_query_arg( 'fs_schnell', $ok ? 'ok' : 'error', $back ) );
 	exit;
@@ -150,16 +136,6 @@ function fahrschule_handle_kontakt() {
 
 	$ok = wp_mail( $to, $subject, $body, $headers );
 
-	// Zusatzkanal CRM: optionales companion-plugin edi-integrationen.
-	if ( function_exists( 'fahrschule_odoo_send_lead' ) ) {
-		fahrschule_odoo_send_lead( 'kontakt', array(
-			'name'    => $name,
-			'email'   => $email,
-			'telefon' => $phone,
-			'stadt'   => $stadt,
-			'message' => $message,
-		) );
-	}
 
 	wp_safe_redirect( add_query_arg( 'fs_kontakt', $ok ? 'ok' : 'error', $back ) );
 	exit;

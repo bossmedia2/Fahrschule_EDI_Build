@@ -67,9 +67,11 @@ foreach($map as $key=>$pg){
   $pages[$key]=$html;
 }
 // Vorlagen ohne Registry-Seite: 404, Suche, Archiv, Einzelbeitrag.
-foreach(['_404'=>'404','_suche'=>'search','_archiv'=>'archive','_beitrag'=>'single','_index'=>'index'] as $key=>$tpl){
+foreach(['_404'=>'404','_suche'=>'search','_archiv'=>'archive','_beitrag'=>'single','_index'=>'index','_stelle'=>'single-job_listing','_stellen'=>'archive-job_listing'] as $key=>$tpl){
   $errs=[]; $html='';
   fs_stub_set_page('beitrag','Beispielbeitrag',false,'<!-- wp:paragraph --><p>Beispieltext.</p><!-- /wp:paragraph -->');
+  // Stellenanzeige: Beitragstyp job_listing, damit Brotkrumen und Stellenblock greifen.
+  if($key==='_stelle'){ $GLOBALS['__queried']->post_type='job_listing'; $GLOBALS['__queried']->post_title='Fahrlehrer (m/w/d)'; $GLOBALS['__queried']->post_content='Beispielbeschreibung der Stelle.'; }
   try{ $html=fs_fse_render_template($GLOBALS['__theme'],$tpl,'<!-- wp:paragraph --><p>Beispieltext.</p><!-- /wp:paragraph -->'); $st=$errs?'!! '.count($errs).' issue(s)':'OK'; }
   catch(\Throwable $e){ $st='FATAL: '.$e->getMessage(); }
   printf("%-24s %-38s %8d  %s\n", $key, 'templates/'.$tpl.'.html', strlen($html), $st);

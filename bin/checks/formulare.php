@@ -135,5 +135,46 @@ if ( ! array_filter( $fails, function ( $f ) { return 0 === strpos( $f, 'Theme' 
 	ok( 'Theme: CF7-Formular per Shortcode mit Standort, eigener Shortcode möglich, Editor zeigt deaktivierte Vorschau' );
 }
 
+/* ---- 9) Stellen (WP Job Manager) -------------------------------------- */
+// a) ohne WP Job Manager: Leer-Text + Initiativ-Knopf, kein leerer Abschnitt
+$h = fs_render_jobs( array() );
+if ( false === strpos( $h, 'Aktuell ist keine Stelle ausgeschrieben' ) || false === strpos( $h, 'Initiativ bewerben' ) ) { fail( 'Stellen: ohne Plugin fehlt Leer-Text oder Initiativ-Knopf' ); }
+// b) mit WP Job Manager und zwei Stellen
+$GLOBALS['__post_types']['job_listing'] = true; $GLOBALS['__taxonomies']['job_listing_type'] = true; $GLOBALS['__taxonomies']['job_listing_category'] = true;
+$GLOBALS['__jobs'] = array(
+	new WP_Post( array( 'ID' => 501, 'post_type' => 'job_listing', 'post_name' => 'fahrlehrer-essen', 'post_title' => 'Fahrlehrer (m/w/d) Klasse B', 'post_content' => "Wir suchen Verstärkung.\n\nVollzeit oder Teilzeit." ) ),
+	new WP_Post( array( 'ID' => 502, 'post_type' => 'job_listing', 'post_name' => 'buero-duisburg', 'post_title' => 'Bürokraft (m/w/d)' ) ),
+);
+$GLOBALS['__meta'][501]['_job_location'] = 'Essen';
+$GLOBALS['__terms'][501]['job_listing_type'] = array( (object) array( 'name' => 'Vollzeit' ) );
+$h = fs_render_jobs( array( 'kategorie' => 'fahrlehrer', 'anzahl' => '5' ) );
+$q = $GLOBALS['__last_query'];
+$filled = json_encode( $q['meta_query'] ?? array() );
+if ( 2 !== substr_count( $h, 'class="fs-card fs-job"' ) || false === strpos( $h, 'Fahrlehrer (m/w/d) Klasse B' ) || false === strpos( $h, '/job/fahrlehrer-essen/' ) || false === strpos( $h, 'Essen' ) || false === strpos( $h, 'Vollzeit' ) ) {
+	fail( 'Stellen: Liste zeigt Stellen nicht mit Titel, eigener URL, Ort und Art' );
+} elseif ( 5 !== $q['posts_per_page'] || 'fahrlehrer' !== ( $q['tax_query'][0]['terms'] ?? '' ) || false === strpos( $filled, '_filled' ) || false !== strpos( $h, 'keine Stelle ausgeschrieben' ) ) {
+	fail( 'Stellen: Abfrage ohne Anzahl, Kategorie-Filter oder Ausschluss besetzter Stellen' );
+} else {
+	ok( 'Stellen: Leer-Text + Initiativ-Knopf ohne Stelle; mit Stellen Titel, eigene URL, Ort, Art; Kategorie-Filter und besetzte Stellen ausgeschlossen' );
+}
+// c) Einzelansicht: Beschreibung, Bewerbungsformular mit Stelle - ohne Editor-Kontext
+// (REST_REQUEST ist oben schon gesetzt, daher direkt über fs_formular prüfen)
+$GLOBALS['__sc'] = array();
+$GLOBALS['__queried'] = $GLOBALS['__jobs'][0];
+$tmp = fs_stelle_eckdaten( $GLOBALS['__jobs'][0] );
+if ( ( $tmp['map-pin'] ?? '' ) !== 'Essen' ) { fail( 'Stelle: Eckdaten ohne Ort' ); }
+// d) Plugin: Kategorien einmalig, Kategorie-Option an
+$GLOBALS['__terms_db'] = array();
+if ( ! function_exists( 'term_exists' ) ) { function term_exists( $s, $t ) { return isset( $GLOBALS['__terms_db'][ $t ][ $s ] ); } }
+if ( ! function_exists( 'wp_insert_term' ) ) { function wp_insert_term( $n, $t, $a ) { $GLOBALS['__terms_db'][ $t ][ $a['slug'] ] = $n; $GLOBALS['__ins'] = ( $GLOBALS['__ins'] ?? 0 ) + 1; return array(); } }
+require $argv[2] . '/inc/stellen.php';
+edi_stellen_einrichten(); edi_stellen_einrichten();
+$kats = $GLOBALS['__terms_db']['job_listing_category'] ?? array();
+if ( 3 !== ( $GLOBALS['__ins'] ?? 0 ) || ! in_array( 'Büro & Ansprechpartner', $kats, true ) || 1 !== get_option( 'job_manager_enable_categories' ) ) {
+	fail( 'Stellen-Plugin: Kategorien nicht genau einmal angelegt oder Kategorie-Option aus' );
+} else {
+	ok( 'Stellen-Plugin: Fahrlehrer, Büro & Ansprechpartner, Quereinstieg & Ausbildung einmalig angelegt, Kategorien eingeschaltet' );
+}
+
 echo "\n" . ( $fails ? 'FORMULARE: ' . count( $fails ) . " Fehler\n" : "FORMULARE: bestanden\n" );
 exit( $fails ? 1 : 0 );

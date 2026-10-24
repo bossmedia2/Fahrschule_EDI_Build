@@ -2601,3 +2601,122 @@ function fs_render_seiten_anriss( $a ) {
 	<?php
 	return ob_get_clean();
 }
+
+/* -------------------------------------------------------------------------
+ * STELLEN (WP Job Manager)
+ * ---------------------------------------------------------------------- */
+
+/** Offene Stellen - ohne WP Job Manager oder ohne Treffer leer. */
+function fs_stellen( $anzahl, $kategorie = '' ) {
+	if ( ! post_type_exists( 'job_listing' ) ) { return array(); }
+	$args = array(
+		'post_type'      => 'job_listing',
+		'post_status'    => 'publish',
+		'posts_per_page' => max( 1, min( 50, (int) $anzahl ) ),
+		'no_found_rows'  => true,
+		// Als besetzt markierte Stellen (WP Job Manager: _filled = 1) nicht zeigen.
+		'meta_query'     => array(
+			'relation' => 'OR',
+			array( 'key' => '_filled', 'value' => '1', 'compare' => '!=' ),
+			array( 'key' => '_filled', 'compare' => 'NOT EXISTS' ),
+		),
+	);
+	if ( '' !== trim( (string) $kategorie ) ) {
+		$args['tax_query'] = array( array( 'taxonomy' => 'job_listing_category', 'field' => 'slug', 'terms' => sanitize_title( $kategorie ) ) );
+	}
+	return get_posts( $args );
+}
+
+/** Eckdaten einer Stelle: Ort, Art, Kategorie (leer entfällt). */
+function fs_stelle_eckdaten( $post ) {
+	$terms = static function ( $tax ) use ( $post ) {
+		$t = taxonomy_exists( $tax ) ? get_the_terms( $post, $tax ) : array();
+		return ( $t && ! is_wp_error( $t ) ) ? implode( ', ', wp_list_pluck( $t, 'name' ) ) : '';
+	};
+	return array_filter( array(
+		'map-pin'   => (string) get_post_meta( $post->ID, '_job_location', true ),
+		'clock'     => $terms( 'job_listing_type' ),
+		'users'     => $terms( 'job_listing_category' ),
+	) );
+}
+
+function fs_render_jobs( $a ) {
+	$d = fs_attrs( $a, array(
+		'heading'   => 'Offene Stellen',
+		'intro'     => '',
+		'anzahl'    => '10',
+		'kategorie' => '',
+		'btn_label' => 'Zur Stelle',
+		'leer'      => 'Aktuell ist keine Stelle ausgeschrieben. Initiativbewerbungen sind willkommen.',
+		'initiativ' => 'Initiativ bewerben',
+		'ziel'      => '#kontaktformular',
+	) );
+	$jobs = fs_stellen( $d['anzahl'], $d['kategorie'] );
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light" data-fs-jobs>
+		<div class="fs-container">
+			<?php echo fs_wrap( 'div', fs_el( 'h2', $d['heading'] ) . fs_el( 'p', $d['intro'] ), 'class="fs-head"' ); ?>
+			<?php if ( $jobs ) : ?>
+			<div class="fs-jobs">
+				<?php foreach ( $jobs as $job ) : ?>
+				<article class="fs-card fs-job">
+					<div class="fs-card__body">
+						<h3><?php echo esc_html( get_the_title( $job ) ); ?></h3>
+						<?php $eck = fs_stelle_eckdaten( $job ); if ( $eck ) : ?>
+						<ul class="fs-job__eck">
+							<?php foreach ( $eck as $icon => $wert ) : ?><li><?php echo fs_icon( $icon, 16 ); ?> <?php echo esc_html( $wert ); ?></li><?php endforeach; ?>
+						</ul>
+						<?php endif; ?>
+						<?php if ( fs_has( $d, 'btn_label' ) ) : ?>
+						<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( get_permalink( $job ) ); ?>"><?php echo esc_html( $d['btn_label'] ); ?><span class="fs-visually-hidden">: <?php echo esc_html( get_the_title( $job ) ); ?></span></a>
+						<?php endif; ?>
+					</div>
+				</article>
+				<?php endforeach; ?>
+			</div>
+			<?php else : ?>
+			<?php echo fs_el( 'p', $d['leer'], 'class="fs-jobs__leer"' ); ?>
+			<?php endif; ?>
+			<?php if ( fs_has( $d, 'initiativ' ) && fs_has( $d, 'ziel' ) ) : ?>
+			<div class="fs-center fs-mt-8"><a class="fs-btn fs-btn--lg <?php echo $jobs ? 'fs-btn--outline' : 'fs-btn--primary'; ?>" href="<?php echo esc_url( fs_link( $d['ziel'] ) ); ?>"><?php echo esc_html( $d['initiativ'] ); ?></a></div>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * Einzelansicht einer Stelle. Die Beschreibung läuft bewusst NICHT durch
+ * the_content: WP Job Manager hängt dort seine eigene Stellenausgabe an,
+ * die neben diesem Block doppelt stünde.
+ */
+function fs_render_stelle( $a ) {
+	$d    = fs_attrs( $a, array( 'form_heading' => 'Jetzt bewerben' ) );
+	$post = fs_context_post();
+	if ( ! $post || 'job_listing' !== $post->post_type ) {
+		return fs_editor_hint( 'Stelle', 'Zeigt hier Eckdaten, Beschreibung und Bewerbungsformular der geöffneten Stellenanzeige.' );
+	}
+	$eck = fs_stelle_eckdaten( $post );
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light">
+		<div class="fs-container fs-stelle">
+			<?php if ( $eck ) : ?>
+			<ul class="fs-job__eck fs-job__eck--gross">
+				<?php foreach ( $eck as $icon => $wert ) : ?><li><?php echo fs_icon( $icon, 18 ); ?> <?php echo esc_html( $wert ); ?></li><?php endforeach; ?>
+			</ul>
+			<?php endif; ?>
+			<div class="fs-rich"><?php echo wp_kses_post( wpautop( (string) $post->post_content ) ); ?></div>
+		</div>
+	</section>
+	<section class="fs-section fs-surface-brand" id="kontaktformular">
+		<div class="fs-container fs-z">
+			<?php echo fs_wrap( 'div', fs_el( 'h2', $d['form_heading'] ), 'class="fs-head"' ); ?>
+			<div class="fs-contactform">
+				<?php echo fs_formular( 'bewerbung', array( 'stelle' => get_the_title( $post ), 'stelle_id' => $post->ID ) ); ?>
+			</div>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}

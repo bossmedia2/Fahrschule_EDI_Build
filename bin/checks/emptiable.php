@@ -7,6 +7,9 @@ $GLOBALS['__theme']=$argv[1];
 require __DIR__.'/wp-stub.php';
 define('FAHRSCHULE_DIR',$argv[1]); define('FAHRSCHULE_URI','/u'); define('FAHRSCHULE_VERSION','1');
 foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config','seo'] as $f) require $argv[1].'/inc/'.$f.'.php';
+// Eine Beispielstelle, damit die Felder des Stellen-Blocks etwas bewirken können.
+$GLOBALS['__post_types']['job_listing']=true;
+$GLOBALS['__jobs']=[new WP_Post(['ID'=>901,'post_type'=>'job_listing','post_name'=>'beispiel','post_title'=>'Beispielstelle'])];
 $cfg=fahrschule_blocks_config();
 foreach($cfg as $n=>$c){ $at=[]; if(!empty($c['fields'])) foreach($c['fields'] as $k=>$fl) $at[$k]=['type'=>((($fl['control']??'')==='repeater')?'array':'string'),'default'=>$fl['default']];
   register_block_type($n,['attributes'=>$at,'render_callback'=>$c['render']]); }
@@ -25,8 +28,13 @@ foreach($cfg as $name=>$c){
     if(($f['control']??'')==='repeater') continue;   // eigener Prüfteil weiter unten
     if(!is_string($f['default']) || trim($f['default'])==='') continue;
     $total++;
+    // Felder, die nur im Leerzustand wirken (Leer-Text der Stellenliste),
+    // werden ohne Beispieldaten geprüft.
+    $jobs = $GLOBALS['__jobs'];
+    if(($f['zustand']??'')==='ohne_daten') $GLOBALS['__jobs']=[];
     $base = $R($name,[]);              // Vorgabe
     $cleared = $R($name,[$key=>'']);   // Feld geleert
+    $GLOBALS['__jobs'] = $jobs;
     // Bewusste Ausnahmen: das Logo faellt auf die Medien-Registry zurueck.
     // Ein Header ohne Logo waere kaputt, nicht leer.
     $erlaubt = ['fahrschule/navigation.logo', 'fahrschule/footer.logo'];

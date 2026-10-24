@@ -237,6 +237,24 @@ function fahrschule_noscript() {
 }
 add_action( 'wp_head', 'fahrschule_noscript', 20 );
 
+/*
+ * Hinweis im Backend, wenn ein Plugin fehlt, das die Website erwartet. Das
+ * Theme läuft ohne sie weiter (Rückfall-Formulare, leere Stellenliste) -
+ * der Hinweis sagt nur, was dann fehlt. Die Plugins liegen nicht im ZIP.
+ */
+function fahrschule_plugin_hinweis() {
+	if ( ! current_user_can( 'activate_plugins' ) ) { return; }
+	$fehlt = array();
+	if ( ! defined( 'WPCF7_VERSION' ) ) { $fehlt[] = 'Contact Form 7 (Formulare)'; }
+	if ( ! defined( 'FLAMINGO_VERSION' ) ) { $fehlt[] = 'Flamingo (Formular-Eingänge speichern)'; }
+	if ( ! class_exists( 'WP_Job_Manager' ) ) { $fehlt[] = 'WP Job Manager (Stellenangebote)'; }
+	if ( ! defined( 'EDI_INTEGRATIONEN_VERSION' ) ) { $fehlt[] = 'edi-integrationen (Begleit-Plugin aus dem Theme-Paket)'; }
+	if ( ! $fehlt ) { return; }
+	echo '<div class="notice notice-warning"><p><strong>Fahrschule edi:</strong> Diese Plugins fehlen oder sind nicht aktiv: '
+		. esc_html( implode( ', ', $fehlt ) ) . '. Ohne sie nutzt die Website eingebaute Formulare bzw. zeigt keine Stellen.</p></div>';
+}
+add_action( 'admin_notices', 'fahrschule_plugin_hinweis' );
+
 function fahrschule_body_class( $classes ) {
 	$classes[] = 'fahrschule-theme';
 	return $classes;

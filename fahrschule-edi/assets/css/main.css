@@ -1021,3 +1021,16 @@ h1, h2, h3 { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
 .wpcf7-form .wpcf7-not-valid-tip { color: var(--c-heading); font-size: .85rem; font-weight: 600; margin-top: .25rem; }
 .wpcf7-form .wpcf7-response-output { margin: 1rem 0 0; padding: .75rem 1rem; border: 2px solid var(--c-accent); border-radius: var(--fs-radius); color: var(--c-text); background: var(--c-field-bg); }
 .wpcf7-form .wpcf7-spinner { margin: .5rem auto 0; display: block; }
+
+/* ==========================================================================
+   STELLEN (WP Job Manager): Liste und Einzelansicht
+   ========================================================================== */
+.fs-jobs { display: grid; gap: 1.25rem; grid-template-columns: 1fr; max-width: 64rem; margin-inline: auto; }
+@media (min-width: 768px) { .fs-jobs { grid-template-columns: repeat(2, 1fr); } }
+.fs-job h3 { color: var(--c-heading); font-size: 1.25rem; font-weight: 800; margin: 0 0 .75rem; }
+.fs-job__eck { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+.fs-job__eck li { display: inline-flex; align-items: center; gap: .35rem; color: var(--c-text); font-size: .9rem; }
+.fs-job__eck svg { color: var(--c-accent); }
+.fs-job__eck--gross li { font-size: 1rem; font-weight: 600; }
+.fs-jobs__leer { text-align: center; color: var(--c-text); font-size: 1.1rem; max-width: 40rem; margin-inline: auto; }
+.fs-stelle { max-width: 48rem; }
