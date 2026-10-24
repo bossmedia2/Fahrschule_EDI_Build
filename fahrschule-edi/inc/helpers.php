@@ -230,7 +230,7 @@ function fahrschule_location_hours_text( $city ) {
 		'duisburg'      => "Mo – Do: 13:00 – 20:00 Uhr\nFr: 13:00 – 18:00 Uhr",
 	);
 	$key = sanitize_key( $city );
-	return isset( $hours[ $key ] ) ? $hours[ $key ] : $hours['duisburg'];
+	return isset( $hours[ $key ] ) ? $hours[ $key ] : '';
 }
 
 /**
@@ -254,4 +254,41 @@ function fs_highlight( $heading, $highlight = '' ) {
 		return $safe; // Wort nicht enthalten – unverändert ausgeben.
 	}
 	return str_replace( $needle, '<span class="fs-accent">' . $needle . '</span>', $safe );
+}
+
+/* -------------------------------------------------------------------------
+ * Kontext für Blöcke, die von der geöffneten Seite abhängen
+ * ---------------------------------------------------------------------- */
+
+/**
+ * Die Seite bzw. der Beitrag, auf dem gerade gerendert wird - im Frontend die
+ * Hauptabfrage, in der Editor-Vorschau (REST-Block-Renderer mit post_id) der
+ * bearbeitete Beitrag. Im Website-Editor (Vorlage ohne Seite) null.
+ *
+ * @return WP_Post|null
+ */
+function fs_context_post() {
+	if ( is_singular() ) {
+		$q = get_queried_object();
+		return $q instanceof WP_Post ? $q : null;
+	}
+	if ( fs_is_editor_preview() && isset( $GLOBALS['post'] ) && $GLOBALS['post'] instanceof WP_Post ) {
+		return $GLOBALS['post'];
+	}
+	return null;
+}
+
+/** Läuft das Rendern für die Vorschau im Block- oder Website-Editor? */
+function fs_is_editor_preview() {
+	return defined( 'REST_REQUEST' ) && REST_REQUEST;
+}
+
+/**
+ * Hinweis an Stelle eines Blocks, der ohne Seitenkontext nichts ausgeben
+ * kann - NUR in der Editor-Vorschau. Im Frontend bleibt es bei '' (der
+ * Abschnitt entfällt), damit nie ein Hinweistext auf der Website landet.
+ */
+function fs_editor_hint( $title, $text ) {
+	if ( ! fs_is_editor_preview() ) { return ''; }
+	return '<div class="fs-editor-hint"><strong>' . esc_html( $title ) . '</strong> ' . esc_html( $text ) . '</div>';
 }

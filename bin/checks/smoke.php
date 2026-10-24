@@ -7,6 +7,7 @@ $GLOBALS['__blocks']=[]; $GLOBALS['__patterns']=[];
 $errs=[];
 set_error_handler(function($no,$str,$f,$l) use (&$errs){ $errs[]=sprintf("[%s] %s  (%s:%d)", $no===E_USER_WARNING?'WARN':'PHP', $str, basename($f), $l); return true; });
 require __DIR__.'/wp-stub.php';
+require __DIR__.'/fse.php';
 define('FAHRSCHULE_VERSION','1.1.0');
 define('FAHRSCHULE_DIR', $GLOBALS['__theme']);
 define('FAHRSCHULE_URI', '/wp-content/themes/fahrschule-edi');
@@ -44,33 +45,34 @@ echo str_repeat("-",74)."\n";
 printf("TOTAL %d blocks, %d bytes HTML, %d with errors, %d empty\n",count($GLOBALS['__blocks']),$total,$failed,$empty);
 file_put_contents($FS_OUT.'/rendered.json', json_encode($outs));
 
-/* ---- Page-level render: build each registry page like page.php does ---- */
+/* ---- Seiten: jede Registry-Seite über ihre Block-Vorlage rendern (bin/checks/fse.php) ---- */
 echo "\n".str_repeat("=",74)."\nPAGE-LEVEL SMOKE TEST (inc/pages.php registry)\n".str_repeat("=",74)."\n";
 $map = fahrschule_page_map();
 $pages=[];
 foreach($map as $key=>$pg){
   $errs=[]; $html='';
-  // Kontext der jeweiligen Seite herstellen - sonst rendert die Navigation
-  // ohne aktiven Eintrag und der Seitenkopf ohne Titel.
-  fs_stub_set_page($pg['slug'], $pg['title'] ?? ($pg['menu'] ?? $key), $key==='home');
+  // Kontext der jeweiligen Seite herstellen (unten im try) - sonst rendert
+  // die Navigation ohne aktiven Eintrag und der Seitenkopf ohne Titel.
   try{
-    $html .= render_block(['blockName'=>'fahrschule/navigation','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
-    $html .= '<!--fs-main-->'; // Grenze Kopf/Inhalt für mkpages.php
-    // Wie page.php: Seitenkopf, ausser die Seite bringt ihren eigenen Hero mit.
-    $first = $pg['blocks'][0][0] ?? '';
-    if($key!=='home' && !in_array($first,['fahrschule/location-hero','fahrschule/testimonials-hero','fahrschule/video-hero'],true)){
-      $html .= render_block(['blockName'=>'fahrschule/page-hero','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
-    }
-    if($key!=='home'){ $html .= fs_breadcrumbs(); }
-    foreach(($pg['blocks']?:[]) as $b){
-      $html .= render_block(['blockName'=>$b[0],'attrs'=>$b[1]??[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
-    }
-    $html .= render_block(['blockName'=>'fahrschule/footer','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
-    $html .= render_block(['blockName'=>'fahrschule/cookie-banner','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
-    $html .= render_block(['blockName'=>'fahrschule/tiktok-badge','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+    // Wie WordPress mit einem Block-Theme: Vorlage aus templates/, Parts aus
+    // parts/, Seiteninhalt = das Markup, das die Seitenanlage schreibt.
+    $content = fahrschule_page_content($key);
+    fs_stub_set_page($pg['slug'], $pg['title'] ?? ($pg['menu'] ?? $key), $key==='home', $content);
+    $tpl  = $pg['template'] ?? 'page';
+    $html = fs_fse_render_template($GLOBALS['__theme'], $tpl, $content);
     $st = $errs ? '!! '.count($errs).' issue(s)' : 'OK';
   } catch(\Throwable $e){ $st='FATAL: '.$e->getMessage(); }
   printf("%-24s %-38s %8d  %s\n", $key, '/'.$pg['slug'], strlen($html), $st);
+  foreach(array_unique($errs) as $e) echo "      -> $e\n";
+  $pages[$key]=$html;
+}
+// Vorlagen ohne Registry-Seite: 404, Suche, Archiv, Einzelbeitrag.
+foreach(['_404'=>'404','_suche'=>'search','_archiv'=>'archive','_beitrag'=>'single','_index'=>'index'] as $key=>$tpl){
+  $errs=[]; $html='';
+  fs_stub_set_page('beitrag','Beispielbeitrag',false,'<!-- wp:paragraph --><p>Beispieltext.</p><!-- /wp:paragraph -->');
+  try{ $html=fs_fse_render_template($GLOBALS['__theme'],$tpl,'<!-- wp:paragraph --><p>Beispieltext.</p><!-- /wp:paragraph -->'); $st=$errs?'!! '.count($errs).' issue(s)':'OK'; }
+  catch(\Throwable $e){ $st='FATAL: '.$e->getMessage(); }
+  printf("%-24s %-38s %8d  %s\n", $key, 'templates/'.$tpl.'.html', strlen($html), $st);
   foreach(array_unique($errs) as $e) echo "      -> $e\n";
   $pages[$key]=$html;
 }

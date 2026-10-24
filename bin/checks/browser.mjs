@@ -41,8 +41,19 @@ const HELPERS = `
 function lum(c){const s=c.map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return .2126*s[0]+.7152*s[1]+.0722*s[2]}
 function parse(c){const m=c.match(/rgba?\\(([^)]+)\\)/);if(!m)return null;const p=m[1].split(',').map(x=>parseFloat(x));return {r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1}}
 function over(f,b){return [f.r*f.a+b.r*(1-f.a), f.g*f.a+b.g*(1-f.a), f.b*f.a+b.b*(1-f.a)]}
-function effBg(el){let e=el;const st=[];while(e&&e!==document.documentElement){const c=parse(getComputedStyle(e).backgroundColor);if(c&&c.a>0)st.push(c);if(c&&c.a===1)break;e=e.parentElement}
-  let base=[255,255,255];for(let i=st.length-1;i>=0;i--)base=over(st[i],{r:base[0],g:base[1],b:base[2]});return base}
+// Hintergrund hinter einem Element. Normalfall: die Vorfahren. Liegt das
+// Element aber in einer FIXIERTEN Ebene ohne eigene deckende Fläche (die
+// Leiste am Seitenanfang), sieht man nicht die Vorfahren, sondern den
+// Seiteninhalt, der gerade darunter liegt - ein Lauf über die Vorfahren
+// mäße dort gegen das Pink des body und übersähe Weiß auf Rosé.
+function effBg(el){let e=el;const st=[];let fixedHost=null;
+  while(e&&e!==document.documentElement){const cs=getComputedStyle(e);const c=parse(cs.backgroundColor);if(c&&c.a>0)st.push(c);if(c&&c.a===1)break;
+    if(cs.position==='fixed'){fixedHost=e;break}e=e.parentElement}
+  let base=[255,255,255];
+  if(fixedHost&&!(st.length&&st[st.length-1].a===1)){const r=el.getBoundingClientRect();
+    const under=document.elementsFromPoint(r.left+r.width/2,r.top+r.height/2).find(x=>!fixedHost.contains(x)&&x!==document.documentElement);
+    if(under) base=effBg(under);}
+  for(let i=st.length-1;i>=0;i--)base=over(st[i],{r:base[0],g:base[1],b:base[2]});return base}
 function ratio(a,b){const L1=lum(a),L2=lum(b);return (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05)}
 // Beschriftungen über Foto + Scrim: die abdunkelnde Ebene ist ein GESCHWISTER,
 // kein Vorfahr - ein Lauf über die Vorfahren würde hier falsch Alarm schlagen.
@@ -117,6 +128,11 @@ function navGeometry(){
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
+/* Harte Regel 6: keine Abrufe bei Dritten ohne Einwilligung. Jede Anfrage,
+ * die nicht auf die lokalen Testseiten geht, wird abgefangen und notiert -
+ * eine Schrift von Google, ein Karten-iframe vor dem Klick, ein Tracker. */
+const fremd = [];
+await page.route(/^(?!file:|data:|blob:|about:)/, r => { fremd.push(r.request().url()); r.abort(); });
 const home = 'file://' + dir + '/home.html';
 
 // ---------- 1) Navigationslayout -----------------------------------------
@@ -201,6 +217,7 @@ const checkAria = async (f, where) => {
   for (const x of r) ariaBad.push(`${f} [${where}] ${x}`);
 };
 let activeSeen = 0, drawerActiveSeen = 0;
+const drawerTab = [];
 /* Nichts Lesbares unter der fixierten Leiste: Brotkrumen und Seitentitel
  * müssen am Seitenanfang unterhalb der Leiste beginnen. Auf Seiten ohne
  * Seitenkopf lagen die Brotkrumen bis Oktober 2026 verdeckt darunter. */
@@ -266,6 +283,10 @@ for (const f of pages) {
     await collect('schmal, Leiste gescrollt');
     await page.evaluate(() => document.querySelector('.fs-nav')?.classList.remove('is-scrolled'));
   }
+  // Geschlossenes Schubfach: nichts darin darf per Tab erreichbar sein.
+  const tabbar = await page.evaluate(() => [...document.querySelectorAll('.fs-drawer a, .fs-drawer button')]
+    .filter(e => getComputedStyle(e).visibility !== 'hidden' && e.getClientRects().length).length);
+  if (tabbar) drawerTab.push(`${f}: ${tabbar} Links im geschlossenen Schubfach per Tab erreichbar`);
   // Über den echten Burger öffnen - so wie ein Mensch es tut.
   await page.click('[data-fs-burger]');
   await page.waitForTimeout(60);
@@ -288,6 +309,8 @@ for (const f of pages) {
 }
 if (covered.length) for (const x of covered) fail('verdeckt von der Leiste: ' + x);
 else ok(`Brotkrumen und Seitentitel auf ${pages.length} Seiten unterhalb der fixierten Leiste (390 und 1440px)`);
+if (drawerTab.length) for (const x of drawerTab.slice(0, 5)) fail(x);
+else ok(`geschlossenes Schubfach auf ${pages.length} Seiten nicht per Tab erreichbar`);
 if (!drawerActiveSeen) fail('kein einziger aktiver Eintrag im Schubfach gefunden');
 else ok(`Schubfach: ${drawerActiveSeen} Seiten mit sichtbarem aktivem Eintrag, Flyout: ${activeSeen} Zustände mit aktivem Eintrag gemessen`);
 await page.setViewportSize({ width: 1440, height: 1000 });
@@ -359,6 +382,25 @@ const fr = await page.evaluate(new Function(HELPERS + `
 for (const f of fr) {
   if (f.r < 3) fail(`Fokusring auf .${f.surf} nur ${f.r}:1 (nötig 3:1) – ${f.outline} / ${f.shadow} auf ${f.bg}`);
   else ok(`Fokusring auf .${f.surf}: ${f.r}:1`);
+}
+
+// ---------- 5) Keine Drittanbieter-Abrufe ohne Einwilligung -------------
+console.log('\nDrittanbieter (harte Regel 6)');
+if (fremd.length) for (const u of [...new Set(fremd)].slice(0, 10)) fail('Abruf ohne Einwilligung: ' + u);
+else ok(`keine Anfrage an Dritte auf ${pages.length} Seiten in allen geprüften Zuständen`);
+// Gegenstück: Die Karte lädt auf Klick - und erst dann.
+const karteSeite = pages.find(f => f === 'duisburg.html');
+if (karteSeite) {
+  fremd.length = 0;
+  await page.goto('file://' + dir + '/' + karteSeite);
+  await page.addStyleTag({ content: NOANIM });
+  const vor = fremd.length;
+  await page.click('[data-fs-karte-load]');
+  await page.waitForTimeout(200);
+  const nach = fremd.filter(u => u.startsWith('https://www.openstreetmap.org/export/embed.html')).length;
+  if (vor !== 0) fail(`Karte: ${vor} Abruf(e) schon vor dem Klick`);
+  else if (nach !== 1) fail(`Karte: nach dem Klick ${nach} statt 1 Abruf bei OpenStreetMap`);
+  else ok('Karte: kein Abruf vor dem Klick, genau einer danach (OpenStreetMap)');
 }
 
 await browser.close();

@@ -226,7 +226,8 @@ function fahrschule_pdf_first_sentence( $text ) {
  */
 function fahrschule_pdf_location( $city ) {
 	$locations = fahrschule_pdf( 'f8' )['locations'];
-	return isset( $locations[ $city ] ) ? $locations[ $city ] : $locations['Duisburg'];
+	// Unbekannter Ort: nichts - nie still die Adresse eines anderen Standorts.
+	return isset( $locations[ $city ] ) ? $locations[ $city ] : array();
 }
 
 /**

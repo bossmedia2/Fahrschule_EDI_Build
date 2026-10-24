@@ -1,0 +1,28 @@
+/**
+ * Nur im Block- und Website-Editor (add_editor_style in functions.php).
+ *
+ * Die Vorschau darf nie von Frontend-JavaScript abhängen: Was im Frontend
+ * frontend.js einblendet, ist hier von Anfang an sichtbar. Fixierte und
+ * schwebende Elemente werden in den Fluss geholt, damit sie im Editor-Rahmen
+ * nicht über dem Inhalt liegen, den man gerade bearbeitet.
+ */
+.fs-fade-up { opacity: 1 !important; animation: none !important; transform: none !important; }
+
+/* Gehören zur Website, nicht in die Bearbeitung. */
+.fs-cookiebanner,
+.fs-tiktok,
+.fs-drawer,
+.fs-drawer-overlay { display: none !important; }
+
+/* Die Leiste steht im Editor im Fluss statt fixiert über dem Inhalt. */
+.fs-nav { position: relative !important; }
+.fs-crumbs:first-child { padding-top: .65rem; }
+
+/* Hinweis anstelle eines Blocks, der ohne geöffnete Seite nichts zeigen
+   kann (fs_editor_hint). Erscheint nie im Frontend. */
+.fs-editor-hint {
+  margin: 1rem auto; max-width: 64rem; padding: 1rem 1.25rem;
+  border: 2px dashed var(--c-border); border-radius: var(--fs-radius);
+  color: var(--c-text); font-size: .95rem;
+}
+.fs-editor-hint strong { color: var(--c-heading); margin-right: .35rem; }

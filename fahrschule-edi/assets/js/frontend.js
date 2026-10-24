@@ -305,6 +305,27 @@
 			fsOpenCookieBanner();
 		} );
 
+		/* ---------- Karte (Zwei-Klick) ----------
+		 * Das iframe entsteht erst hier - im HTML steht nur die Adresse im
+		 * data-Attribut. Bei Einwilligung „Alle akzeptieren" sofort, sonst
+		 * auf Klick. Vorher geht keine Anfrage an OpenStreetMap. */
+		function fsLoadKarte( box ) {
+			if ( box.querySelector( 'iframe' ) ) { return; }
+			var f = document.createElement( 'iframe' );
+			f.src = box.getAttribute( 'data-src' );
+			f.title = box.getAttribute( 'data-title' ) || 'Karte';
+			f.loading = 'lazy';
+			f.referrerPolicy = 'no-referrer';
+			box.innerHTML = '';
+			box.appendChild( f );
+			box.classList.add( 'is-loaded' );
+		}
+		var consentAll = /(?:^|;\s*)fs_consent=all(?:;|$)/.test( document.cookie );
+		document.querySelectorAll( '[data-fs-karte]' ).forEach( function ( box ) {
+			if ( consentAll ) { fsLoadKarte( box ); return; }
+			on( box.querySelector( '[data-fs-karte-load]' ), 'click', function () { fsLoadKarte( box ); } );
+		} );
+
 		/* ---------- Fahrlehrer-Finder ----------
 		 * Ohne JavaScript bleiben schlicht alle Karten sichtbar - die
 		 * Filterleiste ist dann wirkungslos, aber nichts ist unerreichbar. */
@@ -330,6 +351,10 @@
 						&& ( ! vw || '1' === c.getAttribute( 'data-weiblich' ) );
 					c.hidden = ! ok;
 					if ( ok ) { sichtbar++; }
+				} );
+				// Gruppe ohne sichtbare Person: Überschrift mit ausblenden.
+				[].slice.call( grid.querySelectorAll( '[data-fs-team-group]' ) ).forEach( function ( g ) {
+					g.hidden = ! g.querySelector( '.fs-teamcard:not([hidden])' );
 				} );
 				if ( leer ) { leer.hidden = sichtbar > 0; }
 			}

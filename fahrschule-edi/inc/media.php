@@ -72,16 +72,10 @@ function fahrschule_media_map() {
 		'grad_jung'     => 'edi-galerie-absolventen-002',
 		'grad_motorrad' => 'edi-galerie-absolventen-003',
 
-		/* --- Team: noch keine Fotos vorhanden ---------------------------------
-		 * Das PDF (Abschnitt F9) sieht je Gruppe Fotos vor: Büro &
-		 * Ansprechpartner, Geschäftsleitung, Dozenten & Ausbilder – jeweils
-		 * für Essen, Gelsenkirchen und Duisburg. Solange hier nichts
-		 * hinterlegt ist, zeigt der Team-Block die Initialen der Gruppe –
-		 * bewusst, statt ein fremdes Stockfoto.
-		 * ------------------------------------------------------------------ */
-		'team_buero'             => '',
-		'team_geschaeftsleitung' => '',
-		'team_dozenten'          => '',
+		/* --- Team: kein Gruppenfoto je PDF-Gruppe -------------------------
+		 * Jede Person hält ihr eigenes Foto (edi-team-<vorname>, Zweitfoto
+		 * -b), gepflegt im Fahrlehrer-Finder. Die PDF-Gruppen (F9) sind dort
+		 * eine Spalte - bis 2.x standen hier drei leere Gruppenfoto-Schlüssel. */
 
 		/* --- Instagram-Beiträge: bewusst leer -----------------------------
 		 * Hier standen sechs Unsplash-Stockfotos ohne Bezug zur Fahrschule.

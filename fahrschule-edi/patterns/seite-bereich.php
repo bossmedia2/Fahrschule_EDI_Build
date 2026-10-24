@@ -5,9 +5,8 @@
  * Categories: fahrschule
  * Block Types: core/post-content
  * Post Types: page
- * Description: Startpunkt für einen Bereich wie PKW oder Motorrad: Einleitung, Klassen-Übersicht und Handlungsaufruf.
+ * Description: Inhalt einer Bereichsseite (PKW, Motorrad …). Klassen-Kacheln und Handlungsaufruf liefert die Vorlage „Bereich“.
  */
 ?>
-<!-- wp:fahrschule/bereich-uebersicht {"eyebrow":"Führerscheinklassen","heading":"Klassen in diesem Bereich","subtitle":"Wählen Sie die Klasse, die zu Ihnen passt."} /-->
 <!-- wp:fahrschule/services {"eyebrow":"Leistungen","heading":"Was Sie bei uns erwartet"} /-->
-<!-- wp:fahrschule/cta /-->
+

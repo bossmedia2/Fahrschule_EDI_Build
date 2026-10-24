@@ -106,6 +106,93 @@
           "text": "#ffffff"
         }
       }
+    },
+    "spacing": {
+      "blockGap": "0"
     }
-  }
+  },
+  "templateParts": [
+    {
+      "name": "header",
+      "title": "Kopfbereich (Navigation)",
+      "area": "header"
+    },
+    {
+      "name": "footer",
+      "title": "Fußbereich (Footer, Cookie-Banner, TikTok)",
+      "area": "footer"
+    }
+  ],
+  "customTemplates": [
+    {
+      "name": "page-uebersicht",
+      "title": "Übersicht / Landingpage",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-bereich",
+      "title": "Bereich (mit Klassen-Kacheln)",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-kurs",
+      "title": "Kurs / Führerscheinklasse",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-beruf",
+      "title": "Beruf & Weiterbildung",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-standort",
+      "title": "Standort",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-team",
+      "title": "Team",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-kontakt",
+      "title": "Kontakt / Anmeldung",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-faq",
+      "title": "FAQ",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-theorie",
+      "title": "Theorieunterricht",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "page-recht",
+      "title": "Rechtliches (Impressum, Datenschutz)",
+      "postTypes": [
+        "page"
+      ]
+    }
+  ]
 }

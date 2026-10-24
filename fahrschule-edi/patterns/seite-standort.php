@@ -5,10 +5,10 @@
  * Categories: fahrschule
  * Block Types: core/post-content
  * Post Types: page
- * Description: Aufbau einer Standortseite: Hero mit Schnellanmeldung, Beschreibung, Preisrechner.
+ * Description: Inhalt einer Standortseite: Hero (Adresse und Zeiten aus den Stammdaten der Stadt), Beschreibung, Preisrechner. Den Handlungsaufruf liefert die Vorlage „Standort“.
  */
 ?>
 <!-- wp:fahrschule/location-hero {"city":"Duisburg"} /-->
 <!-- wp:fahrschule/location-content {"city":"Duisburg"} /-->
 <!-- wp:fahrschule/location-calculator /-->
-<!-- wp:fahrschule/cta /-->
+

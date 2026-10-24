@@ -333,6 +333,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-drawer__link { font-weight: 600; }
 .fs-drawer__actions { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: .75rem; }
 .fs-drawer.is-open { transform: none; }
+/* Geschlossen ist das Schubfach nur aus dem Bild geschoben. Ohne visibility
+   blieben seine Links per Tab erreichbar (unsichtbarer Fokus) und sein
+   Schatten fiele als dunkler Streifen an den rechten Rand. */
+.fs-drawer:not(.is-open) { visibility: hidden; box-shadow: none; transition: transform .3s ease, visibility 0s .3s; }
 .fs-drawer a:not(.fs-btn), .fs-drawer button:not(.fs-btn) { color: var(--c-text); font-size: 1.05rem; background: none; border: 0; text-align: left; display: inline-flex; align-items: center; gap: .4rem; }
 .fs-drawer a:not(.fs-btn):hover, .fs-drawer button:not(.fs-btn):hover { color: var(--c-hover-text); background: var(--c-hover-bg); }
 .fs-drawer a[aria-current="page"]:not(.fs-btn) { color: var(--c-active-text); background: var(--c-active-bg); font-weight: 600; }
@@ -602,7 +606,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
    Streifen unter der Initiale stehen. */
 .fs-teamcard__avatar { width: 100%; height: 100%; background: var(--fs-brand-strong); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; font-weight: 800; color: var(--fs-light); }
 .fs-teamcard__body { padding: 1.5rem; }
-.fs-teamcard__body h2, .fs-teamcard__body h3 { color: var(--c-heading); font-weight: 700; font-size: 1.125rem; }
+.fs-teamcard__body h2, .fs-teamcard__body h3, .fs-teamcard__body h4 { color: var(--c-heading); font-weight: 700; font-size: 1.125rem; }
 .fs-teamcard__body p { color: var(--c-text); font-size: .875rem; }
 .fs-teamcard__names { margin-top: .75rem; display: grid; gap: .25rem; }
 .fs-teamcard__names li { color: var(--c-heading); font-weight: 600; font-size: .9rem; }
@@ -769,7 +773,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* Ohne Seitenkopf (Standort-, Erfahrungsseiten) stehen die Brotkrumen ganz
    oben und rutschen sonst unter die fixierte Leiste (Höhe 5rem). */
 .fs-crumbs:first-child { padding-top: calc(5rem + .65rem); }
-.fs-crumbs ol { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.fs-crumbs ol { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: 0; padding: 0; list-style: none; }
 .fs-crumbs li { display: flex; align-items: center; gap: .4rem; color: var(--c-text); }
 .fs-crumbs li + li::before { content: "›"; color: var(--c-accent); }
 .fs-crumbs a { color: var(--c-text); }
@@ -916,3 +920,61 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-lightbox__nav--next { right: 1.5rem; }
 .fs-lightbox__nav { top: 50%; transform: translateY(-50%); }
 .fs-lightbox__close:hover, .fs-lightbox__nav:hover { background: var(--fs-brand); }
+
+/* ==========================================================================
+   KURS: Textkarten + Seitenleiste „Kurzdaten“ (Vorlage page-kurs)
+   ========================================================================== */
+.fs-kurs { display: grid; gap: 1.5rem; max-width: 64rem; margin-inline: auto; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 1024px) { .fs-kurs { grid-template-columns: 2fr 1fr; } .fs-kurs--solo { grid-template-columns: minmax(0, 28rem); justify-content: center; } }
+.fs-kurs__main { display: grid; gap: 1.5rem; }
+.fs-kurs__hinweis { color: var(--c-text); }
+.fs-kurs__facts { border: 1px solid var(--c-card-border); border-radius: var(--fs-radius-lg); }
+@media (min-width: 1024px) { .fs-kurs__facts { position: sticky; top: 6rem; } }
+.fs-kurs__facts h3 { margin-bottom: 1rem; }
+.fs-kurs__facts dl { margin: 0; display: grid; gap: .25rem; }
+.fs-kurs__facts dt { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--c-accent); margin-top: .75rem; }
+.fs-kurs__facts dt:first-child { margin-top: 0; }
+.fs-kurs__facts dd { margin: 0; color: var(--c-text); font-weight: 600; }
+.fs-kurs__preislink { display: inline-flex; align-items: center; gap: .35rem; margin-top: 1.25rem; font-weight: 600; color: var(--c-accent); text-decoration: underline; text-underline-offset: 3px; }
+.fs-kurs__preislink:hover { color: var(--c-heading); }
+
+/* Fehlerseite (Vorlage 404): steht direkt unter der fixierten Leiste. */
+.fs-fehlerseite { padding-top: calc(5rem + 4rem); }
+.fs-fehlerseite h1 { font-size: clamp(2.5rem, 7vw, 4rem); font-weight: 800; margin: .75rem 0 1rem; color: var(--c-heading); }
+
+/* ==========================================================================
+   BLOCK-THEME-RAHMEN UND SUCHE
+   ========================================================================== */
+/* WordPress umschließt die Vorlage mit .wp-site-blocks. Kurze Seiten (Suche
+   ohne Treffer, 404) sollen den Footer trotzdem unten haben. */
+.wp-site-blocks { display: flex; flex-direction: column; min-height: 100vh; }
+.wp-site-blocks > main { flex: 1 0 auto; }
+
+/* Suchfeld: Kern-Block (Suche/Archiv) und klassisches Formular (404). */
+.search-form, .wp-block-search__inside-wrapper { display: flex; gap: .5rem; max-width: 32rem; margin: 0 auto 2rem; }
+.search-form label { flex: 1; }
+.search-field, .wp-block-search__input {
+  width: 100%; padding: .7rem 1rem; font: inherit;
+  background: var(--c-field-bg); color: var(--c-card-text);
+  border: 1px solid var(--c-card-border); border-radius: var(--fs-radius);
+}
+.search-submit, .wp-block-search__button {
+  padding: .7rem 1.25rem; font: inherit; font-weight: 600; cursor: pointer;
+  background: var(--c-btn-bg); color: var(--c-btn-text); border: 0; border-radius: var(--fs-radius);
+}
+.search-submit:hover, .wp-block-search__button:hover { background: var(--c-btn-bg-hover); }
+.screen-reader-text, .wp-block-search__label.screen-reader-text {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Fahrlehrer-Finder: Personen nach den drei PDF-Gruppen (F9). */
+.fs-teamgroup + .fs-teamgroup { margin-top: 3rem; }
+.fs-teamgroup__title { color: var(--c-heading); font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem; }
+
+/* Karte (Zwei-Klick): Platzhalter in Kartengröße, danach das iframe. */
+.fs-karte { max-width: 64rem; margin-inline: auto; min-height: 22rem; border-radius: var(--fs-radius-lg); overflow: hidden; border: 1px solid var(--c-card-border); background: var(--c-card); display: flex; }
+.fs-karte__platzhalter { margin: auto; padding: 2rem; text-align: center; max-width: 36rem; color: var(--c-card-text); }
+.fs-karte__adresse { display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; color: var(--c-card-heading); }
+.fs-karte__aktionen { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: 1.25rem; }
+.fs-karte iframe { width: 100%; min-height: 22rem; border: 0; display: block; }

@@ -24,6 +24,28 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 function fahrschule_blocks_config() {
 
+	/* Fahrlehrer-Team (Bild-Briefing Oktober 2026): Name, Foto-Slug,
+	   Standort, Klassen, Rolle, PDF-Gruppe. Vorgabe des Fahrlehrer-Finders. */
+	$fs_lehrer = array(
+		array( 'Aslan', 'aslan', 'Gelsenkirchen', 'A, B', 'Leiter & Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Yalcin', 'yalcin', 'Duisburg', 'A, B, BE', 'Leiter & Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Adis', 'adis', 'Gelsenkirchen', 'A', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Ali Ihsan', 'ali-ihsan', 'Gelsenkirchen', 'B, BE', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Baris', 'baris', 'Gelsenkirchen', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Birol', 'birol', 'Gelsenkirchen', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Fergan', 'fergan', 'Gelsenkirchen', 'A, B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Nebahat', 'nebahat', 'Gelsenkirchen', 'B', 'Fahrlehrerin', 'Dozenten & Ausbilder' ),
+		array( 'Ramazan', 'ramazan', 'Gelsenkirchen', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Sakit', 'sakit', 'Gelsenkirchen', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Ömer', 'oemer', 'Duisburg', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Rahel', 'rahel', 'Duisburg', 'B, BE', 'Fahrlehrerin', 'Dozenten & Ausbilder' ),
+		array( 'Tammam', 'tammam', 'Duisburg', 'B, BE', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Devran', 'devran', 'Essen', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Mustafa', 'mustafa', 'Essen', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Abdullah', 'abdullah', '', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+		array( 'Mesut', 'mesut', '', 'B', 'Fahrlehrer', 'Dozenten & Ausbilder' ),
+	);
+
 	$t  = function ( $default, $label, $control = 'text', $options = array() ) {
 		return array( 'default' => $default, 'label' => $label, 'control' => $control, 'options' => $options );
 	};
@@ -68,15 +90,20 @@ function fahrschule_blocks_config() {
 			),
 		),
 		'fahrschule/kurs-details' => array(
-			'title' => 'Kurs: Eckdaten & Inhalte', 'description' => 'Mindestalter, Dauer, Richtpreis sowie Voraussetzungen, Ablauf und Förderung. Jeder Slot ist einzeln leerbar.',
+			'title' => 'Kurs: Eckdaten & Inhalte', 'description' => 'Textkarten (Voraussetzungen, Ablauf, Förderung) mit Seitenleiste „Kurzdaten“: Mindestalter, Theorie, Pflichtfahrten, Fahrstunden, Prüfung, Richtpreis und Verweis auf die Preisseite. Jeder Slot ist einzeln leerbar.',
 			'icon' => 'id-alt', 'keywords' => array( 'kurs', 'klasse', 'details', 'voraussetzungen' ),
 			'render' => 'fs_render_kurs_details', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Kurs',
 			'fields' => array(
 				'eyebrow'         => $t( '', 'Eyebrow', 'text' ),
 				'heading'         => $t( 'Das Wichtigste auf einen Blick', 'Überschrift', 'text' ),
 				'alter'           => $t( '', 'Mindestalter', 'text' ),
-				'dauer'           => $t( '', 'Ausbildungsdauer', 'text' ),
+				'theorie'         => $t( '', 'Theorieunterricht', 'text' ),
+				'pflichtfahrten'  => $t( '', 'Pflichtfahrten', 'text' ),
+				'dauer'           => $t( '', 'Fahrstunden (Richtwert)', 'text' ),
+				'pruefung'        => $t( '', 'Prüfung', 'text' ),
 				'preis'           => $t( '', 'Richtpreis', 'text' ),
+				'preis_link'      => $t( '@preise', 'Preisverweis: Link', 'text' ),
+				'preis_label'     => $t( 'Alle Preise & Rechner', 'Preisverweis: Text', 'text' ),
 				'voraussetzungen' => $t( '', 'Voraussetzungen', 'textarea' ),
 				'ablauf'          => $t( '', 'Ablauf der Ausbildung', 'textarea' ),
 				'foerderung'      => $t( '', 'Förderung & Finanzierung', 'textarea' ),
@@ -86,7 +113,7 @@ function fahrschule_blocks_config() {
 
 		/* ---- Team & Galerie ---- */
 		'fahrschule/fahrlehrer-finder' => array(
-			'title' => 'Fahrlehrer-Finder', 'description' => 'Filterbares Team-Raster nach Standort, Klasse und Fahrlehrerin. Fotos kommen über edi-team-<slug> aus der Mediathek.',
+			'title' => 'Fahrlehrer-Finder', 'description' => 'Team nach den drei PDF-Gruppen (Büro & Ansprechpartner, Geschäftsleitung, Dozenten & Ausbilder), filterbar nach Standort, Klasse und Fahrlehrerin. Fotos über edi-team-<slug> aus der Mediathek. Gruppen ohne Personen entfallen.',
 			'icon' => 'groups', 'keywords' => array( 'team', 'fahrlehrer', 'filter', 'standort' ),
 			'render' => 'fs_render_fahrlehrer_finder', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Team',
 			'fields' => array(
@@ -94,25 +121,11 @@ function fahrschule_blocks_config() {
 				'heading'  => $t( 'Finden Sie Ihren Fahrlehrer', 'Überschrift', 'text' ),
 				'subtitle' => $t( 'Filtern Sie nach Standort und Führerscheinklasse.', 'Untertitel', 'textarea' ),
 				'empty'    => $t( 'Für diese Auswahl ist gerade niemand hinterlegt.', 'Text, wenn kein Treffer', 'text' ),
-				'people'   => $rep( array(
-					array( 'Aslan', 'aslan', 'Gelsenkirchen', 'A, B', 'Leiter & Fahrlehrer' ),
-					array( 'Yalcin', 'yalcin', 'Duisburg', 'A, B, BE', 'Leiter & Fahrlehrer' ),
-					array( 'Adis', 'adis', 'Gelsenkirchen', 'A', 'Fahrlehrer' ),
-					array( 'Ali Ihsan', 'ali-ihsan', 'Gelsenkirchen', 'B, BE', 'Fahrlehrer' ),
-					array( 'Baris', 'baris', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
-					array( 'Birol', 'birol', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
-					array( 'Fergan', 'fergan', 'Gelsenkirchen', 'A, B', 'Fahrlehrer' ),
-					array( 'Nebahat', 'nebahat', 'Gelsenkirchen', 'B', 'Fahrlehrerin' ),
-					array( 'Ramazan', 'ramazan', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
-					array( 'Sakit', 'sakit', 'Gelsenkirchen', 'B', 'Fahrlehrer' ),
-					array( 'Ömer', 'oemer', 'Duisburg', 'B', 'Fahrlehrer' ),
-					array( 'Rahel', 'rahel', 'Duisburg', 'B, BE', 'Fahrlehrerin' ),
-					array( 'Tammam', 'tammam', 'Duisburg', 'B, BE', 'Fahrlehrer' ),
-					array( 'Devran', 'devran', 'Essen', 'B', 'Fahrlehrer' ),
-					array( 'Mustafa', 'mustafa', 'Essen', 'B', 'Fahrlehrer' ),
-					array( 'Abdullah', 'abdullah', '', 'B', 'Fahrlehrer' ),
-					array( 'Mesut', 'mesut', '', 'B', 'Fahrlehrer' ),
-				), 'Fahrlehrer', array( 'Name', 'Dateiname (edi-team-…)', 'Standort', 'Klassen (B, BE, A)', 'Rolle' ) ),
+				'people'   => $rep( array_merge( fs_team_ansprechpartner( $fs_lehrer ), $fs_lehrer, array_map(
+					// Geschäftsleitung aus den Stammdaten (Impressum), ohne Foto und Klassen.
+					static function ( $n ) { return array( $n, '', '', '', 'Geschäftsführung', 'Geschäftsleitung' ); },
+					fahrschule_business_data()['management']
+				) ), 'Person', array( 'Name', 'Dateiname (edi-team-…)', 'Standort', 'Klassen (B, BE, A)', 'Rolle', 'Gruppe (Büro & Ansprechpartner / Geschäftsleitung / Dozenten & Ausbilder)' ) ),
 			),
 		),
 		'fahrschule/galerie' => array(
@@ -410,11 +423,11 @@ function fahrschule_blocks_config() {
 				'badge'   => $t( 'Hafen & Logistik', 'Badge', 'text' ),
 				'heading' => $t( 'Sicher fahren in Duisburg. Sicher fahren im Hafen. Sicher fahren bei edi.', 'Überschrift', 'textarea' ),
 				'lead'    => $t( 'Spezialisiert auf Sicherheitstraining und Fahrpraxis im dichten Stadtverkehr. Ideal für logistische Anforderungen im Duisburger Hafen.', 'Lead-Text', 'textarea' ),
-				'address' => $t( fahrschule_pdf_location( 'Duisburg' )['street'], 'Adresse', 'text' ),
-				'zip'     => $t( fahrschule_pdf_location( 'Duisburg' )['zip'], 'PLZ & Ort', 'text' ),
-				'phone'   => $t( fahrschule_pdf_location( 'Duisburg' )['phone'], 'Telefon', 'text' ),
-				'email'   => $t( fahrschule_pdf_location( 'Duisburg' )['email'], 'E-Mail', 'text' ),
-				'hours'   => $t( str_replace( "\n", ', ', fahrschule_location_hours_text( 'Duisburg' ) ), 'Öffnungszeiten', 'text' ),
+				'address' => $t( '', 'Adresse (leer = aus den Stammdaten der Stadt)', 'text' ),
+				'zip'     => $t( '', 'PLZ & Ort (leer = Stammdaten)', 'text' ),
+				'phone'   => $t( '', 'Telefon (leer = Stammdaten)', 'text' ),
+				'email'   => $t( '', 'E-Mail (leer = Stammdaten)', 'text' ),
+				'hours'   => $t( '', 'Öffnungszeiten (leer = zentral hinterlegte Zeiten)', 'text' ),
 				'contact' => $t( '', 'Ansprechpartner vor Ort (optional)', 'text' ),
 			),
 		),
@@ -424,7 +437,7 @@ function fahrschule_blocks_config() {
 			'render' => 'fs_render_location_content', 'pattern' => true, 'page' => 'Standorte',
 			'fields' => array(
 				'city'   => $t( 'Duisburg', 'Stadt', 'text' ),
-				'img1'   => $t( fs_media( 'loc_duisburg' ), 'Bild 1 URL', 'url' ),
+				'img1'   => $t( '', 'Bild 1 URL (leer = edi-standort-<stadt> aus der Mediathek)', 'url' ),
 				'img1_t' => $t( 'Moderne Fahrschule', 'Bild 1 Titel', 'text' ),
 				'img1_s' => $t( 'Standort mit Schulungsfahrzeugen', 'Bild 1 Untertitel', 'text' ),
 				'img2'   => $t( fs_media( 'fac_empfang' ), 'Bild 2 URL', 'url' ),
@@ -552,6 +565,42 @@ function fahrschule_blocks_config() {
 				'heading'   => $t( '', 'Überschrift (leer = PDF-Abschnitt bzw. Seitentitel)', 'text' ),
 				'highlight' => $t( '', 'Hervorgehobenes Wort', 'text' ),
 				'lead'      => $t( '', 'Einleitung (leer = aus Registry)', 'textarea' ),
+			),
+		),
+		'fahrschule/breadcrumbs' => array(
+			'title' => 'Brotkrumen', 'description' => 'Pfad zur aktuellen Seite (Startseite › Bereich › Seite). Steht in den Seitenvorlagen; ohne Seite (Website-Editor) nur ein Hinweis.',
+			'icon' => 'arrow-right-alt', 'keywords' => array( 'breadcrumbs', 'brotkrumen', 'pfad' ),
+			'render' => 'fs_render_breadcrumbs', 'pattern' => false, 'may_be_empty' => true, 'page' => 'Vorlagen',
+			'fields' => array(),
+		),
+		'fahrschule/karte' => array(
+			'title' => 'Karte (nach Einwilligung)', 'description' => 'OpenStreetMap-Karte des Standorts, Zwei-Klick-Lösung: Bis zum Klick (oder „Alle akzeptieren") wird nichts von Dritten geladen. Standort aus den Stammdaten; leer = Standort der geöffneten Seite.',
+			'icon' => 'location-alt', 'keywords' => array( 'karte', 'map', 'anfahrt', 'route' ),
+			'render' => 'fs_render_karte', 'pattern' => false, 'may_be_empty' => true, 'page' => 'Standorte',
+			'fields' => array(
+				'city'    => $t( '', 'Standort (leer = Seite; sonst duisburg, essen, gelsenkirchen)', 'text' ),
+				'heading' => $t( 'So finden Sie uns', 'Überschrift', 'text' ),
+				'hinweis' => $t( 'Die Karte wird von OpenStreetMap geladen. Dabei wird Ihre IP-Adresse an die OpenStreetMap Foundation übertragen.', 'Hinweis vor dem Laden', 'textarea' ),
+				'button'  => $t( 'Karte laden', 'Button-Text', 'text' ),
+				'route'   => $t( 'Route bei OpenStreetMap planen', 'Routen-Link (öffnet extern)', 'text' ),
+			),
+		),
+		'fahrschule/fehlerseite' => array(
+			'title' => 'Fehlerseite (404)', 'description' => 'Hinweis „Seite nicht gefunden“ mit Wegen zurück und Suchfeld. Steht in der Vorlage 404.',
+			'icon' => 'warning', 'keywords' => array( '404', 'fehler', 'nicht gefunden' ),
+			'render' => 'fs_render_fehlerseite', 'pattern' => false, 'page' => 'Vorlagen',
+			'fields' => array(
+				'eyebrow'   => $t( 'Fehler 404', 'Eyebrow', 'text' ),
+				'heading'   => $t( 'Diese Seite gibt es nicht mehr', 'Überschrift', 'text' ),
+				'highlight' => $t( 'nicht mehr', 'Hervorgehobenes Wort', 'text' ),
+				'text'      => $t( 'Die aufgerufene Adresse führt ins Leere. Vielleicht hilft einer dieser Wege weiter.', 'Text', 'textarea' ),
+				'links'     => $rep( array(
+					array( 'Zur Startseite', '/', 'arrow-right' ),
+					array( 'Führerscheinklassen ansehen', '@klassen', 'arrow-right' ),
+					array( 'Unsere Standorte', '@standorte', 'map-pin' ),
+					array( 'Kontakt aufnehmen', '@kontakt', 'phone' ),
+				), 'Weg', array( 'Text', 'Link', 'Icon' ) ),
+				'suche'     => $t( '1', 'Suchfeld zeigen (1/0)', 'text' ),
 			),
 		),
 		'fahrschule/page-teasers' => array(

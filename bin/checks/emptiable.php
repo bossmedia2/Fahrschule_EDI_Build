@@ -6,7 +6,7 @@ $GLOBALS['__theme']=$argv[1];
    und weder vom Lint noch vom Smoke-Test gesehen wurde. */ $GLOBALS['__blocks']=[];
 require __DIR__.'/wp-stub.php';
 define('FAHRSCHULE_DIR',$argv[1]); define('FAHRSCHULE_URI','/u'); define('FAHRSCHULE_VERSION','1');
-foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config'] as $f) require $argv[1].'/inc/'.$f.'.php';
+foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config','seo'] as $f) require $argv[1].'/inc/'.$f.'.php';
 $cfg=fahrschule_blocks_config();
 foreach($cfg as $n=>$c){ $at=[]; if(!empty($c['fields'])) foreach($c['fields'] as $k=>$fl) $at[$k]=['type'=>((($fl['control']??'')==='repeater')?'array':'string'),'default'=>$fl['default']];
   register_block_type($n,['attributes'=>$at,'render_callback'=>$c['render']]); }

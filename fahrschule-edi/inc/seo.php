@@ -32,6 +32,9 @@ function fahrschule_business_data() {
 		'email'       => 'info@fahrschule-edi.de',
 		'phone'       => '+49 203 5785703',
 		'vat'         => 'DE195505422',
+		// Geschäftsführung laut Impressum („Vertreten durch"). Einzige Quelle -
+		// Impressum und Team-Seite (Gruppe Geschäftsleitung) lesen hier.
+		'management'  => array( 'Gülsüm Alkan', 'Robert Peter Fiedler', 'Rainer Fritz Erich Grunwald' ),
 		'founded'     => '1993',
 		'currency'    => 'EUR',
 		'logo'        => fs_media( 'logo' ),

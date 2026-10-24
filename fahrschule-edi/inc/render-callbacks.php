@@ -888,26 +888,10 @@ function fs_render_about_team( $a ) {
 		'head'    => '1',
 	) );
 	/*
-	 * Drei Gruppen laut PDF, dort je mit „(Fotos)" markiert. Fotos aus der
-	 * Medien-Registry; solange keine hinterlegt sind, zeigen wir bewusst die
-	 * Initialen statt eines fremden Stockfotos. Bei der Geschäftsleitung stehen
-	 * die Namen aus dem Impressum („Vertreten durch").
+	 * Die drei Gruppen aus dem PDF (Büro & Ansprechpartner, Geschäftsleitung,
+	 * Dozenten & Ausbilder) zeigt der Fahrlehrer-Finder mit den echten
+	 * Personen - hier stand bis 2.x je Gruppe eine Platzhalterkachel.
 	 */
-	$photos = array(
-		'Büro & Ansprechpartner' => 'team_buero',
-		'Geschäftsleitung'       => 'team_geschaeftsleitung',
-		'Dozenten & Ausbilder'   => 'team_dozenten',
-	);
-	$names = array(
-		'Geschäftsleitung' => array( 'Gülsüm Alkan', 'Robert Peter Fiedler', 'Rainer Fritz Erich Grunwald' ),
-	);
-	$initials = static function ( $group ) {
-		$words = preg_split( '/\s+/u', trim( str_replace( '&', ' ', $group ) ) );
-		$first = $words[0];
-		$last  = end( $words );
-		return mb_strtoupper( mb_substr( $first, 0, 1 ) . ( $last !== $first ? mb_substr( $last, 0, 1 ) : '' ) );
-	};
-	$hx = fahrschule_pdf_show_head( $d ) ? 'h3' : 'h2'; // Gliederung ohne Sprung h1 -> h3
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light" data-pdf-section="F9">
 		<div class="fs-container">
@@ -917,24 +901,6 @@ function fs_render_about_team( $a ) {
 			<div class="fs-rich fs-center">
 				<?php echo fs_el( 'p', $d['p1'], 'class="lead"' ); ?>
 				<?php echo fs_el( 'p', $d['p2'] ); ?>
-			</div>
-			<div class="fs-grid fs-grid--3 fs-mt-8" style="max-width:64rem;margin-inline:auto;">
-				<?php foreach ( $f9['groups'] as $group => $where ) : ?>
-				<div class="fs-teamcard">
-					<?php if ( fs_has_media( $photos[ $group ] ) ) : ?>
-						<img class="fs-teamcard__photo" src="<?php echo esc_url( fs_media( $photos[ $group ] ) ); ?>" alt="<?php echo esc_attr( $group . ' der Fahrschule edi' ); ?>" width="400" height="400" loading="lazy" decoding="async">
-					<?php else : ?>
-						<div class="fs-teamcard__avatar" aria-hidden="true"><?php echo esc_html( $initials( $group ) ); ?></div>
-					<?php endif; ?>
-					<div class="fs-teamcard__body">
-						<<?php echo $hx; ?>><?php echo esc_html( $group ); ?></<?php echo $hx; ?>>
-						<p><?php echo esc_html( $where ); ?></p>
-						<?php if ( ! empty( $names[ $group ] ) ) : ?>
-						<ul class="fs-teamcard__names"><?php foreach ( $names[ $group ] as $n ) : ?><li><?php echo esc_html( $n ); ?></li><?php endforeach; ?></ul>
-						<?php endif; ?>
-					</div>
-				</div>
-				<?php endforeach; ?>
 			</div>
 			<?php echo fs_el( 'p', $d['footer'], 'class="fs-center fs-mt-8" style="color:var(--c-heading);font-weight:600;max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
@@ -1054,13 +1020,23 @@ function fs_render_location_hero( $a ) {
 		'badge'    => 'Hafen & Logistik',
 		'heading'  => 'Sicher fahren in Duisburg. Sicher fahren im Hafen. Sicher fahren bei edi.',
 		'lead'     => 'Spezialisiert auf Sicherheitstraining und Fahrpraxis im dichten Stadtverkehr. Ideal für logistische Anforderungen im Duisburger Hafen.',
-		'address'  => fahrschule_pdf_location( 'Duisburg' )['street'],
-		'zip'      => fahrschule_pdf_location( 'Duisburg' )['zip'],
-		'phone'    => fahrschule_pdf_location( 'Duisburg' )['phone'],
-		'email'    => fahrschule_pdf_location( 'Duisburg' )['email'],
-		'hours'    => str_replace( "\n", ', ', fahrschule_location_hours_text( 'Duisburg' ) ),
+		'address'  => '',
+		'zip'      => '',
+		'phone'    => '',
+		'email'    => '',
+		'hours'    => '',
 		'contact'  => '',
 	) );
+	// Leere Kontaktfelder = Stammdaten der Stadt (inc/pdf-texts.php,
+	// Öffnungszeiten aus fahrschule_location_hours_text()). So steht keine
+	// Kopie von Adresse, Telefon oder Zeiten im Seiteninhalt.
+	$nap = fahrschule_pdf_location( $d['city'] );
+	foreach ( array( 'address' => 'street', 'zip' => 'zip', 'phone' => 'phone', 'email' => 'email' ) as $k => $src ) {
+		if ( '' === trim( (string) $d[ $k ] ) && ! empty( $nap[ $src ] ) ) { $d[ $k ] = $nap[ $src ]; }
+	}
+	if ( '' === trim( (string) $d['hours'] ) ) {
+		$d['hours'] = str_replace( "\n", ', ', fahrschule_location_hours_text( $d['city'] ) );
+	}
 	$herocls = 'fs-lochero fs-surface-brand';
 	ob_start(); ?>
 	<section class="<?php echo esc_attr( $herocls ); ?>">
@@ -1070,7 +1046,9 @@ function fs_render_location_hero( $a ) {
 					<span class="fs-badge"><?php echo fs_icon( $d['icon'], 16 ); ?> <?php echo esc_html( $d['badge'] ); ?></span>
 					<?php echo fs_el( 'h1', $d['heading'] ); ?>
 					<?php echo fs_el( 'p', $d['lead'], 'class="lead"' ); ?>
+					<?php if ( fs_has( $d, 'address' ) || fs_has( $d, 'zip' ) ) : ?>
 					<div class="fs-loc__line"><?php echo fs_icon( 'map-pin', 20 ); ?><div><?php echo fs_el( 'p', $d['address'], 'style="font-weight:600;color:var(--c-heading);margin:0;"' ); ?><?php echo fs_el( 'p', $d['zip'], 'style="margin:0;"' ); ?></div></div>
+					<?php endif; ?>
 					<?php if ( fs_has( $d, 'phone' ) ) : ?>
 					<div class="fs-loc__line"><?php echo fs_icon( 'phone', 20 ); ?><a href="tel:<?php echo esc_attr( fs_tel( $d['phone'] ) ); ?>" style="color:var(--c-heading);"><?php echo esc_html( $d['phone'] ); ?></a></div>
 					<?php endif; ?>
@@ -1137,7 +1115,7 @@ function fs_render_location_hero( $a ) {
 function fs_render_location_content( $a ) {
 	$d = fs_attrs( $a, array(
 		'city'    => 'Duisburg',
-		'img1'    => fs_media( 'loc_duisburg' ),
+		'img1'    => '',
 		'img1_t'  => 'Moderne Fahrschule',
 		'img1_s'  => 'Standort mit Schulungsfahrzeugen',
 		'img2'    => fs_media( 'fac_empfang' ),
@@ -1155,6 +1133,8 @@ function fs_render_location_content( $a ) {
 	 * array( 'Vorname N.', 'Stadtteil', 'Zitat' ).
 	 */
 	$testi = array();
+	// Leeres Bild 1 = Standortbild der Stadt aus der Mediathek (edi-standort-<stadt>).
+	if ( '' === trim( (string) $d['img1'] ) ) { $d['img1'] = fs_media( 'loc_' . sanitize_key( $d['city'] ) ); }
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container">
@@ -1605,27 +1585,32 @@ function fs_render_legal( $a ) {
 	return ob_get_clean();
 }
 
-function fs_legal_impressum() { ?>
+function fs_legal_impressum() {
+	// Stammdaten aus inc/seo.php - keine zweite Kopie von Adresse, Telefon,
+	// E-Mail, USt-ID und Geschäftsführung im Impressum.
+	$b   = fahrschule_business_data();
+	$sitz = $b['locations']['duisburg'];
+	?>
 	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-legal">
 			<div class="fs-head" style="text-align:left;margin-bottom:2rem;"><h2><?php echo fs_icon( 'shield', 32, 'fs-icon-pink' ); ?> Angaben gemäß § 5 TMG</h2></div>
 			<div class="fs-legal__card">
 				<div class="fs-legal__block">
 					<h2>Anbieterangaben</h2>
-					<p><strong>Fahrschule &amp; Fahrlehrerfachschule edi GmbH</strong><br>Friedrich Ebert Str. 346<br>47139 Duisburg<br>Deutschland</p>
+					<p><strong><?php echo esc_html( $b['legal_name'] ); ?></strong><br><?php echo esc_html( $sitz['street'] ); ?><br><?php echo esc_html( $sitz['zip'] . ' ' . $sitz['city'] ); ?><br>Deutschland</p>
 				</div>
 				<div class="fs-legal__block">
 					<h2>Vertreten durch</h2>
-					<p>Gülsüm Alkan, Robert Peter Fiedler, Rainer Fritz Erich Grunwald (Geschäftsführung)</p>
+					<p><?php echo esc_html( implode( ', ', $b['management'] ) ); ?> (Geschäftsführung)</p>
 				</div>
 				<div class="fs-legal__block">
 					<h2>Kontaktdaten</h2>
-					<p><strong>Telefon:</strong> +49 (0)203 57 85 703</p>
-					<p><strong>E-Mail:</strong> <a href="mailto:info@fahrschule-edi.de">info@fahrschule-edi.de</a></p>
+					<p><strong>Telefon:</strong> <a href="tel:<?php echo esc_attr( fs_tel( $b['phone'] ) ); ?>"><?php echo esc_html( $b['phone'] ); ?></a></p>
+					<p><strong>E-Mail:</strong> <a href="mailto:<?php echo esc_attr( $b['email'] ); ?>"><?php echo esc_html( $b['email'] ); ?></a></p>
 				</div>
 				<div class="fs-legal__block">
 					<h2>Registereintrag</h2>
-					<p><strong>Register:</strong> Handelsregister<br><strong>Register Ort:</strong> Duisburg<br><strong>Registernummer:</strong> HRB-Nr. 7858<br><strong>Umsatzsteuernummer:</strong> DE195505422</p>
+					<p><strong>Register:</strong> Handelsregister<br><strong>Register Ort:</strong> Duisburg<br><strong>Registernummer:</strong> HRB-Nr. 7858<br><strong>Umsatzsteuernummer:</strong> <?php echo esc_html( $b['vat'] ); ?></p>
 				</div>
 				<div class="fs-legal__block">
 					<h2>Aufsichtsbehörde</h2>
@@ -1704,6 +1689,15 @@ function fs_render_page_hero( $a ) {
 		'highlight' => '',
 	) );
 
+	// Bringt der Seiteninhalt einen eigenen Hero mit (Standort, Erfahrungen,
+	// Startseite), tritt der Seitenkopf der Vorlage zurück - sonst stünden
+	// zwei Köpfe übereinander. So kommen alle Seitenvorlagen mit demselben
+	// Aufbau aus, und die Redaktion kann den Hero frei setzen.
+	$post = fs_context_post();
+	if ( $post && preg_match( '#<!-- wp:fahrschule/(location-hero|testimonials-hero|video-hero)[ /]#', (string) $post->post_content ) ) {
+		return '';
+	}
+
 	// Fallback auf die Registry-Daten der aktuellen Seite. Gehört zur Seite ein
 	// PDF-Abschnitt ('pdf' in inc/pages.php), zeigt der Seitenkopf dessen Label
 	// und Überschrift – der Abschnitt darunter verzichtet dann auf seinen Kopf.
@@ -1718,10 +1712,12 @@ function fs_render_page_hero( $a ) {
 			$pdf_id = $pdf['id'];
 		} elseif ( $page ) {
 			$d['heading'] = $page['title'];
-		} else {
-			$d['heading'] = get_the_title();
+		} elseif ( $post ) {
+			$d['heading'] = get_the_title( $post );
 		}
 		if ( $page && '' === $d['lead'] && ! empty( $page['lead'] ) ) { $d['lead'] = $page['lead']; }
+		// Website-Editor (Vorlage ohne Seite): Platzhalter statt leerer Fläche.
+		if ( '' === $d['heading'] && fs_is_editor_preview() ) { $d['heading'] = 'Seitentitel'; }
 	}
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
 	ob_start(); ?>
@@ -1873,17 +1869,31 @@ function fs_render_bereich_uebersicht( $a ) {
 	// Ist auch die unbekannt (Editor-Vorschau, Pattern-Katalog), gibt es
 	// nichts auszugeben - sonst würde parent === '' auf alle Wurzelseiten
 	// passen und der Block die halbe Website auflisten.
-	$parent = $d['bereich'] ? $d['bereich'] : fahrschule_current_key();
-	if ( '' === $parent ) { return ''; }
-	$map    = fahrschule_page_map();
+	// "@eltern" = Bereich der Seite, auf der der Block steht (Vorlage
+	// page-kurs: die Geschwisterklassen). Die eigene Seite fehlt dann.
+	$current = fahrschule_current_key();
+	$map     = fahrschule_page_map();
+	if ( '@eltern' === $d['bereich'] ) {
+		$parent = ( $current && ! empty( $map[ $current ]['parent'] ) ) ? $map[ $current ]['parent'] : '';
+	} else {
+		$parent = $d['bereich'] ? $d['bereich'] : $current;
+	}
+	if ( '' === $parent || ! isset( $map[ $parent ] ) ) {
+		return fs_editor_hint( 'Bereichsübersicht', 'Zeigt hier die Klassen des Bereichs - auf einer Bereichs- oder Klassenseite.' );
+	}
 
 	$children = array();
 	foreach ( $map as $key => $page ) {
-		if ( isset( $page['parent'] ) && $page['parent'] === $parent ) {
+		if ( isset( $page['parent'] ) && $page['parent'] === $parent && $key !== $current ) {
 			$children[ $key ] = $page;
 		}
 	}
 	if ( ! $children ) { return ''; }
+	// {bereich} in Texten steht für den Namen des Bereichs - so passt eine
+	// Überschrift in der Vorlage auf PKW, Motorrad und LKW & Bus zugleich.
+	foreach ( array( 'eyebrow', 'heading', 'subtitle' ) as $k ) {
+		$d[ $k ] = str_replace( '{bereich}', $map[ $parent ]['menu'], $d[ $k ] );
+	}
 
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
@@ -1916,33 +1926,40 @@ function fs_render_bereich_uebersicht( $a ) {
  * ---------------------------------------------------------------------- */
 function fs_render_kurs_details( $a ) {
 	$d = fs_attrs( $a, array(
-		'eyebrow'        => '',
-		'heading'        => 'Das Wichtigste auf einen Blick',
-		'alter'          => '',
-		'dauer'          => '',
-		'preis'          => '',
-		'voraussetzungen'=> '',
-		'ablauf'         => '',
-		'foerderung'     => '',
-		'hinweis'        => '',
+		'eyebrow'         => '',
+		'heading'         => 'Das Wichtigste auf einen Blick',
+		'alter'           => '',
+		'theorie'         => '',
+		'pflichtfahrten'  => '',
+		'dauer'           => '',
+		'pruefung'        => '',
+		'preis'           => '',
+		'preis_link'      => '@preise',
+		'preis_label'     => 'Alle Preise & Rechner',
+		'voraussetzungen' => '',
+		'ablauf'          => '',
+		'foerderung'      => '',
+		'hinweis'         => '',
 	) );
 
-	// Kennzahlen-Kacheln: Beschriftung => Wert.
-	$facts = array(
-		'Mindestalter' => $d['alter'],
-		'Ausbildungsdauer' => $d['dauer'],
-		'Richtpreis' => $d['preis'],
-	);
-	$facts = array_filter( $facts, static function ( $v ) { return '' !== trim( (string) $v ); } );
+	// Kurzdaten der Seitenleiste: Beschriftung => Wert. Leeres entfällt.
+	$facts = array_filter( array(
+		'Mindestalter'              => $d['alter'],
+		'Theorieunterricht'         => $d['theorie'],
+		'Pflichtfahrten'            => $d['pflichtfahrten'],
+		'Fahrstunden (Richtwert)'   => $d['dauer'],
+		'Prüfung'                   => $d['pruefung'],
+		'Richtpreis'                => $d['preis'],
+	), static function ( $v ) { return '' !== trim( (string) $v ); } );
 
-	// Textblöcke: Überschrift => Inhalt.
-	$sections = array(
-		'Voraussetzungen' => $d['voraussetzungen'],
-		'Ablauf der Ausbildung' => $d['ablauf'],
+	// Textkarten: Überschrift => Inhalt.
+	$sections = array_filter( array(
+		'Voraussetzungen'          => $d['voraussetzungen'],
+		'Ablauf der Ausbildung'    => $d['ablauf'],
 		'Förderung & Finanzierung' => $d['foerderung'],
-	);
-	$sections = array_filter( $sections, static function ( $v ) { return '' !== trim( (string) $v ); } );
+	), static function ( $v ) { return '' !== trim( (string) $v ); } );
 
+	$link = fs_has( $d, 'preis_link' ) && fs_has( $d, 'preis_label' );
 	if ( ! $facts && ! $sections && ! fs_has( $d, 'hinweis' ) ) { return ''; }
 
 	ob_start(); ?>
@@ -1951,29 +1968,38 @@ function fs_render_kurs_details( $a ) {
 			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
 				. fs_el( 'h2', $d['heading'] ), 'class="fs-head"' ); ?>
 
-			<?php if ( $facts ) : ?>
-			<div class="fs-grid fs-grid--3" style="max-width:64rem;margin-inline:auto;">
-				<?php foreach ( $facts as $label => $value ) : ?>
-				<div class="fs-stat">
-					<div class="big"><?php echo esc_html( $value ); ?></div>
-					<p><?php echo esc_html( $label ); ?></p>
+			<div class="<?php echo esc_attr( $sections ? 'fs-kurs' : 'fs-kurs fs-kurs--solo' ); ?>">
+				<?php if ( $sections || fs_has( $d, 'hinweis' ) ) : ?>
+				<div class="fs-kurs__main">
+					<?php foreach ( $sections as $title => $text ) : ?>
+					<div class="fs-card"><div class="fs-card__body">
+						<h3><?php echo esc_html( $title ); ?></h3>
+						<?php echo fs_paragraphs( $text ); ?>
+					</div></div>
+					<?php endforeach; ?>
+					<?php echo fs_el( 'p', $d['hinweis'], 'class="fs-kurs__hinweis"' ); ?>
 				</div>
-				<?php endforeach; ?>
-			</div>
-			<?php endif; ?>
+				<?php endif; ?>
 
-			<?php if ( $sections ) : ?>
-			<div class="fs-grid fs-grid--2 fs-mt-8" style="max-width:64rem;margin-inline:auto;">
-				<?php foreach ( $sections as $title => $text ) : ?>
-				<div class="fs-card"><div class="fs-card__body">
-					<h3><?php echo esc_html( $title ); ?></h3>
-					<?php echo fs_paragraphs( $text ); ?>
-				</div></div>
-				<?php endforeach; ?>
+				<?php if ( $facts || $link ) : ?>
+				<aside class="fs-card fs-kurs__facts" aria-label="Kurzdaten">
+					<div class="fs-card__body">
+						<h3>Kurzdaten</h3>
+						<?php if ( $facts ) : ?>
+						<dl>
+							<?php foreach ( $facts as $label => $value ) : ?>
+							<dt><?php echo esc_html( $label ); ?></dt>
+							<dd><?php echo esc_html( $value ); ?></dd>
+							<?php endforeach; ?>
+						</dl>
+						<?php endif; ?>
+						<?php if ( $link ) : ?>
+						<a class="fs-kurs__preislink" href="<?php echo esc_url( fs_link( $d['preis_link'] ) ); ?>"><?php echo esc_html( $d['preis_label'] ); ?> <?php echo fs_icon( 'arrow-right', 16 ); ?></a>
+						<?php endif; ?>
+					</div>
+				</aside>
+				<?php endif; ?>
 			</div>
-			<?php endif; ?>
-
-			<?php echo fs_el( 'p', $d['hinweis'], 'class="fs-center fs-mt-8" style="color:var(--c-text);max-width:42rem;margin-inline:auto;"' ); ?>
 		</div>
 	</section>
 	<?php
@@ -1992,6 +2018,27 @@ function fs_render_kurs_details( $a ) {
  * bewusst NICHT im Dateinamen, sondern im Wiederholfeld: ein Standortwechsel
  * wäre sonst ein Umbenennen samt Neuimport.
  * ---------------------------------------------------------------------- */
+/**
+ * Vorgabezeilen der Gruppe „Büro & Ansprechpartner": die Ansprechperson je
+ * Standort aus den Stammdaten (inc/seo.php, 'contact'). Wer dort steht und
+ * schon als Fahrlehrer geführt wird (Aslan Seymen), erscheint nicht doppelt.
+ *
+ * @param array $lehrer_zeilen Fahrlehrer-Zeilen des Finders (Name zuerst).
+ */
+function fs_team_ansprechpartner( $lehrer_zeilen ) {
+	$lehrer = array();
+	foreach ( $lehrer_zeilen as $z ) { $lehrer[] = mb_strtolower( strtok( $z[0], ' ' ) ); }
+	$rows = array();
+	foreach ( fahrschule_business_data()['locations'] as $loc ) {
+		$name = trim( (string) $loc['contact'] );
+		if ( '' === $name ) { continue; }
+		$vorname = mb_strtolower( strtok( $name, ' ' ) );
+		if ( in_array( $vorname, $lehrer, true ) ) { continue; }
+		$rows[] = array( $name, '', $loc['city'], '', 'Ansprechperson vor Ort', 'Büro & Ansprechpartner' );
+	}
+	return $rows;
+}
+
 function fs_render_fahrlehrer_finder( $a ) {
 	$d = fs_attrs( $a, array(
 		'eyebrow'  => 'Unser Team',
@@ -2001,8 +2048,17 @@ function fs_render_fahrlehrer_finder( $a ) {
 		'empty'    => 'Für diese Auswahl ist gerade niemand hinterlegt.',
 	) );
 
-	$people = fs_rows( $d['people'], 5 );
+	$people = fs_rows( $d['people'], 6 );
 	if ( ! $people ) { return ''; }
+
+	// Gruppen in der Reihenfolge des PDF (F9); Zeilen ohne Gruppe (Stand 2.x,
+	// damals nur Fahrlehrer) zählen zu den Ausbildern. Leere Gruppen entfallen.
+	$gruppen = array_fill_keys( array_keys( fahrschule_pdf( 'f9' )['groups'] ), array() );
+	foreach ( $people as $p ) {
+		$g = '' !== trim( $p[5] ) ? trim( $p[5] ) : 'Dozenten & Ausbilder';
+		$gruppen[ $g ][] = $p;
+	}
+	$gruppen = array_filter( $gruppen );
 
 	// Filterwerte aus den Daten ableiten - keine zweite Liste zu pflegen.
 	$orte = array();
@@ -2052,8 +2108,12 @@ function fs_render_fahrlehrer_finder( $a ) {
 			</div>
 			<?php endif; ?>
 
-			<div class="fs-teamgrid" data-fs-team-grid>
-				<?php foreach ( $people as $p ) :
+			<div data-fs-team-grid>
+				<?php foreach ( $gruppen as $gruppe => $mitglieder ) : ?>
+				<div class="fs-teamgroup" data-fs-team-group>
+				<h3 class="fs-teamgroup__title"><?php echo esc_html( $gruppe ); ?></h3>
+				<div class="fs-teamgrid">
+				<?php foreach ( $mitglieder as $p ) :
 					list( $name, $slug, $ort, $kl, $rolle ) = $p;
 					$foto  = $slug ? fs_media_by_slug( 'edi-team-' . $slug ) : '';
 					$foto2 = $slug ? fs_media_by_slug( 'edi-team-' . $slug . '-b' ) : '';
@@ -2076,7 +2136,7 @@ function fs_render_fahrlehrer_finder( $a ) {
 						<?php endif; ?>
 					</div>
 					<div class="fs-teamcard__body">
-						<?php echo fs_el( 'h3', $name ); ?>
+						<?php echo fs_el( 'h4', $name ); ?>
 						<?php echo fs_el( 'p', $rolle, 'class="fs-teamcard__names"' ); ?>
 						<p class="fs-teamcard__meta">
 							<?php if ( '' !== trim( $ort ) ) : ?><span><?php echo fs_icon( 'map-pin', 14 ); ?> <?php echo esc_html( $ort ); ?></span><?php endif; ?>
@@ -2084,6 +2144,9 @@ function fs_render_fahrlehrer_finder( $a ) {
 						</p>
 					</div>
 				</article>
+				<?php endforeach; ?>
+				</div>
+				</div>
 				<?php endforeach; ?>
 			</div>
 			<p class="fs-center fs-mt-8" data-fs-team-empty hidden><?php echo esc_html( $d['empty'] ); ?></p>
@@ -2214,6 +2277,105 @@ function fs_render_galerie( $a ) {
 			<button type="button" class="fs-lightbox__nav fs-lightbox__nav--prev" data-fs-lb-prev aria-label="Vorheriges Bild"><?php echo fs_icon( 'chevron-left', 28 ); ?></button>
 			<img data-fs-lb-img src="" alt="">
 			<button type="button" class="fs-lightbox__nav fs-lightbox__nav--next" data-fs-lb-next aria-label="Nächstes Bild"><?php echo fs_icon( 'chevron-right', 28 ); ?></button>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
+ * BROTKRUMEN (Vorlagen) - Hülle um fs_breadcrumbs()
+ * ---------------------------------------------------------------------- */
+function fs_render_breadcrumbs( $a ) {
+	$out = fs_breadcrumbs();
+	if ( '' === $out ) {
+		return fs_editor_hint( 'Brotkrumen', 'Startseite › Bereich › Seite – erscheinen auf jeder Unterseite.' );
+	}
+	return $out;
+}
+
+/* -------------------------------------------------------------------------
+ * FEHLERSEITE (Vorlage 404)
+ * ---------------------------------------------------------------------- */
+function fs_render_fehlerseite( $a ) {
+	$d = fs_attrs( $a, array(
+		'eyebrow'   => 'Fehler 404',
+		'heading'   => 'Diese Seite gibt es nicht mehr',
+		'highlight' => 'nicht mehr',
+		'text'      => '',
+		'links'     => array(),
+		'suche'     => '1',
+	) );
+	$links = fs_rows( $d['links'], 3 );
+	ob_start(); ?>
+	<section class="fs-section fs-surface-brand fs-fehlerseite">
+		<div class="fs-container fs-z">
+			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
+				. fs_el( 'h1', '', '', fs_highlight( $d['heading'], $d['highlight'] ) )
+				. fs_el( 'p', $d['text'] ), 'class="fs-head"' ); ?>
+			<?php if ( $links ) : ?>
+			<div class="fs-features">
+				<?php foreach ( $links as $l ) : if ( '' === trim( $l[0] ) ) { continue; } ?>
+				<a class="fs-feature" href="<?php echo esc_url( fs_link( $l[1] ) ); ?>">
+					<?php echo fs_icon( $l[2] ? $l[2] : 'arrow-right', 22 ); ?><span><?php echo esc_html( $l[0] ); ?></span>
+				</a>
+				<?php endforeach; ?>
+			</div>
+			<?php endif; ?>
+			<?php if ( '1' === (string) $d['suche'] ) : ?>
+			<div class="fs-center fs-mt-8"><?php echo get_search_form( array( 'echo' => false ) ); ?></div>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
+ * KARTE (Vorlage Standort) - Zwei-Klick-Lösung
+ *
+ * Harte Regel: keine Drittanbieter-Abrufe ohne Einwilligung. Ausgegeben wird
+ * nur ein Platzhalter mit der Karten-Adresse im data-Attribut; das iframe
+ * setzt frontend.js erst nach Klick oder bei Einwilligung „Alle akzeptieren".
+ * Ohne JavaScript bleibt der Routen-Link (externer Aufruf nur auf Klick).
+ * ---------------------------------------------------------------------- */
+function fs_render_karte( $a ) {
+	$d = fs_attrs( $a, array(
+		'city'    => '',
+		'heading' => 'So finden Sie uns',
+		'hinweis' => '',
+		'button'  => 'Karte laden',
+		'route'   => 'Route bei OpenStreetMap planen',
+	) );
+	$locs = fahrschule_business_data()['locations'];
+	$key  = sanitize_key( '' !== trim( $d['city'] ) ? $d['city'] : fahrschule_current_key() );
+	if ( ! isset( $locs[ $key ] ) ) {
+		return fs_editor_hint( 'Karte', 'Zeigt hier die Karte des Standorts - auf einer Standortseite oder mit eingetragenem Standort.' );
+	}
+	$loc  = $locs[ $key ];
+	$lat  = (float) $loc['lat'];
+	$lng  = (float) $loc['lng'];
+	$bbox = sprintf( '%.4f,%.4f,%.4f,%.4f', $lng - 0.008, $lat - 0.004, $lng + 0.008, $lat + 0.004 );
+	$src  = 'https://www.openstreetmap.org/export/embed.html?bbox=' . rawurlencode( $bbox ) . '&layer=mapnik&marker=' . rawurlencode( $lat . ',' . $lng );
+	$url  = 'https://www.openstreetmap.org/directions?to=' . rawurlencode( $lat . ',' . $lng );
+	ob_start(); ?>
+	<section class="fs-section fs-surface-light">
+		<div class="fs-container">
+			<?php echo fs_wrap( 'div', fs_el( 'h2', $d['heading'] ), 'class="fs-head"' ); ?>
+			<div class="fs-karte" data-fs-karte data-src="<?php echo esc_url( $src ); ?>" data-title="<?php echo esc_attr( 'Karte: Fahrschule edi ' . $loc['city'] ); ?>">
+				<div class="fs-karte__platzhalter">
+					<p class="fs-karte__adresse"><?php echo fs_icon( 'map-pin', 20 ); ?> <?php echo esc_html( $loc['street'] . ', ' . $loc['zip'] . ' ' . $loc['city'] ); ?></p>
+					<?php echo fs_el( 'p', $d['hinweis'] ); ?>
+					<div class="fs-karte__aktionen">
+						<?php if ( fs_has( $d, 'button' ) ) : ?>
+						<button type="button" class="fs-btn fs-btn--primary" data-fs-karte-load><?php echo esc_html( $d['button'] ); ?></button>
+						<?php endif; ?>
+						<?php if ( fs_has( $d, 'route' ) ) : ?>
+						<a class="fs-btn fs-btn--outline" href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $d['route'] ); ?></a>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
 		</div>
 	</section>
 	<?php

@@ -34,7 +34,10 @@
 		// Attribut-Schema + Default-Werte aus den Feldern ableiten.
 		var attributes = {};
 		( block.fields || [] ).forEach( function ( f ) {
-			attributes[ f.key ] = { type: 'string', 'default': f['default'] };
+			// Wiederholfelder sind Listen. Mit type 'string' verwirft der
+			// Editor beim Laden jede gespeicherte Liste als ungültig und fällt
+			// auf die Vorgabe zurück - Änderungen wären nach dem Neuladen weg.
+			attributes[ f.key ] = { type: 'repeater' === f.control ? 'array' : 'string', 'default': f['default'] };
 		} );
 
 		var settings = {
@@ -186,10 +189,26 @@
 					)
 					: null;
 
+				// Seitenkontext für die Vorschau: Im Block-Editor die bearbeitete
+				// Seite (der PHP-Renderer setzt damit $post, siehe
+				// fahrschule_current_key). Im Website-Editor ist die "Seite" eine
+				// Vorlage mit Text-ID - die darf nicht mitgeschickt werden.
+				var editorStore = wp.data && wp.data.select( 'core/editor' );
+				var postId = editorStore && editorStore.getCurrentPostId ? editorStore.getCurrentPostId() : null;
+				var query  = ( 'number' === typeof postId ) ? { post_id: postId } : {};
+
 				var preview = el( 'div', useBlockProps ? useBlockProps() : {},
 					el( ServerSideRender, {
 						block: block.name,
-						attributes: attrs
+						attributes: attrs,
+						urlQueryArgs: query,
+						// Leere Ausgabe = der Abschnitt entfällt im Frontend. Statt eines
+						// leeren Kastens sagt der Editor das ausdrücklich.
+						EmptyResponsePlaceholder: function () {
+							return el( 'div', { className: 'fs-editor-hint' },
+								el( 'strong', null, block.title ),
+								' ' + __( 'ist hier leer und wird im Frontend ausgeblendet. Inhalte rechts in der Seitenleiste ergänzen.', 'fahrschule-edi' ) );
+						}
 					} )
 				);
 

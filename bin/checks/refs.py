@@ -19,6 +19,11 @@ php_files = [os.path.join(dp, f) for dp, dn, fn in os.walk(root)
              for f in fn if f.endswith('.php') and '.git' not in dp and '/bin/' not in dp.replace(os.sep,'/')]
 allphp = "\n".join(rd(p) for p in php_files)
 maincss = rd(os.path.join(theme, 'assets/css/main.css'))
+editorcss = rd(os.path.join(theme, 'assets/css/editor.css')) if os.path.exists(os.path.join(theme, 'assets/css/editor.css')) else ''
+# Block-Vorlagen und -Parts (FSE): Markup wie PHP behandeln.
+html_files = [os.path.join(theme, d, f) for d in ('templates', 'parts') if os.path.isdir(os.path.join(theme, d))
+              for f in sorted(os.listdir(os.path.join(theme, d))) if f.endswith('.html')]
+allhtml = "\n".join(rd(p) for p in html_files)
 cfg = rd(os.path.join(theme, 'inc/blocks-config.php'))
 helpers = rd(os.path.join(theme, 'inc/helpers.php'))
 
@@ -31,6 +36,7 @@ if missing: fail("Render-Funktion fehlt: " + ", ".join(missing))
 norender = [b for b in declared if b not in renders]
 if norender: fail("Block ohne 'render': " + ", ".join(norender))
 used = set(re.findall(r"fs_block\(\s*'(fahrschule/[a-z0-9-]+)'", allphp))
+used |= set(re.findall(r"<!-- wp:(fahrschule/[a-z0-9-]+)", allhtml + allphp))
 unknown = sorted(used - set(declared))
 if unknown: fail("fs_block() auf nicht registrierten Block: " + ", ".join(unknown))
 if not missing and not norender and not unknown:
@@ -81,11 +87,12 @@ else:
 
 # --- CSS-Klassen ---------------------------------------------------------
 CL = r"[A-Za-z][A-Za-z0-9_-]*"
-cssc = set(re.findall(r"\.(fs-" + CL + ")", maincss))
+cssc = set(re.findall(r"\.(fs-" + CL + ")", maincss + editorcss))
 phpc = set()
-for pat in [r'class="([^"]*)"', r"class='([^']*)'"]:
-    for m in re.finditer(pat, allphp):
+for pat in [r'class="([^"]*)"', r"class='([^']*)'", r'"className":"([^"]*)"']:
+    for m in re.finditer(pat, allphp + allhtml):
         for c in m.group(1).split():
+            c = c.strip("'\"(),;")   # Klassen aus PHP-Ausdrücken: 'fs-a' : 'fs-b'
             if c.startswith('fs-') and '$' not in c and '<' not in c and '%' not in c:
                 phpc.add(c)
 und = sorted(phpc - cssc)

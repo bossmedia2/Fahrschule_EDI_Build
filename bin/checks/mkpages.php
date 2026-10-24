@@ -21,19 +21,20 @@ $tpl = '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'
 	. '<noscript><style>.fs-fade-up{opacity:1 !important;animation:none !important}'
 	. '.fs-cookiebanner,.fs-tiktok{display:none !important}</style></noscript>'
 	. '</head><body class="fahrschule-theme"><a class="fs-skip" href="#content">Zum Inhalt springen</a>'
-	. '%s<script src="frontend.js"></script></body></html>';
+	// .wp-site-blocks: der Rahmen, den template-canvas.php um jede Block-Vorlage legt.
+	. '<div class="wp-site-blocks">%s</div><script src="frontend.js"></script></body></html>';
 
 foreach ( $pages as $key => $html ) {
 	// Theme-URL auf den lokalen Pfad biegen, damit Bilder wirklich laden.
 	$html = str_replace( '/wp-content/themes/fahrschule-edi/assets/', 'assets/', $html );
-	// Die Marke setzt smoke.php hinter die Navigation. Früher suchte hier ein
-	// Regex das erste "</div></div>" nach dem Overlay - das lag im Schubfach,
-	// <main> landete mitten darin und verbog dessen Layout in der Prüfung.
-	if ( false === strpos( $html, '<!--fs-main-->' ) ) {
-		fwrite( STDERR, "  FEHLER: $key ohne <!--fs-main--> Marke\n" );
+	// Die Block-Vorlage bringt <main> selbst mit. WordPress setzt dort die
+	// Sprungmarke für den Skip-Link (the_block_template_skip_link) - hier
+	// dasselbe, damit der Link aus dem Seitenrahmen ein Ziel hat.
+	if ( 1 !== substr_count( $html, '<main' ) ) {
+		fwrite( STDERR, "  FEHLER: $key hat nicht genau ein <main>\n" );
 		exit( 1 );
 	}
-	$html = str_replace( '<!--fs-main-->', '<main id="content">', $html ) . '</main>';
+	$html = preg_replace( '#<main(?![^>]*\bid=)#', '<main id="content"', $html, 1 );
 	file_put_contents( $out . '/' . $key . '.html', sprintf( $tpl, htmlspecialchars( $key ), $html ) );
 }
 echo "  ok: " . count( $pages ) . " Seiten gerendert nach $out\n";

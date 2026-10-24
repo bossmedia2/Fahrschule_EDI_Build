@@ -20,7 +20,6 @@ require_once FAHRSCHULE_DIR . '/inc/helpers.php';
 require_once FAHRSCHULE_DIR . '/inc/pdf-texts.php';   // Kundentexte (PDF) – einzige Quelle für Blöcke + Editor-Defaults
 require_once FAHRSCHULE_DIR . '/inc/media.php';
 require_once FAHRSCHULE_DIR . '/inc/pages.php';
-require_once FAHRSCHULE_DIR . '/inc/template-parts.php';
 require_once FAHRSCHULE_DIR . '/inc/render-callbacks.php';
 require_once FAHRSCHULE_DIR . '/inc/blocks-config.php';
 require_once FAHRSCHULE_DIR . '/inc/seo.php';
@@ -40,12 +39,14 @@ function fahrschule_setup() {
 	add_theme_support( 'responsive-embeds' );
 	add_theme_support( 'wp-block-styles' );
 
-	add_editor_style( 'assets/css/main.css' );
-
-	register_nav_menus( array(
-		'primary' => __( 'Hauptmenü', 'fahrschule-edi' ),
-		'footer'  => __( 'Footer-Menü', 'fahrschule-edi' ),
-	) );
+	// Editor-Stile landen im iframe von Block- UND Website-Editor. editor.css
+	// macht dort sichtbar, was im Frontend erst JavaScript einblendet
+	// (.fs-fade-up), und blendet Cookie-Banner und TikTok-Badge aus.
+	$editor_styles = array( 'assets/css/main.css', 'assets/css/editor.css' );
+	if ( file_exists( FAHRSCHULE_DIR . '/assets/fonts/fonts.css' ) ) {
+		array_unshift( $editor_styles, 'assets/fonts/fonts.css' );
+	}
+	add_editor_style( $editor_styles );
 }
 add_action( 'after_setup_theme', 'fahrschule_setup' );
 
@@ -70,7 +71,7 @@ function fahrschule_register_assets() {
 	wp_register_script(
 		'fahrschule-editor',
 		FAHRSCHULE_URI . '/assets/js/editor.js',
-		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n' ),
+		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n', 'wp-data' ),
 		FAHRSCHULE_VERSION,
 		true
 	);
@@ -101,8 +102,9 @@ add_action( 'wp_enqueue_scripts', 'fahrschule_assets' );
  * (ServerSideRender-Vorschau + InspectorControls aus den 'fields' der Konfiguration).
  */
 function fahrschule_editor_assets() {
+	// Einziger Weg, auf dem editor.js lädt - auch im Website-Editor, wo ein
+	// 'editor_script' an register_block_type() nicht zuverlässig greift.
 	wp_enqueue_script( 'fahrschule-editor' );
-	wp_enqueue_style( 'fahrschule-main' );
 
 	// Block-Meta für den generischen Editor zusammenstellen.
 	$config = fahrschule_blocks_config();
@@ -194,7 +196,6 @@ function fahrschule_register_blocks_and_patterns() {
 				'attributes'      => $attributes,
 				'supports'        => array( 'html' => false, 'align' => array( 'wide', 'full' ) ),
 				'render_callback' => $cfg['render'],
-				'editor_script'   => 'fahrschule-editor',
 				'editor_style'    => 'fahrschule-main',
 				'style'           => 'fahrschule-main',
 			)
@@ -224,6 +225,18 @@ add_action( 'init', 'fahrschule_register_blocks_and_patterns' );
 /* =========================================================================
  * 5) Body-Klasse + Editor-Wrapper für korrekte Vorschau
  * ====================================================================== */
+/*
+ * Ohne JavaScript werden Scroll-Animationen übersprungen, damit alle Inhalte
+ * sichtbar und crawlbar bleiben. Cookie-Banner und TikTok-Badge lassen sich
+ * nur per JavaScript schließen und würden sonst dauerhaft den unteren
+ * Bildrand belegen - ohne JS lädt das Theme ohnehin nichts
+ * Einwilligungspflichtiges. (Stand bis 2.x in header.php.)
+ */
+function fahrschule_noscript() {
+	echo "<noscript><style>.fs-fade-up{opacity:1 !important;animation:none !important}.fs-cookiebanner,.fs-tiktok{display:none !important}</style></noscript>\n";
+}
+add_action( 'wp_head', 'fahrschule_noscript', 20 );
+
 function fahrschule_body_class( $classes ) {
 	$classes[] = 'fahrschule-theme';
 	return $classes;

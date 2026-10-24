@@ -108,16 +108,17 @@ function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($
    fs_stub_set_page() setzt den Kontext, den WordPress fuer eine Seite haette. */
 if(!class_exists('WP_Post')){ class WP_Post { public $ID=0; public $post_name=''; public $post_title=''; public $post_type='page'; public $post_content='';
   public function __construct($a=[]){ foreach($a as $k=>$v) $this->$k=$v; } } }
-function fs_stub_set_page($slug,$title,$front=false){
+function fs_stub_set_page($slug,$title,$front=false,$content=''){
   $GLOBALS['__is_front']=$front;
-  $GLOBALS['__queried']=$front?null:new WP_Post(['ID'=>crc32($slug)%100000,'post_name'=>$slug,'post_title'=>$title]);
+  $GLOBALS['__queried']=$front?null:new WP_Post(['ID'=>crc32($slug)%100000,'post_name'=>$slug,'post_title'=>$title,'post_content'=>$content]);
 }
 function get_permalink($p=null){ $q=$GLOBALS['__queried']??null; return home_url('/'.($q?$q->post_name.'/':'')); }
 function get_the_title($p=null){ $q=$GLOBALS['__queried']??null; return $q?$q->post_title:'Startseite'; } function get_the_content($m=null){return '';}
 function get_post_field($f,$p=null){return '';}
 function the_content(){} function the_excerpt(){} function the_post(){} function have_posts(){return false;}
 function the_ID(){echo '1';}
-function get_search_form($e=true){$h='<form role="search"><label class="fs-visually-hidden" for="s">Suche</label><input id="s" type="search" name="s"><button type="submit">Suchen</button></form>'; if($e) echo $h; return $h;}
+function get_search_form($e=true){$h='<form role="search" method="get" class="search-form" action="/"><label><span class="screen-reader-text">Suche nach:</span><input type="search" class="search-field" placeholder="Suche …" value="" name="s"></label><input type="submit" class="search-submit" value="Suche"></form>'; if(is_array($e)) $e=$e['echo']??true; if($e) echo $h; return $h;}
+function get_post_ancestors($p){ return []; }
 function get_search_query(){return '';}
 function get_header(){} function get_footer(){}
 function get_page_by_path($p,$o='OBJECT',$t='page'){return null;}
@@ -136,3 +137,26 @@ function flush_rewrite_rules(){} function add_options_page(){} function register
 function settings_fields($g){} function submit_button($t=null){} function checked($a,$b=true,$e=true){}
 function mb_strrpos_stub(){}
 function number_format_i18n($n,$d=0){return number_format($n,$d,',','.');}
+/* ---- Block-Serialisierung wie WordPress (wp-includes/blocks.php) ----
+   Gleiche Maskierung der Attribute, gleiche Kurzform für Kern-Blöcke,
+   damit der Test dasselbe Markup sieht, das die Seitenanlage schreibt. */
+if(!function_exists('serialize_block_attributes')){
+function serialize_block_attributes($a){
+  $s=json_encode($a,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  $s=preg_replace('/--/','\\u002d\\u002d',$s);
+  $s=preg_replace('/</','\\u003c',$s); $s=preg_replace('/>/','\\u003e',$s);
+  $s=preg_replace('/&/','\\u0026',$s); $s=preg_replace('/\\\\"/','\\u0022',$s);
+  return $s; }
+function strip_core_block_namespace($n=null){ return (is_string($n)&&str_starts_with($n,'core/'))?substr($n,5):$n; }
+function get_comment_delimited_block_content($name,$attrs,$content){
+  if($name===null) return $content;
+  $n=strip_core_block_namespace($name);
+  $sa=empty($attrs)?'':serialize_block_attributes($attrs).' ';
+  if(empty($content)) return sprintf('<!-- wp:%s %s/-->',$n,$sa);
+  return sprintf('<!-- wp:%s %s-->%s<!-- /wp:%s -->',$n,$sa,$content,$n); }
+function serialize_block($b){
+  $c=''; $i=0; foreach($b['innerContent'] as $chunk){ $c.=is_string($chunk)?$chunk:serialize_block($b['innerBlocks'][$i++]); }
+  if(!is_array($b['attrs'])) $b['attrs']=[];
+  return get_comment_delimited_block_content($b['blockName'],$b['attrs'],$c); }
+function serialize_blocks($bs){ return implode('',array_map('serialize_block',$bs)); }
+}
