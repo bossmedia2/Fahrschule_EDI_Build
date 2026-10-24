@@ -511,82 +511,112 @@ function fs_render_testimonials( $a ) {
  * ---------------------------------------------------------------------- */
 function fs_render_instagram_slider( $a ) {
 	$d = fs_attrs( $a, array(
-		'heading'  => 'Folgen Sie uns auf Instagram',
-		'highlight'=> 'Instagram',
-		'subtitle' => 'Einblicke in den Alltag der Fahrschule edi – Tipps und Neuigkeiten direkt in Ihrem Feed.',
-		'url'      => 'https://www.instagram.com/fahrschuleedi/',
-		'cap_1'    => 'Endlich bestanden! Herzlichen Glückwunsch an alle neuen Fahrerinnen und Fahrer.',
-		'cap_2'    => 'Moderne Fahrzeuge, moderne Ausbildung.',
-		'cap_3'    => 'Team edi – Ihre Ansprechpartner im Ruhrgebiet.',
-		'cap_4'    => 'Motorradtraining – Sicherheit an erster Stelle.',
-		'cap_5'    => 'Klasse C erfolgreich bestanden.',
-		'cap_6'    => 'Bei uns lernen Sie nicht nur fahren.',
+		'heading'      => 'Folgen Sie uns',
+		'highlight'    => '',
+		'subtitle'     => '',
+		'instaHandle'  => '',
+		'instaUrl'     => '',
+		'tiktokHandle' => '',
+		'tiktokUrl'    => '',
+		'items'        => array(),
+		'url'          => '',
 	) );
-	/*
-	 * Die Like-/Kommentarzahlen standen hier frei erfunden im Code (234 Likes
-	 * usw.). Erfundene Reichweitenzahlen sind Werbung mit falschen Angaben -
-	 * sie sind ersatzlos entfallen. Es bleiben Bild und Bildtext.
-	 */
-	$posts = array();
-	foreach ( array( 'ig_1', 'ig_2', 'ig_3', 'ig_4', 'ig_5', 'ig_6' ) as $i => $key ) {
-		if ( ! fs_has_media( $key ) ) { continue; }
-		$posts[] = array( fs_media( $key ), $d[ 'cap_' . ( $i + 1 ) ] );
-	}
-	$heading = fs_highlight( $d['heading'], $d['highlight'] );
+	if ( '' === trim( $d['instaUrl'] ) && '' !== trim( $d['url'] ) ) { $d['instaUrl'] = $d['url']; } // Altfeld bis 3.0
+	$profil = array( 'instagram' => $d['instaUrl'], 'tiktok' => $d['tiktokUrl'] );
+	$name   = array( 'instagram' => 'Instagram', 'tiktok' => 'TikTok' );
 
 	/*
-	 * Ohne hinterlegte Beiträge entfällt der Slider und es bleibt der reine
-	 * Verweis auf das echte Profil - kein leerer Rahmen, keine Platzhalter.
+	 * Eine Kachel braucht Bild UND Beschreibung: ohne Bild gibt es nichts zu
+	 * zeigen, ohne Beschreibung fehlt der Alt-Text (WCAG). Keine Kachel lädt
+	 * etwas von TikTok oder Instagram - das Bild kommt aus der Mediathek, der
+	 * Klick öffnet den Beitrag in einem neuen Tab.
 	 */
-	if ( ! $posts ) {
-		ob_start(); ?>
-		<section class="fs-section fs-surface-light">
-			<div class="fs-container fs-z">
-				<div class="fs-head">
-					<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><?php echo fs_el( 'h2', '', '', $heading ); ?></div>
-					<?php echo fs_el( 'p', $d['subtitle'] ); ?>
-				</div>
-				<div class="fs-center">
-					<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( 'instagram', 20 ); ?> Besuchen Sie uns auf Instagram</a>
-				</div>
-			</div>
-		</section>
-		<?php
-		return ob_get_clean();
+	$kacheln = array();
+	$fehlt   = array();
+	foreach ( fs_rows( $d['items'], 4 ) as $i => $row ) {
+		list( $plattform, $slug, $link, $text ) = array_map( 'trim', $row );
+		$plattform = 'instagram' === strtolower( $plattform ) ? 'instagram' : 'tiktok';
+		$bild      = '' !== $slug ? fs_media_by_slug( $slug ) : '';
+		if ( '' === $bild ) { continue; }
+		if ( '' === $text ) { $fehlt[] = $i + 1; continue; }
+		$kacheln[] = array(
+			'plattform' => $plattform,
+			'bild'      => $bild,
+			'link'      => '' !== $link ? $link : $profil[ $plattform ],
+			'text'      => $text,
+		);
 	}
+	$hinweis = $fehlt ? fs_editor_hint( 'Social-Feed', 'Kachel ' . implode( ', ', $fehlt ) . ': Bildbeschreibung fehlt – ohne sie erscheint die Kachel nicht.' ) : '';
+	if ( ! $kacheln ) {
+		return $hinweis ? $hinweis : fs_editor_hint( 'Social-Feed', 'Erscheint, sobald eine Kachel ein Bild (Medien-Slug) und eine Bildbeschreibung hat.' );
+	}
+
+	$knoepfe = array();
+	foreach ( array( 'instagram' => 'instaHandle', 'tiktok' => 'tiktokHandle' ) as $p => $feld ) {
+		if ( fs_has( $d, $feld ) && '' !== trim( $profil[ $p ] ) ) {
+			$knoepfe[ $p ] = '@' . ltrim( trim( $d[ $feld ] ), '@' );
+		}
+	}
+	$heading = fs_highlight( $d['heading'], $d['highlight'] );
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light" data-fs-ig>
 		<div class="fs-container fs-wide" style="margin-inline:auto;">
+			<?php echo $hinweis; ?>
+			<?php if ( fs_has( $d, 'heading' ) || fs_has( $d, 'subtitle' ) ) : ?>
 			<div class="fs-head">
-				<div class="fs-ig__head"><?php echo fs_icon( 'instagram', 32 ); ?><?php echo fs_el( 'h2', '', '', $heading ); ?></div>
+				<?php if ( fs_has( $d, 'heading' ) ) : ?><div class="fs-ig__head"><?php echo fs_el( 'h2', '', '', $heading ); ?></div><?php endif; ?>
 				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
 			</div>
-			<div class="fs-ig__track" id="fs-ig-track" aria-live="polite" data-fs-ig-track
-				data-posts='<?php echo esc_attr( wp_json_encode( $posts ) ); ?>'><?php
-				// Die ersten drei Beiträge werden serverseitig ausgegeben: dadurch sind
-				// Inhalte für Suchmaschinen sichtbar und ohne JavaScript nutzbar.
-				for ( $i = 0; $i < min( 3, count( $posts ) ); $i++ ) :
-					$p = $posts[ $i ]; ?>
-					<figure class="fs-ig__post">
-						<span class="fs-ig__badge">Instagram</span>
-						<img src="<?php echo esc_url( $p[0] ); ?>" alt="<?php echo esc_attr( wp_strip_all_tags( $p[1] ) ); ?>" width="500" height="500" loading="lazy" decoding="async">
-						<figcaption class="fs-ig__cap">
-							<p><?php echo esc_html( $p[1] ); ?></p>
-						</figcaption>
+			<?php endif; ?>
+			<?php /* Alle Kacheln stehen im HTML - Editor-Vorschau und Seite ohne
+			         JavaScript zeigen sie vollständig; frontend.js blendet im
+			         Karussell ein Fenster von drei ein. */ ?>
+			<div class="fs-ig__track" id="fs-ig-track" aria-live="polite" data-fs-ig-track>
+				<?php foreach ( $kacheln as $k ) : ?>
+				<a class="fs-ig__post" href="<?php echo esc_url( $k['link'] ); ?>" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr( $k['text'] ); ?>" data-plattform="<?php echo esc_attr( $k['plattform'] ); ?>">
+					<figure>
+						<span class="fs-ig__badge"><?php echo fs_icon( $k['plattform'], 14 ); ?> <?php echo esc_html( $name[ $k['plattform'] ] ); ?></span>
+						<img src="<?php echo esc_url( $k['bild'] ); ?>" alt="<?php echo esc_attr( $k['text'] ); ?>" width="500" height="500" loading="lazy" decoding="async">
+						<figcaption class="fs-ig__cap"><p><?php echo esc_html( $k['text'] ); ?></p></figcaption>
 					</figure>
-				<?php endfor; ?></div>
+				</a>
+				<?php endforeach; ?>
+			</div>
+			<?php if ( count( $kacheln ) > 3 ) : ?>
 			<div class="fs-ig__nav">
 				<button type="button" class="fs-ig__arrow" data-fs-ig-prev aria-label="Vorherige Beiträge" aria-controls="fs-ig-track"><?php echo fs_icon( 'chevron-left', 24 ); ?></button>
 				<div class="fs-ig__dots" data-fs-ig-dots></div>
 				<button type="button" class="fs-ig__arrow" data-fs-ig-next aria-label="Nächste Beiträge" aria-controls="fs-ig-track"><?php echo fs_icon( 'chevron-right', 24 ); ?></button>
 			</div>
-			<div class="fs-center fs-mt-8">
-				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( 'instagram', 20 ); ?> Besuchen Sie uns auf Instagram</a>
+			<?php endif; ?>
+			<?php if ( $knoepfe ) : ?>
+			<div class="fs-center fs-mt-8 fs-ig__profile">
+				<?php foreach ( $knoepfe as $p => $handle ) : ?>
+				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $profil[ $p ] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( $p, 20 ); ?> <?php echo esc_html( $handle ); ?><span class="fs-visually-hidden"> auf <?php echo esc_html( $name[ $p ] ); ?></span></a>
+				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php
 	return ob_get_clean();
+}
+
+/**
+ * Social-Profil aus den Stammdaten (inc/seo.php, 'social'): Link und @-Name.
+ *
+ * @param string $plattform instagram | tiktok
+ * @return array{url:string,handle:string}
+ */
+function fs_social_profil( $plattform ) {
+	$host = 'instagram' === $plattform ? 'instagram.com' : 'tiktok.com';
+	foreach ( (array) fahrschule_business_data()['social'] as $url ) {
+		if ( false !== strpos( (string) $url, $host ) ) {
+			$teil = trim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
+			return array( 'url' => $url, 'handle' => '@' . ltrim( strtok( $teil, '/' ), '@' ) );
+		}
+	}
+	return array( 'url' => '', 'handle' => '' );
 }
 
 /* -------------------------------------------------------------------------

@@ -68,6 +68,10 @@ Einzelheiten: `docs/assets_image_list.md`.
   - [ ] Absatz zu Bewerbungsdaten ergänzen.
 - [ ] **Einwilligungen** für Fotos mit Minderjährigen (Bild-Briefing).
 - [ ] **Vollständige Namen** der Fahrlehrer, Standort von Abdullah und Mesut.
+- [ ] **Social-Feed** (Erfahrungen): je Kachel ein Coverbild (`edi-social-<nnn>`,
+      quadratisch) hochladen und im Block eine Bildbeschreibung eintragen –
+      ohne beides erscheint die Kachel nicht. Ist keine Kachel gefüllt, entfällt
+      die ganze Sektion.
 
 ---
 

@@ -113,6 +113,9 @@ function fahrschule_editor_assets() {
 		$fields = array();
 		if ( ! empty( $cfg['fields'] ) ) {
 			foreach ( $cfg['fields'] as $key => $f ) {
+				// Altfelder bleiben registriert (sonst verwirft Gutenberg ihre
+				// Werte beim Speichern), erscheinen aber nicht im Editor.
+				if ( ! empty( $f['legacy'] ) ) { continue; }
 				$fields[] = array(
 					'key'     => $key,
 					'label'   => $f['label'],

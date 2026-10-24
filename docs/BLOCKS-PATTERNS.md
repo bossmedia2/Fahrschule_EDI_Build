@@ -101,7 +101,7 @@ gibt der Block nichts aus, etwa die Galerie ohne Bilder.
 | `team-spirit` | Team Spirit | Wert (Liste) · Badge · Überschrift · Hervorgehobenes Wort · Text · Zitat · Zitat-Autor · Video-URL | nein | /ueber-uns/team |
 | `fleet-facilities` | Flotte & Einrichtungen | – | nein | /moderne-ausbildung |
 | `testimonials` | Testimonials | Eyebrow · Überschrift · Untertitel · Fläche | nein | / |
-| `instagram-slider` | Instagram Slider | Überschrift · Hervorgehobenes Wort · Untertitel · Instagram-URL | nein | /ueber-uns/erfahrungen |
+| `instagram-slider` | Social-Feed (Instagram/TikTok) | Überschrift · Hervorgehobenes Wort · Untertitel · Instagram: @-Name (leer = kein Knopf) · Instagram: Profil-Link · TikTok: @-Name (leer = kein Knopf) · TikTok: Profil-Link · Kachel (Liste) · Instagram-URL (alt) | ja | /ueber-uns/erfahrungen |
 | `faq` | FAQ | Eyebrow · Überschrift | nein | /faq, /preise |
 | `cta` | CTA / Kontakt | Kennzahl (Liste) · Überschrift · Hervorgehobenes Wort · Lead-Text · Telefon · E-Mail | nein | /kontakt, templates/page-bereich.html, templates/page-beruf.html, templates/page-faq.html, templates/page-kurs.html, templates/page-standort.html, templates/page-theorie.html, templates/page-uebersicht.html |
 | `about-intro` | Über uns – Intro | Eyebrow · Überschrift · Hervorgehobenes Wort · Absatz 1 · Absatz 2 · Absatz 3 · Abschnittskopf (Label + Überschrift) anzeigen | nein | /ueber-uns |

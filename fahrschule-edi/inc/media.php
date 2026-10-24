@@ -77,15 +77,10 @@ function fahrschule_media_map() {
 		 * -b), gepflegt im Fahrlehrer-Finder. Die PDF-Gruppen (F9) sind dort
 		 * eine Spalte - bis 2.x standen hier drei leere Gruppenfoto-Schlüssel. */
 
-		/* --- Instagram-Beiträge: bewusst leer -----------------------------
-		 * Hier standen sechs Unsplash-Stockfotos ohne Bezug zur Fahrschule.
-		 * Der Instagram-Block blendet sich aus, solange nichts hinterlegt ist. */
-		'ig_1' => '',
-		'ig_2' => '',
-		'ig_3' => '',
-		'ig_4' => '',
-		'ig_5' => '',
-		'ig_6' => '',
+		/* --- Social-Feed: kein fester Schlüssel mehr ----------------------
+		 * Jede Kachel des Social-Feeds nennt ihr Bild selbst (Medien-Slug wie
+		 * edi-social-001, Spalte im Wiederholfeld). Bis 3.0 standen hier die
+		 * leeren Schlüssel ig_1 bis ig_6 (davor Unsplash-Platzhalter). */
 	) );
 }
 

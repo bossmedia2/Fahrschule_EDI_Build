@@ -289,15 +289,33 @@ function fahrschule_blocks_config() {
 				'flaeche'  => $t( 'light', 'Fläche', 'select', array( 'light' => 'Rosé', 'brand' => 'Pink' ) ),
 			),
 		),
+		/* Slug bleibt instagram-slider: Umbenennen bräche jede Seite, auf der der
+		   Block steht. Inhaltlich ist es der Social-Feed beider Plattformen. */
 		'fahrschule/instagram-slider' => array(
-			'title' => 'Instagram Slider', 'description' => 'Slider mit Instagram-Beiträgen (3 sichtbar).',
-			'icon' => 'instagram', 'keywords' => array( 'instagram', 'social', 'slider' ),
-			'render' => 'fs_render_instagram_slider', 'pattern' => true, 'page' => 'Startseite',
+			'title' => 'Social-Feed (Instagram/TikTok)', 'description' => 'Karussell aus Kacheln; jede Kachel trägt ihre Plattform (tiktok/instagram), ein Bild aus der Mediathek, einen Link und eine Bildbeschreibung. Kein Embed, kein Abruf bei TikTok oder Instagram. Ohne Kachel mit Bild und Beschreibung entfällt die Sektion.',
+			'icon' => 'share', 'keywords' => array( 'instagram', 'tiktok', 'social', 'slider' ),
+			'render' => 'fs_render_instagram_slider', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Erfahrungen',
 			'fields' => array(
-				'heading'   => $t( 'Folgen Sie uns auf Instagram', 'Überschrift', 'text' ),
-				'highlight' => $t( 'Instagram', 'Hervorgehobenes Wort', 'text' ),
-				'subtitle'  => $t( 'Einblicke in den Alltag der Fahrschule edi – Tipps und Neuigkeiten direkt in Ihrem Feed.', 'Untertitel', 'textarea' ),
-				'url'       => $t( 'https://www.instagram.com/fahrschuleedi/', 'Instagram-URL', 'url' ),
+				'heading'      => $t( 'Folgen Sie uns', 'Überschrift', 'text' ),
+				'highlight'    => $t( '', 'Hervorgehobenes Wort', 'text' ),
+				'subtitle'     => $t( 'Einblicke in den Alltag der Fahrschule edi – Tipps und Neuigkeiten direkt in Ihrem Feed.', 'Untertitel', 'textarea' ),
+				// Profile aus den Stammdaten (inc/seo.php). Leerer @-Name = Knopf entfällt.
+				'instaHandle'  => $t( fs_social_profil( 'instagram' )['handle'], 'Instagram: @-Name (leer = kein Knopf)', 'text' ),
+				'instaUrl'     => $t( fs_social_profil( 'instagram' )['url'], 'Instagram: Profil-Link', 'url' ),
+				'tiktokHandle' => $t( fs_social_profil( 'tiktok' )['handle'], 'TikTok: @-Name (leer = kein Knopf)', 'text' ),
+				'tiktokUrl'    => $t( fs_social_profil( 'tiktok' )['url'], 'TikTok: Profil-Link', 'url' ),
+				// Kacheln: bewusst ohne Bildbeschreibung vorbelegt - eine Kachel
+				// erscheint erst, wenn Bild UND Beschreibung da sind.
+				'items'        => $rep(
+					array_map( static function ( $n ) { return array( 'instagram', sprintf( 'edi-social-%03d', $n ), '', '' ); }, range( 1, 6 ) ),
+					'Kachel',
+					array( 'Plattform (tiktok / instagram)', 'Bild: Medien-Slug, z. B. edi-social-001 (quadratisch, mind. 1080 px)', 'Link zum Beitrag (leer = Profil)', 'Bildbeschreibung (Pflicht – was ist auf dem Bild zu sehen?)' ),
+					array( array( 'tiktok', 'edi-logo', '', 'ZZPROBEZZ' ), 'ZZPROBEZZ' )
+				),
+				// Bis 3.0: einzelnes Instagram-Profil. Bleibt registriert, damit
+				// Gutenberg einen gespeicherten Wert beim Speichern nicht verwirft;
+				// im Editor ausgeblendet, beim Rendern Rückfall für instaUrl.
+				'url'          => $t( '', 'Instagram-URL (alt)', 'url' ) + array( 'legacy' => true ),
 			),
 		),
 		'fahrschule/faq' => array(

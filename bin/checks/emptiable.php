@@ -22,8 +22,14 @@ foreach($cfg as $name=>$c){
      Kurs-Slots), lassen sich so nicht vergleichen: leer bleibt leer. Sie
      werden an anderer Stelle geprueft - hier uebersprungen statt faelschlich
      als Fehler gemeldet. */
-  if(!empty($c['may_be_empty'])){ $skipped += count($c['fields']); continue; }
+  /* Ausnahme von der Ausnahme: Hat ein solcher Block ein Wiederholfeld mit
+     gültiger Probezeile (Social-Feed: Kachel mit Theme-Bild), wird er MIT
+     dieser Zeile als Grundzustand geprüft - dann wirken seine Textfelder. */
+  $basis=[];
+  foreach($c['fields'] as $k=>$f){ if(!empty($f['probe'])) $basis[$k]=[$f['probe'][0]]; }
+  if(!empty($c['may_be_empty']) && !$basis){ $skipped += count($c['fields']); continue; }
   foreach($c['fields'] as $key=>$f){
+    if(!empty($f['legacy'])) continue;              // Altfeld, im Editor nicht sichtbar
     if(($f['control']??'')==='select') continue;
     if(($f['control']??'')==='repeater') continue;   // eigener Prüfteil weiter unten
     if(!is_string($f['default']) || trim($f['default'])==='') continue;
@@ -32,8 +38,8 @@ foreach($cfg as $name=>$c){
     // werden ohne Beispieldaten geprüft.
     $jobs = $GLOBALS['__jobs'];
     if(($f['zustand']??'')==='ohne_daten') $GLOBALS['__jobs']=[];
-    $base = $R($name,[]);              // Vorgabe
-    $cleared = $R($name,[$key=>'']);   // Feld geleert
+    $base = $R($name,$basis);                     // Vorgabe
+    $cleared = $R($name,array_merge($basis,[$key=>'']));   // Feld geleert
     $GLOBALS['__jobs'] = $jobs;
     // Bewusste Ausnahmen: das Logo faellt auf die Medien-Registry zurueck.
     // Ein Header ohne Logo waere kaputt, nicht leer.
@@ -62,16 +68,17 @@ foreach($cfg as $name=>$c){
   /* Dieselbe Ausnahme wie oben: Bloecke, deren Ausgabe an externen Daten
      haengt (die Galerie liest die Mediathek, die im Test leer ist), geben
      unabhaengig vom Feldwert nichts aus - daran laesst sich nichts messen. */
-  if(!empty($c['may_be_empty'])) continue;
+  $mbe = !empty($c['may_be_empty']);
   foreach($c['fields'] as $key=>$f){
     if(($f['control']??'')!=='repeater') continue;
+    if($mbe && empty($f['probe'])) continue;        // ohne gültige Probezeile nicht messbar
     $cols  = max(1, count($f['columns'] ?? []));
     $probe = 'ZZPROBEZZ';
     $row   = array_fill(0, $cols, $probe);
     if(!empty($f['probe'])){ [$row,$probe] = $f['probe']; }   // Schlüssel-Spalten: gültige Testzeile
     $custom = $R($name,[$key=>[$row]]);
     $empty  = $R($name,[$key=>[]]);
-    $base   = $R($name,[]);
+    $base   = $mbe ? $custom : $R($name,[]);   // leerer Grundzustand: gegen die Probezeile messen
     if(strpos($custom,$probe)===false){ $repBad[]="$name.$key: eigene Zeile erscheint nicht"; }
     if(strlen($empty) >= strlen($base)){ $repBad[]="$name.$key: Leeren verkleinert die Ausgabe nicht"; }
     /* Nur Container zählen, die durch das Leeren NEU entstehen. Manche sind

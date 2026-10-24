@@ -183,77 +183,47 @@
 			paint();
 		} );
 
-		/* ---------- Instagram-Slider ---------- */
+		/* ---------- Social-Feed (Karussell) ----------
+		 * Alle Kacheln stehen bereits im HTML (Editor und Seite ohne JS zeigen
+		 * sie vollständig). Hier wird nur ein Fenster von drei Kacheln
+		 * eingeblendet; die übrigen bekommen hidden. Die Reihenfolge im Fenster
+		 * läuft über CSS order, damit das Blättern ringförmig bleibt, ohne das
+		 * Markup umzubauen. */
 		document.querySelectorAll( '[data-fs-ig]' ).forEach( function ( section ) {
 			var track = section.querySelector( '[data-fs-ig-track]' );
 			var dots  = section.querySelector( '[data-fs-ig-dots]' );
 			if ( ! track ) { return; }
-			var posts = [];
-			try { posts = JSON.parse( track.getAttribute( 'data-posts' ) ); } catch ( e ) {}
-			if ( ! posts.length ) { return; }
-			var current = 0;
-
-			function buildCard( p ) {
-				var fig = document.createElement( 'figure' );
-				fig.className = 'fs-ig__post';
-
-				var badge = document.createElement( 'span' );
-				badge.className = 'fs-ig__badge';
-				badge.textContent = 'Instagram';
-
-				var img = document.createElement( 'img' );
-				img.src = p[0];
-				img.alt = p[1];
-				img.width = 500; img.height = 500;
-				img.loading = 'lazy'; img.decoding = 'async';
-
-				var cap = document.createElement( 'figcaption' );
-				cap.className = 'fs-ig__cap';
-				var txt = document.createElement( 'p' );
-				txt.textContent = p[1];
-				cap.appendChild( txt );
-
-				fig.appendChild( badge ); fig.appendChild( img ); fig.appendChild( cap );
-				return fig;
-			}
+			var cards = [].slice.call( track.querySelectorAll( '.fs-ig__post' ) );
+			var n = cards.length, current = 0, sichtbar = 3;
+			if ( n <= sichtbar ) { return; }
 
 			function render() {
-				track.textContent = '';
-				for ( var i = 0; i < Math.min( 3, posts.length ); i++ ) {
-					track.appendChild( buildCard( posts[ ( current + i ) % posts.length ] ) );
-				}
+				cards.forEach( function ( c, i ) {
+					var off = ( i - current + n ) % n;
+					c.hidden = off >= sichtbar;
+					c.style.order = off;
+				} );
 				if ( dots ) {
-					dots.textContent = '';
-					posts.forEach( function ( _, idx ) {
-						var d = document.createElement( 'button' );
-						d.type = 'button';
-						d.className = 'fs-ig__dot' + ( idx === current ? ' is-active' : '' );
-						d.setAttribute( 'aria-label', 'Beitrag ' + ( idx + 1 ) + ' anzeigen' );
-						d.addEventListener( 'click', function () { current = idx; render(); } );
-						dots.appendChild( d );
+					[].slice.call( dots.children ).forEach( function ( d, i ) {
+						d.classList.toggle( 'is-active', i === current );
+						d.setAttribute( 'aria-current', i === current ? 'true' : 'false' );
 					} );
 				}
 			}
-
-			// Punkte-Navigation initial aufbauen; die ersten drei Karten kommen
-			// bereits serverseitig gerendert aus PHP und bleiben bis zur ersten
-			// Interaktion unangetastet.
-			function renderDotsOnly() {
-				if ( ! dots ) { return; }
+			if ( dots ) {
 				dots.textContent = '';
-				posts.forEach( function ( _, idx ) {
+				cards.forEach( function ( _, idx ) {
 					var d = document.createElement( 'button' );
 					d.type = 'button';
-					d.className = 'fs-ig__dot' + ( idx === current ? ' is-active' : '' );
+					d.className = 'fs-ig__dot';
 					d.setAttribute( 'aria-label', 'Beitrag ' + ( idx + 1 ) + ' anzeigen' );
 					d.addEventListener( 'click', function () { current = idx; render(); } );
 					dots.appendChild( d );
 				} );
 			}
-
-			on( section.querySelector( '[data-fs-ig-next]' ), 'click', function () { current = ( current + 1 ) % posts.length; render(); } );
-			on( section.querySelector( '[data-fs-ig-prev]' ), 'click', function () { current = ( current - 1 + posts.length ) % posts.length; render(); } );
-			renderDotsOnly();
+			on( section.querySelector( '[data-fs-ig-next]' ), 'click', function () { current = ( current + 1 ) % n; render(); } );
+			on( section.querySelector( '[data-fs-ig-prev]' ), 'click', function () { current = ( current - 1 + n ) % n; render(); } );
+			render();
 		} );
 
 		/* ---------- TikTok-Badge schließen ---------- */

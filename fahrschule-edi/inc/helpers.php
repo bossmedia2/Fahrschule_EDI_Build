@@ -40,7 +40,8 @@ function fs_icon( $name, $size = 20, $extra_class = '' ) {
 	);
 
 	$inner = isset( $paths[ $name ] ) ? $paths[ $name ] : '';
-	$fill  = in_array( $name, array( 'play', 'star', 'tiktok', 'instagram', 'navigation', 'heart' ), true ) ? 'currentColor' : 'none';
+	// instagram ist ein Umriss-Icon (Kamera): gefüllt würde es ein volles Quadrat.
+	$fill  = in_array( $name, array( 'play', 'star', 'tiktok', 'navigation', 'heart' ), true ) ? 'currentColor' : 'none';
 	$stroke = 'currentColor';
 
 	return sprintf(

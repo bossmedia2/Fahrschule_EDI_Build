@@ -384,6 +384,53 @@ for (const f of fr) {
   else ok(`Fokusring auf .${f.surf}: ${f.r}:1`);
 }
 
+// ---------- 4b) Social-Feed (Prüfseite _social) --------------------------
+if (pages.includes('_social.html')) {
+  console.log('\nSocial-Feed');
+  const sbad = [];
+  for (const w of [320, 390, 768]) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.goto('file://' + dir + '/_social.html');
+    await page.addStyleTag({ content: NOANIM });
+    const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (ov > 0) sbad.push(`${w}px: ${ov}px horizontaler Überlauf`);
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('file://' + dir + '/_social.html');
+  await page.addStyleTag({ content: NOANIM });
+  const st = await page.evaluate(new Function(HELPERS + `
+    const cards=[...document.querySelectorAll('.fs-ig__post')];
+    // Tatsächlich sichtbar - nicht das hidden-Attribut abfragen: CSS kann es überstimmen.
+    const vis=cards.filter(c=>c.getClientRects().length && getComputedStyle(c).display!=='none' && c.offsetHeight>0);
+    const dots=document.querySelectorAll('.fs-ig__dot').length;
+    const notLink=cards.filter(c=>c.tagName!=='A' || c.target!=='_blank').length;
+    // Icon (currentColor) gegen die Badge-Fläche
+    const ic=vis.map(c=>{ const b=c.querySelector('.fs-ig__badge'); const svg=b&&b.querySelector('svg'); if(!svg) return 0;
+      const fg=parse(getComputedStyle(svg).color), bg=effBg(b); return ratio(over(fg,{r:bg[0],g:bg[1],b:bg[2]}),bg); });
+    // Pfeil-Symbol gegen seine Knopffläche (SC 1.4.11, 3:1)
+    const ar=[...document.querySelectorAll('.fs-ig__arrow')].map(b=>{ const fg=parse(getComputedStyle(b).color), bg=effBg(b); return ratio(over(fg,{r:bg[0],g:bg[1],b:bg[2]}),bg); });
+    return {n:cards.length, vis:vis.length, dots, notLink, minIcon: ic.length?Math.min(...ic):0, minArrow: ar.length?Math.min(...ar):99};`));
+  if (st.vis !== 3 || st.dots !== st.n) sbad.push(`Karussell: ${st.vis} sichtbar (erwartet 3), ${st.dots} Punkte für ${st.n} Kacheln`);
+  if (st.notLink) sbad.push(`${st.notLink} Kachel(n) ohne Link in neuem Tab`);
+  if (st.minArrow < 3) sbad.push(`Karussell-Pfeil nur ${st.minArrow.toFixed(2)}:1 gegen seinen Knopf (nötig 3:1)`);
+  if (st.minIcon < 3) sbad.push(`Plattform-Icon nur ${st.minIcon.toFixed(2)}:1 gegen seine Fläche (nötig 3:1)`);
+  // Tastatur: jede sichtbare Kachel per Tab erreichbar, beim Weiterblättern auch die übrigen.
+  const erreicht = new Set();
+  for (let r = 0; r < st.n; r++) {
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    await page.focus('body');
+    for (let t = 0; t < 80; t++) {
+      await page.keyboard.press('Tab');
+      const idx = await page.evaluate(() => { const a = document.activeElement; const all = [...document.querySelectorAll('.fs-ig__post')]; return all.indexOf(a); });
+      if (idx >= 0) erreicht.add(idx);
+    }
+    await page.click('[data-fs-ig-next]');
+  }
+  if (erreicht.size !== st.n) sbad.push(`per Tab erreicht: ${erreicht.size} von ${st.n} Kacheln`);
+  for (const x of sbad) fail('Social-Feed: ' + x);
+  if (!sbad.length) ok(`Social-Feed: ${st.n} Kacheln, Fenster von 3 mit ${st.dots} Punkten, alle per Tab erreichbar und Links in neuem Tab, Icon ${st.minIcon.toFixed(2)}:1, kein Überlauf bei 320/390/768px`);
+}
+
 // ---------- 5) Keine Drittanbieter-Abrufe ohne Einwilligung -------------
 console.log('\nDrittanbieter (harte Regel 6)');
 if (fremd.length) for (const u of [...new Set(fremd)].slice(0, 10)) fail('Abruf ohne Einwilligung: ' + u);

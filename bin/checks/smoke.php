@@ -78,6 +78,44 @@ foreach(['_404'=>'404','_suche'=>'search','_archiv'=>'archive','_beitrag'=>'sing
   foreach(array_unique($errs) as $e) echo "      -> $e\n";
   $pages[$key]=$html;
 }
+/* ---- Social-Feed: Prüfseite mit gemischten Kacheln ----
+ * Bilder sind Theme-Dateien, damit sie ohne Mediathek auflösen. Neun Zeilen:
+ * eine ohne Bild, eine ohne Beschreibung -> sieben Kacheln. */
+$social_rows = [
+  ['tiktok','edi-logo','https://www.tiktok.com/@edi_fahrschule/video/1','Logo der Fahrschule edi auf pinkem Grund'],
+  ['instagram','edi-partner-certqua','','CERTQUA-Zertifikat der Fahrschule'],
+  ['tiktok','edi-partner-schalke','','Partnerlogo Schalke'],
+  ['instagram','','','Kachel ohne Bild'],
+  ['tiktok','edi-logo','','Zweites TikTok-Cover'],
+  ['instagram','edi-partner-certqua','https://www.instagram.com/p/abc/',''],
+  ['instagram','edi-logo','','Drittes Instagram-Bild'],
+  ['tiktok','edi-partner-certqua','','Viertes TikTok-Cover'],
+  ['instagram','edi-partner-schalke','','Letzte Kachel'],
+];
+$sb = fn($attrs)=>render_block(['blockName'=>'fahrschule/instagram-slider','attrs'=>$attrs,'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+$serr=[];
+$h = $sb(['items'=>$social_rows]);
+preg_match_all('#<a class="fs-ig__post"([^>]*)>(.*?)</a>#s',$h,$mm,PREG_SET_ORDER);
+if(count($mm)!==7) $serr[]=count($mm).' Kacheln statt 7 (ohne Bild bzw. ohne Beschreibung muss entfallen)';
+foreach($mm as $i=>$m){
+  if(strpos($m[1],'target="_blank"')===false || strpos($m[1],'rel="noopener')===false) $serr[]="Kachel ".($i+1).": kein Link in neuem Tab";
+  if(!preg_match('#<img[^>]+alt="([^"]+)"#',$m[2])) $serr[]="Kachel ".($i+1).": ohne Alt-Text";
+  if(strpos($m[2],'<svg')===false) $serr[]="Kachel ".($i+1).": ohne Plattform-Icon";
+}
+$alts=array_map(fn($m)=>preg_match('#alt="([^"]+)"#',$m[2],$x)?$x[1]:'',$mm);
+if(($alts[0]??'')!=='Logo der Fahrschule edi auf pinkem Grund' || ($alts[6]??'')!=='Letzte Kachel') $serr[]='Reihenfolge folgt nicht den Zeilen';
+if(substr_count($h,'data-plattform="tiktok"')!==4 || substr_count($h,'data-plattform="instagram"')!==3) $serr[]='Plattform je Kachel falsch';
+if(strpos($h,'href="https://www.instagram.com/fahrschuleedi/" target="_blank" rel="noopener noreferrer" title="CERTQUA')===false) $serr[]='leerer Link fällt nicht auf das Plattform-Profil zurück';
+if(preg_match('#(tiktok\.com|instagram\.com|tiktokcdn|cdninstagram)[^"]*\.(js|jpg|jpeg|png|webp)|<script|<iframe|embed#i',$h)) $serr[]='Embed, Skript oder Fremdbild im Social-Feed';
+if(substr_count($sb(['items'=>array_slice($social_rows,0,5)]),'class="fs-ig__post"')!==4) $serr[]='5 Zeilen (eine ohne Bild) ergeben nicht 4 Kacheln';
+if(trim($sb(['items'=>[]]))!=='') $serr[]='leere Liste blendet die Sektion nicht aus';
+if(trim($sb([]))!=='') $serr[]='Vorgabe ohne Bilder blendet die Sektion nicht aus';
+$k=$sb(['items'=>$social_rows,'instaHandle'=>'']);
+if(substr_count($k,'fs-ig__profile')!==1 || substr_count($k,'class="fs-btn fs-btn--lg fs-btn--primary"')!==1 || strpos($k,'@edi_fahrschule')===false) $serr[]='nur TikTok-Handle: nicht genau ein Profil-Knopf';
+echo "\nSocial-Feed (Prüfseite): ".($serr? "!! ".implode(' | ',$serr)."\n" : "ok: 9 Zeilen -> 7 Kacheln (ohne Bild/Beschreibung entfällt), gemischt TikTok/Instagram, Links in neuem Tab, Alt-Text, Reihenfolge, Profil-Rückfall, leer = ausgeblendet, kein Embed\n");
+fs_stub_set_page('social','Social-Feed (Prüfseite)',false,'');
+$pages['_social']=fs_fse_render_template($GLOBALS['__theme'],'page',serialize_blocks([['blockName'=>'fahrschule/instagram-slider','attrs'=>['items'=>$social_rows],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]]));
+
 file_put_contents($FS_OUT.'/pages.json', json_encode($pages));
 // Erwartete URL je Seite - die Browserprüfung vergleicht damit aria-current.
 $urls=[]; foreach($map as $key=>$pg){ $urls[$key]=fs_url($key); }

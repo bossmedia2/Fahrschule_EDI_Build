@@ -30,6 +30,22 @@
 - Unbelegte Zahlen und Superlative entfernt (10.000+ Absolventen, 5000+
   Prüfungen, „beste“, „Größte“).
 
+**Social-Feed**
+- Der Instagram-Slider ist ein Social-Feed:
+  - **Kacheln:** ein Wiederholer, jede Kachel trägt ihre Plattform (TikTok
+    oder Instagram), dazu Bild-Slug, Beitragslink und Pflicht-Bildbeschreibung
+    als Alt-Text.
+  - **Profile:** Profil-Knöpfe je Plattform aus den Stammdaten.
+  - **Darstellung:** Alle Kacheln stehen im HTML (Editor zeigt alle); das
+    Karussell blendet ein Fenster von drei ein.
+  - **Bild und Link:** einheitlich 1:1; jede Kachel ist ein Link in einem
+    neuen Tab.
+  - **Kein Embed, kein Abruf** bei TikTok oder Instagram.
+  - **Behoben:** Die Karussell-Pfeile (Pink auf Pink, 1,28:1) lesen jetzt die
+    Knopf-Tokens; das Instagram-Icon wurde als volles Quadrat gezeichnet.
+  - **Entfernt:** `ig_1`…`ig_6`. Das Altfeld `url` bleibt registriert (gegen
+    Datenverlust beim Speichern), aber unsichtbar im Editor.
+
 **Formulare und Stellen**
 - Formulare:
   - Contact Form 7 + Flamingo über das Begleit-Plugin;

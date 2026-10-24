@@ -26,3 +26,6 @@
   color: var(--c-text); font-size: .95rem;
 }
 .fs-editor-hint strong { color: var(--c-heading); margin-right: .35rem; }
+
+/* Social-Feed: im Editor alle Kacheln zeigen, nicht nur das Karussell-Fenster. */
+.fs-ig__post[hidden] { display: flex !important; }
