@@ -48,9 +48,17 @@ $map = fahrschule_page_map();
 $pages=[];
 foreach($map as $key=>$pg){
   $errs=[]; $html='';
+  // Kontext der jeweiligen Seite herstellen - sonst rendert die Navigation
+  // ohne aktiven Eintrag und der Seitenkopf ohne Titel.
+  fs_stub_set_page($pg['slug'], $pg['title'] ?? ($pg['menu'] ?? $key), $key==='home');
   try{
     $html .= render_block(['blockName'=>'fahrschule/navigation','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
-    if(empty($pg['blocks'])){ $html .= render_block(['blockName'=>'fahrschule/page-hero','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]); }
+    // Wie page.php: Seitenkopf, ausser die Seite bringt ihren eigenen Hero mit.
+    $first = $pg['blocks'][0][0] ?? '';
+    if($key!=='home' && !in_array($first,['fahrschule/location-hero','fahrschule/testimonials-hero','fahrschule/video-hero'],true)){
+      $html .= render_block(['blockName'=>'fahrschule/page-hero','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+    }
+    if($key!=='home'){ $html .= fs_breadcrumbs(); }
     foreach(($pg['blocks']?:[]) as $b){
       $html .= render_block(['blockName'=>$b[0],'attrs'=>$b[1]??[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
     }

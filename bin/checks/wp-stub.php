@@ -72,8 +72,19 @@ function get_posts($a=[]){return [];}            // leere Mediathek im Test
 function wp_get_attachment_image_url($id,$s='full'){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function get_post_meta($id,$k='',$single=false){return $single?'':[];}
 function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($p=null){return false;}
-function get_permalink($p=null){return home_url('/stub/');}
-function get_the_title($p=null){return 'Stub-Titel';} function get_the_content($m=null){return '';}
+/* Seitenkontext. Frueher lieferte get_queried_object() immer null - jede
+   Seite renderte dadurch, als waere keine geoeffnet: kein aria-current, kein
+   aktiver Menuepunkt, "Stub-Titel" im Seitenkopf. Genau so blieb der
+   unsichtbare aktive Flyout-Eintrag (Oktober 2026) dem Gate verborgen.
+   fs_stub_set_page() setzt den Kontext, den WordPress fuer eine Seite haette. */
+if(!class_exists('WP_Post')){ class WP_Post { public $ID=0; public $post_name=''; public $post_title=''; public $post_type='page'; public $post_content='';
+  public function __construct($a=[]){ foreach($a as $k=>$v) $this->$k=$v; } } }
+function fs_stub_set_page($slug,$title,$front=false){
+  $GLOBALS['__is_front']=$front;
+  $GLOBALS['__queried']=$front?null:new WP_Post(['ID'=>crc32($slug)%100000,'post_name'=>$slug,'post_title'=>$title]);
+}
+function get_permalink($p=null){ $q=$GLOBALS['__queried']??null; return home_url('/'.($q?$q->post_name.'/':'')); }
+function get_the_title($p=null){ $q=$GLOBALS['__queried']??null; return $q?$q->post_title:'Startseite'; } function get_the_content($m=null){return '';}
 function get_post_field($f,$p=null){return '';}
 function the_content(){} function the_excerpt(){} function the_post(){} function have_posts(){return false;}
 function the_ID(){echo '1';}
@@ -81,14 +92,14 @@ function get_search_form($e=true){$h='<form role="search"><label class="fs-visua
 function get_search_query(){return '';}
 function get_header(){} function get_footer(){}
 function get_page_by_path($p,$o='OBJECT',$t='page'){return null;}
-function get_queried_object(){return null;} function get_queried_object_id(){return 0;}
+function get_queried_object(){return $GLOBALS['__queried']??null;} function get_queried_object_id(){ $q=$GLOBALS['__queried']??null; return $q?$q->ID:0; }
 function get_term_link($t){return home_url('/term/');} function term_description($t=0){return '';}
 function get_previous_posts_page_link(){return home_url('/');}
 function wp_get_document_title(){return 'Fahrschule edi';}
 function wp_insert_post($a,$e=false){return 1;}
 function strip_shortcodes($s){return $s;} function excerpt_remove_blocks($s){return $s;}
 function is_front_page(){return (bool)($GLOBALS['__is_front']??false);} function is_home(){return false;}
-function is_singular($t=''){return true;} function is_404(){return false;} function is_search(){return false;}
+function is_singular($t=''){ $q=$GLOBALS['__queried']??null; if(!$q) return false; return $t==='' || $t===$q->post_type || (is_array($t)&&in_array($q->post_type,$t,true)); } function is_404(){return false;} function is_search(){return false;}
 function is_category(){return false;} function is_tag(){return false;} function is_tax(){return false;}
 function is_author(){return false;} function is_attachment(){return false;} function is_paged(){return false;}
 function current_time($t='mysql',$g=0){return date('Y-m-d H:i:s');}
