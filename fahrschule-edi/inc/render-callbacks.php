@@ -1080,39 +1080,7 @@ function fs_render_location_hero( $a ) {
 				</div>
 				<div class="fs-locform">
 					<h2>Schnelle Anmeldung</h2>
-					<?php $fs_schnell_state = isset( $_GET['fs_schnell'] ) ? $_GET['fs_schnell'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nur Anzeige, keine Aktion ?>
-					<?php if ( 'ok' === $fs_schnell_state ) : ?>
-						<p role="status" style="color:var(--c-heading);font-weight:600;">Danke! Wir melden uns kurzfristig bei Ihnen.</p>
-					<?php else : ?>
-					<?php if ( 'error' === $fs_schnell_state ) : ?>
-						<p role="alert" style="color:var(--c-heading);font-weight:600;margin-bottom:1rem;">Bitte prüfen Sie Ihre Angaben (Name und gültige E-Mail-Adresse sind erforderlich) und versuchen Sie es erneut.</p>
-					<?php endif; ?>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-						<input type="hidden" name="action" value="fahrschule_schnellanmeldung">
-						<input type="hidden" name="fs_stadt" value="<?php echo esc_attr( $d['city'] ); ?>">
-						<input type="hidden" name="fs_back" value="<?php echo esc_url( fs_url( strtolower( $d['city'] ) ) ); ?>">
-						<?php wp_nonce_field( 'fahrschule_schnellanmeldung' ); ?>
-						<p style="position:absolute;left:-9999px;" aria-hidden="true">
-							<label>Bitte leer lassen<input type="text" name="fs_hp" tabindex="-1" autocomplete="off"></label>
-						</p>
-						<label class="fs-visually-hidden" for="fs-locform-name-<?php echo esc_attr( $d['city'] ); ?>">Name</label>
-						<input type="text" id="fs-locform-name-<?php echo esc_attr( $d['city'] ); ?>" name="fs_name" placeholder="Name" required>
-						<label class="fs-visually-hidden" for="fs-locform-email-<?php echo esc_attr( $d['city'] ); ?>">E-Mail</label>
-						<input type="email" id="fs-locform-email-<?php echo esc_attr( $d['city'] ); ?>" name="fs_email" placeholder="E-Mail" required>
-						<label class="fs-visually-hidden" for="fs-locform-phone-<?php echo esc_attr( $d['city'] ); ?>">Telefon</label>
-						<input type="tel" id="fs-locform-phone-<?php echo esc_attr( $d['city'] ); ?>" name="fs_phone" placeholder="Telefon">
-						<label class="fs-visually-hidden" for="fs-locform-klasse-<?php echo esc_attr( $d['city'] ); ?>">Führerscheinklasse</label>
-						<select id="fs-locform-klasse-<?php echo esc_attr( $d['city'] ); ?>" name="fs_klasse">
-							<option value="">Führerscheinklasse wählen</option>
-							<option value="b">Klasse B</option>
-							<option value="c">Klasse C</option>
-							<option value="ce">Klasse CE</option>
-							<option value="d">Klasse D</option>
-							<option value="de">Klasse DE</option>
-						</select>
-						<button type="submit" class="fs-btn fs-btn--primary-white fs-btn--block">Kostenloses Beratungsgespräch</button>
-					</form>
-					<?php endif; ?>
+					<?php echo fs_formular( 'schnellanmeldung', array( 'standort' => $d['city'] ) ); ?>
 				</div>
 			</div>
 		</div>
@@ -1520,65 +1488,168 @@ function fs_render_anmeldung( $a ) {
  */
 function fs_render_contact_form( $a ) {
 	$d = fs_attrs( $a, array(
-		'heading' => 'Schreiben Sie uns',
-		'lead'    => 'Fragen zur Ausbildung, den Kosten oder einem Standort? Wir melden uns kurzfristig bei Ihnen zurück.',
+		'heading'       => 'Schreiben Sie uns',
+		'lead'          => '',
+		'art'           => 'kontakt',
+		'formShortcode' => '',
 	) );
-	$back  = function_exists( 'fahrschule_current_url' ) ? fahrschule_current_url() : home_url( '/' );
-	$state = isset( $_GET['fs_kontakt'] ) ? $_GET['fs_kontakt'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nur Anzeige, keine Aktion
 	ob_start(); ?>
 	<section class="fs-section fs-surface-light" id="kontaktformular">
 		<div class="fs-container fs-z">
 			<?php echo fs_wrap( 'div', fs_el( 'h2', $d['heading'] )
 				. fs_el( 'p', $d['lead'] ), 'class="fs-head"' ); ?>
-			<?php if ( 'ok' === $state ) : ?>
-				<p role="status" class="fs-contactform" style="text-align:center;font-weight:600;color:var(--c-card-heading);">Danke für Ihre Nachricht! Wir melden uns kurzfristig bei Ihnen.</p>
-			<?php else : ?>
-				<?php if ( 'error' === $state ) : ?>
-					<p role="alert" style="text-align:center;font-weight:600;color:var(--c-heading);">Bitte prüfen Sie Ihre Angaben (Name, gültige E-Mail-Adresse und Nachricht sind erforderlich) und versuchen Sie es erneut.</p>
-				<?php endif; ?>
-				<form class="fs-contactform" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="fahrschule_kontakt">
-					<input type="hidden" name="fs_back" value="<?php echo esc_url( $back ); ?>">
-					<?php wp_nonce_field( 'fahrschule_kontakt' ); ?>
-					<p style="position:absolute;left:-9999px;" aria-hidden="true">
-						<label>Bitte leer lassen<input type="text" name="fs_hp" tabindex="-1" autocomplete="off"></label>
-					</p>
-					<div class="fs-field">
-						<label for="fs-kontakt-name">Name *</label>
-						<input type="text" id="fs-kontakt-name" name="fs_name" required>
-					</div>
-					<div class="fs-field">
-						<label for="fs-kontakt-email">E-Mail *</label>
-						<input type="email" id="fs-kontakt-email" name="fs_email" required>
-					</div>
-					<div class="fs-field">
-						<label for="fs-kontakt-phone">Telefon</label>
-						<input type="tel" id="fs-kontakt-phone" name="fs_phone">
-					</div>
-					<div class="fs-field">
-						<label for="fs-kontakt-stadt">Standort</label>
-						<select id="fs-kontakt-stadt" name="fs_stadt">
-							<option value="">Egal / noch unklar</option>
-							<option value="Duisburg">Duisburg</option>
-							<option value="Essen">Essen</option>
-							<option value="Gelsenkirchen">Gelsenkirchen</option>
-						</select>
-					</div>
-					<div class="fs-field">
-						<label for="fs-kontakt-message">Nachricht *</label>
-						<textarea id="fs-kontakt-message" name="fs_message" required></textarea>
-					</div>
-					<div class="fs-field">
-						<label style="display:flex;align-items:flex-start;gap:.5rem;font-weight:400;">
-							<input type="checkbox" name="fs_privacy" value="1" required style="width:auto;margin-top:.2rem;">
-							<span>Mit dem Absenden meiner Daten stimme ich der <a href="<?php echo esc_url( fs_url( 'datenschutz' ) ); ?>" style="text-decoration:underline;">Datenschutzerklärung</a> zu. *</span>
-						</label>
-					</div>
-					<button type="submit" class="fs-btn fs-btn--lg fs-btn--primary fs-btn--block">Nachricht senden</button>
-				</form>
-			<?php endif; ?>
+			<div class="fs-contactform">
+				<?php echo fs_formular( $d['art'], array(), $d['formShortcode'] ); ?>
+			</div>
 		</div>
 	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
+ * FORMULARE
+ *
+ * Ein Weg für alle Formulare der Website (Kontakt, Anmeldung,
+ * Schnellanmeldung, Bewerbung):
+ *   1. Editor-Vorschau  -> statische, deaktivierte Felder (die Vorschau darf
+ *                          nicht von Plugin-JavaScript abhängen)
+ *   2. eigener Shortcode im Block-Feld
+ *   3. Contact-Form-7-Formular der Art aus dem Begleit-Plugin
+ *      edi-integrationen (legt es an, setzt den Empfänger aus den
+ *      Stammdaten, Flamingo speichert die Einsendung)
+ *   4. ohne CF7: der eigene Handler in inc/forms.php (Rückfall)
+ * Im Markup steht nie eine Empfängeradresse.
+ * ---------------------------------------------------------------------- */
+function fs_formular( $art, $extra = array(), $shortcode = '' ) {
+	$art = sanitize_key( $art );
+	if ( fs_is_editor_preview() ) {
+		return fs_formular_vorschau( $art );
+	}
+	if ( '' !== trim( (string) $shortcode ) ) {
+		return do_shortcode( $shortcode );
+	}
+	$id = function_exists( 'edi_formular_id' ) ? edi_formular_id( $art ) : 0;
+	if ( $id ) {
+		$cf  = wpcf7_contact_form( $id );
+		$sc  = '[contact-form-7 id="' . esc_attr( method_exists( $cf, 'hash' ) ? $cf->hash() : $id ) . '"';
+		foreach ( $extra as $k => $v ) {
+			$sc .= ' ' . sanitize_key( $k ) . '="' . esc_attr( str_replace( array( '"', ']' ), '', (string) $v ) ) . '"';
+		}
+		return do_shortcode( $sc . ']' );
+	}
+	if ( 'schnellanmeldung' === $art ) {
+		return fs_formular_fallback_schnell( isset( $extra['standort'] ) ? $extra['standort'] : '' );
+	}
+	if ( 'bewerbung' === $art ) {
+		// Datei-Uploads gibt es nur über Contact Form 7.
+		$mail = function_exists( 'fahrschule_business_data' ) ? fahrschule_business_data()['email'] : '';
+		return '<p class="fs-formular-hinweis">Bewerbungen nehmen wir gern per E-Mail entgegen'
+			. ( $mail ? ': <a href="mailto:' . esc_attr( $mail ) . '">' . esc_html( $mail ) . '</a>' : '' ) . '.</p>';
+	}
+	return fs_formular_fallback_kontakt();
+}
+
+/** Beide Pflicht-Einwilligungen - wortgleich zu den CF7-Formularen. */
+function fs_formular_einwilligungen( $disabled = false ) {
+	$dis = $disabled ? ' disabled' : ' required';
+	ob_start(); ?>
+	<div class="fs-field fs-einwilligung">
+		<label><input type="checkbox" name="fs_privacy" value="1"<?php echo $dis; ?>> <span>Ich habe die <a href="<?php echo esc_url( fs_url( 'datenschutz' ) ); ?>">Datenschutzerklärung</a> gelesen und bin mit der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage einverstanden. *</span></label>
+	</div>
+	<div class="fs-field fs-einwilligung">
+		<label><input type="checkbox" name="fs_alter" value="1"<?php echo $dis; ?>> <span>Ich bin mindestens 16 Jahre alt. Bin ich jünger, ist eine erziehungsberechtigte Person mit der Übermittlung einverstanden (Art. 8 DSGVO). *</span></label>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
+/** Editor-Vorschau: zeigt Aufbau und Einwilligungen, sendet nichts. */
+function fs_formular_vorschau( $art ) {
+	$felder = array( 'Name *', 'E-Mail *', 'Telefon' );
+	if ( 'schnellanmeldung' !== $art ) { $felder[] = 'Standort'; }
+	if ( in_array( $art, array( 'anmeldung', 'schnellanmeldung' ), true ) ) { $felder[] = 'Führerscheinklasse'; }
+	if ( 'bewerbung' === $art ) { $felder[] = 'Lebenslauf (PDF, höchstens 10 MB)'; }
+	if ( 'schnellanmeldung' !== $art ) { $felder[] = 'kontakt' === $art ? 'Nachricht *' : 'Nachricht'; }
+	ob_start(); ?>
+	<p class="fs-formular-hinweis">Vorschau des Formulars „<?php echo esc_html( $art ); ?>“ – das echte Formular (Contact Form 7) erscheint im Frontend.</p>
+	<?php foreach ( $felder as $i => $f ) : ?>
+	<div class="fs-field"><label for="fs-vorschau-<?php echo (int) $i; ?>"><?php echo esc_html( $f ); ?></label><input id="fs-vorschau-<?php echo (int) $i; ?>" type="text" disabled></div>
+	<?php endforeach; ?>
+	<?php echo fs_formular_einwilligungen( true ); ?>
+	<button type="button" class="fs-btn fs-btn--lg fs-btn--primary fs-btn--block" disabled>Absenden</button>
+	<?php
+	return ob_get_clean();
+}
+
+/** Rückfall ohne CF7: Kontakt/Anmeldung über inc/forms.php. */
+function fs_formular_fallback_kontakt() {
+	$back  = function_exists( 'fahrschule_current_url' ) ? fahrschule_current_url() : home_url( '/' );
+	$state = isset( $_GET['fs_kontakt'] ) ? sanitize_key( wp_unslash( $_GET['fs_kontakt'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nur Anzeige
+	if ( 'ok' === $state ) {
+		return '<p role="status" class="fs-formular-hinweis">Danke für Ihre Nachricht! Wir melden uns kurzfristig bei Ihnen.</p>';
+	}
+	$orte = function_exists( 'fahrschule_business_data' ) ? array_column( fahrschule_business_data()['locations'], 'city' ) : array();
+	ob_start(); ?>
+	<?php if ( 'error' === $state ) : ?>
+		<p role="alert" class="fs-formular-hinweis">Bitte prüfen Sie Ihre Angaben (Name, gültige E-Mail-Adresse, Nachricht und beide Einwilligungen sind erforderlich) und versuchen Sie es erneut.</p>
+	<?php endif; ?>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="fahrschule_kontakt">
+		<input type="hidden" name="fs_back" value="<?php echo esc_url( $back ); ?>">
+		<?php wp_nonce_field( 'fahrschule_kontakt' ); ?>
+		<span class="fs-hp" aria-hidden="true"><label>Bitte leer lassen<input type="text" name="fs_hp" tabindex="-1" autocomplete="off"></label></span>
+		<div class="fs-field"><label for="fs-kontakt-name">Name *</label><input type="text" id="fs-kontakt-name" name="fs_name" autocomplete="name" required></div>
+		<div class="fs-field"><label for="fs-kontakt-email">E-Mail *</label><input type="email" id="fs-kontakt-email" name="fs_email" autocomplete="email" required></div>
+		<div class="fs-field"><label for="fs-kontakt-phone">Telefon</label><input type="tel" id="fs-kontakt-phone" name="fs_phone" autocomplete="tel"></div>
+		<div class="fs-field">
+			<label for="fs-kontakt-stadt">Standort</label>
+			<select id="fs-kontakt-stadt" name="fs_stadt">
+				<option value="">Egal / noch unklar</option>
+				<?php foreach ( $orte as $o ) : ?><option value="<?php echo esc_attr( $o ); ?>"><?php echo esc_html( $o ); ?></option><?php endforeach; ?>
+			</select>
+		</div>
+		<div class="fs-field"><label for="fs-kontakt-message">Nachricht *</label><textarea id="fs-kontakt-message" name="fs_message" required></textarea></div>
+		<?php echo fs_formular_einwilligungen(); ?>
+		<button type="submit" class="fs-btn fs-btn--lg fs-btn--primary fs-btn--block">Nachricht senden</button>
+	</form>
+	<?php
+	return ob_get_clean();
+}
+
+/** Rückfall ohne CF7: Schnellanmeldung im Standort-Hero. */
+function fs_formular_fallback_schnell( $city ) {
+	$state = isset( $_GET['fs_schnell'] ) ? sanitize_key( wp_unslash( $_GET['fs_schnell'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nur Anzeige
+	if ( 'ok' === $state ) {
+		return '<p role="status" class="fs-formular-hinweis">Danke! Wir melden uns kurzfristig bei Ihnen.</p>';
+	}
+	$id = sanitize_key( $city );
+	ob_start(); ?>
+	<?php if ( 'error' === $state ) : ?>
+		<p role="alert" class="fs-formular-hinweis">Bitte prüfen Sie Ihre Angaben (Name, gültige E-Mail-Adresse und beide Einwilligungen sind erforderlich) und versuchen Sie es erneut.</p>
+	<?php endif; ?>
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+		<input type="hidden" name="action" value="fahrschule_schnellanmeldung">
+		<input type="hidden" name="fs_stadt" value="<?php echo esc_attr( $city ); ?>">
+		<input type="hidden" name="fs_back" value="<?php echo esc_url( fs_url( $id ) ); ?>">
+		<?php wp_nonce_field( 'fahrschule_schnellanmeldung' ); ?>
+		<span class="fs-hp" aria-hidden="true"><label>Bitte leer lassen<input type="text" name="fs_hp" tabindex="-1" autocomplete="off"></label></span>
+		<label class="fs-visually-hidden" for="fs-locform-name-<?php echo esc_attr( $id ); ?>">Name</label>
+		<input type="text" id="fs-locform-name-<?php echo esc_attr( $id ); ?>" name="fs_name" placeholder="Name" autocomplete="name" required>
+		<label class="fs-visually-hidden" for="fs-locform-email-<?php echo esc_attr( $id ); ?>">E-Mail</label>
+		<input type="email" id="fs-locform-email-<?php echo esc_attr( $id ); ?>" name="fs_email" placeholder="E-Mail" autocomplete="email" required>
+		<label class="fs-visually-hidden" for="fs-locform-phone-<?php echo esc_attr( $id ); ?>">Telefon</label>
+		<input type="tel" id="fs-locform-phone-<?php echo esc_attr( $id ); ?>" name="fs_phone" placeholder="Telefon" autocomplete="tel">
+		<label class="fs-visually-hidden" for="fs-locform-klasse-<?php echo esc_attr( $id ); ?>">Führerscheinklasse</label>
+		<select id="fs-locform-klasse-<?php echo esc_attr( $id ); ?>" name="fs_klasse">
+			<option value="">Führerscheinklasse wählen</option>
+			<?php foreach ( fahrschule_pdf( 'f3' )['groups'] as $klassen ) : foreach ( $klassen as $kl ) : ?>
+			<option value="<?php echo esc_attr( $kl ); ?>">Klasse <?php echo esc_html( $kl ); ?></option>
+			<?php endforeach; endforeach; ?>
+		</select>
+		<?php echo fs_formular_einwilligungen(); ?>
+		<button type="submit" class="fs-btn fs-btn--primary-white fs-btn--block">Kostenloses Beratungsgespräch</button>
+	</form>
 	<?php
 	return ob_get_clean();
 }

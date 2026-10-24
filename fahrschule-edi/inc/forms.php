@@ -1,7 +1,13 @@
 <?php
 /**
- * Fahrschule edi – Formular-Handler (echter Versand via wp_mail).
- * Sicher: Nonce-Check + Honeypot. Leitet zurück mit ?fs_schnell=ok|error.
+ * Fahrschule edi – eingebauter Formular-Handler (Versand via wp_mail).
+ *
+ * RÜCKFALL: Ist Contact Form 7 mit dem Begleit-Plugin edi-integrationen aktiv,
+ * laufen alle Formulare über CF7 (fs_formular() in inc/render-callbacks.php)
+ * und dieser Handler bleibt ungenutzt. Ohne CF7 verschickt er Kontakt- und
+ * Schnellanmeldung weiterhin - die Website verliert nie ihre Formulare.
+ * Sicher: Nonce-Check + Honeypot + beide Einwilligungen (Datenschutz,
+ * Art. 8 DSGVO). Leitet zurück mit ?fs_schnell= bzw. ?fs_kontakt=ok|error.
  *
  * Optionaler Zusatzkanal: ist das companion-plugin edi-integrationen aktiv,
  * geht dieselbe Anfrage zusätzlich als Lead an Odoo (fahrschule_odoo_send_lead()).
@@ -14,18 +20,20 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /**
- * Standort-E-Mail: dieselben drei Adressen wie in inc/pages.php und den
- * JSON-LD-Daten (inc/seo.php). Bewusst hier noch einmal hinterlegt statt aus
- * der Seiten-Registry gezogen, damit die Formularzustellung nicht von deren
- * internem Aufbau abhängt. Von beiden Handlern in dieser Datei genutzt.
+ * Standort-E-Mail aus den Stammdaten (inc/seo.php) - dieselbe Quelle wie
+ * Seite, JSON-LD und die CF7-Formulare. Unbekannter Standort: allgemeine
+ * Adresse, nie eine fremde.
  */
 function fahrschule_standort_email( $stadt ) {
-	$standort_email = array(
-		'duisburg'      => 'duisburg@fahrschule-edi.de',
-		'essen'         => 'essen@fahrschule-edi.de',
-		'gelsenkirchen' => 'gelsenkirchen@fahrschule-edi.de',
-	);
-	return isset( $standort_email[ strtolower( $stadt ) ] ) ? $standort_email[ strtolower( $stadt ) ] : 'info@fahrschule-edi.de';
+	$b   = fahrschule_business_data();
+	$key = sanitize_key( (string) $stadt );
+	return ! empty( $b['locations'][ $key ]['email'] ) ? $b['locations'][ $key ]['email'] : $b['email'];
+}
+
+/** Beide Pflicht-Einwilligungen gesetzt (Datenschutz, Art. 8 DSGVO)? */
+function fahrschule_formular_einwilligungen_ok() {
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce prüft der Aufrufer
+	return ! empty( $_POST['fs_privacy'] ) && ! empty( $_POST['fs_alter'] );
 }
 
 /**
@@ -47,6 +55,11 @@ function fahrschule_handle_schnellanmeldung() {
 		exit;
 	}
 
+	if ( ! fahrschule_formular_einwilligungen_ok() ) {
+		wp_safe_redirect( add_query_arg( 'fs_schnell', 'error', $back ) );
+		exit;
+	}
+
 	$stadt  = isset( $_POST['fs_stadt'] ) ? sanitize_text_field( wp_unslash( $_POST['fs_stadt'] ) ) : '';
 	$name   = isset( $_POST['fs_name'] ) ? sanitize_text_field( wp_unslash( $_POST['fs_name'] ) ) : '';
 	$email  = isset( $_POST['fs_email'] ) ? sanitize_email( wp_unslash( $_POST['fs_email'] ) ) : '';
@@ -60,10 +73,10 @@ function fahrschule_handle_schnellanmeldung() {
 
 	$to = fahrschule_standort_email( $stadt );
 
-	$klassen_label = array(
-		'b' => 'Klasse B', 'c' => 'Klasse C', 'ce' => 'Klasse CE', 'd' => 'Klasse D', 'de' => 'Klasse DE',
-	);
-	$klasse_text = isset( $klassen_label[ $klasse ] ) ? $klassen_label[ $klasse ] : '(nicht angegeben)';
+	// Nur Klassen aus PDF F3 - dieselbe Liste wie im Formular.
+	$alle = array();
+	foreach ( fahrschule_pdf( 'f3' )['groups'] as $kl ) { $alle = array_merge( $alle, $kl ); }
+	$klasse_text = in_array( $klasse, $alle, true ) ? 'Klasse ' . $klasse : '(nicht angegeben)';
 
 	$subject = 'Neue Schnellanmeldung – Fahrschule edi ' . ( $stadt ? $stadt : '(Standort unbekannt)' );
 	$body    = "Standort: {$stadt}\nName: {$name}\nE-Mail: {$email}\nTelefon: {$phone}\nFührerscheinklasse: {$klasse_text}\n";
@@ -111,7 +124,7 @@ function fahrschule_handle_kontakt() {
 		exit;
 	}
 
-	if ( empty( $_POST['fs_privacy'] ) ) {
+	if ( ! fahrschule_formular_einwilligungen_ok() ) {
 		wp_safe_redirect( add_query_arg( 'fs_kontakt', 'error', $back ) );
 		exit;
 	}
@@ -127,7 +140,7 @@ function fahrschule_handle_kontakt() {
 		exit;
 	}
 
-	$to      = $stadt ? fahrschule_standort_email( $stadt ) : 'info@fahrschule-edi.de';
+	$to      = fahrschule_standort_email( $stadt );
 	$subject = 'Neue Kontaktanfrage – Fahrschule edi' . ( $stadt ? ' ' . $stadt : '' );
 	$body    = "Name: {$name}\nE-Mail: {$email}\nTelefon: {$phone}\n" . ( $stadt ? "Standort-Interesse: {$stadt}\n" : '' ) . "\nNachricht:\n{$message}\n";
 	$headers = array(

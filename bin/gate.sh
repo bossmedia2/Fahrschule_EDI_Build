@@ -60,6 +60,10 @@ python3 -I "$ROOT/bin/checks/refs.py" "$ROOT"; check $? "Referenzprüfung"
 step "Farbkontexte: keine Rohfarbe innerhalb eines Kontexts"
 python3 -I "$ROOT/bin/checks/tokens.py" "$ROOT"; check $? "Kontext-Tokens"
 
+# --- 4a1 -------------------------------------------------------------------
+step "Formulare: Contact Form 7 + Begleit-Plugin, Rückfall, Empfänger, Spamschutz"
+php "$ROOT/bin/checks/formulare.php" "$THEME" "$ROOT/edi-integrationen"; check $? "Formulare"
+
 # --- 4a2 -------------------------------------------------------------------
 step "Bild-Skript: nachgebauter Bildordner, zwei Läufe"
 python3 -I "$ROOT/bin/checks/test_edi_bilder.py" "$ROOT"; check $? "Bild-Skript"

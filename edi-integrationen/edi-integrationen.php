@@ -34,3 +34,7 @@ define( 'EDI_INTEGRATIONEN_VERSION', '1.0.0' );
 require_once __DIR__ . '/inc/odoo.php';
 require_once __DIR__ . '/inc/matomo.php';
 require_once __DIR__ . '/inc/settings.php';
+require_once __DIR__ . '/inc/formulare.php';
+
+// Formulare gleich bei Aktivierung anlegen, wenn Contact Form 7 schon da ist.
+register_activation_hook( __FILE__, 'edi_formulare_anlegen' );

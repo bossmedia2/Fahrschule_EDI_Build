@@ -1004,3 +1004,20 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* Lange deutsche Komposita („Führerscheinklassen“) brechen auf schmalen
    Geräten per Silbentrennung statt an den Rand zu stoßen (html lang="de"). */
 h1, h2, h3 { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: break-word; }
+
+/* ==========================================================================
+   FORMULARE: Contact Form 7, Einwilligungen, Honeypot
+   CF7 erzeugt sein eigenes Markup; die Formulare (edi-integrationen) nutzen
+   dieselben .fs-field-Hüllen wie der eingebaute Rückfall.
+   ========================================================================== */
+.fs-hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.fs-contactform input[type="checkbox"], .fs-locform input[type="checkbox"],
+.fs-contactform input[type="file"] { width: auto; margin: .2rem 0 0; flex-shrink: 0; }
+.fs-einwilligung label, .fs-einwilligung .wpcf7-list-item label { display: flex; align-items: flex-start; gap: .5rem; font-weight: 400; font-size: .9rem; color: var(--c-text); }
+.fs-einwilligung a { color: var(--c-accent); text-decoration: underline; }
+.fs-einwilligung .wpcf7-list-item { margin: 0; }
+.fs-locform .fs-einwilligung { margin-bottom: .75rem; }
+.fs-formular-hinweis { text-align: center; font-weight: 600; color: var(--c-heading); }
+.wpcf7-form .wpcf7-not-valid-tip { color: var(--c-heading); font-size: .85rem; font-weight: 600; margin-top: .25rem; }
+.wpcf7-form .wpcf7-response-output { margin: 1rem 0 0; padding: .75rem 1rem; border: 2px solid var(--c-accent); border-radius: var(--fs-radius); color: var(--c-text); background: var(--c-field-bg); }
+.wpcf7-form .wpcf7-spinner { margin: .5rem auto 0; display: block; }

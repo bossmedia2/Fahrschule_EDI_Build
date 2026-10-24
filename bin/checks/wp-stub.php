@@ -42,7 +42,7 @@ function add_query_arg($k,$v=null,$u=null){return ($u?:'/').'?'.$k.'='.$v;}
 function wp_parse_args($a,$d=[]){ return (is_array($d)&&$d) ? array_merge($d,(array)$a) : (array)$a; } // wie WordPress: schlichtes array_merge. Ein frueherer array_filter hier verwarf leere Werte und verbarg damit genau die Faelle, in denen ein geleertes Feld eine leere Huelle hinterlaesst.
 function wp_parse_url($u,$c=-1){return parse_url($u,$c);}
 function wp_json_encode($d,$f=0){return json_encode($d,$f);}
-function get_option($k,$d=false){return $d;} function update_option($k,$v){return true;}
+function get_option($k,$d=false){return $GLOBALS['__options'][$k]??$d;} function update_option($k,$v,$a=null){$GLOBALS['__options'][$k]=$v;return true;}
 function get_bloginfo($k=''){ return $k==='name'?'Fahrschule edi':($k==='description'?'Fahrschule & Fahrlehrerfachschule':'https://fahrschule-edi.de'); }
 function bloginfo($k=''){echo get_bloginfo($k);}
 function get_locale(){return 'de_DE';}

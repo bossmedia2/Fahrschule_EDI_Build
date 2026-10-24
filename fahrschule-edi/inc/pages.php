@@ -452,6 +452,7 @@ function fahrschule_page_map() {
 				/* F10 steht voll auf der Startseite; hier trägt der Seitenkopf
 				   Label und Überschrift, darunter direkt das Formular. */
 				array( 'fahrschule/contact-form', array(
+					'art'     => 'anmeldung',
 					'heading' => 'Jetzt unverbindlich anmelden',
 					'lead'    => 'Füllen Sie das Formular aus – wir melden uns kurzfristig zurück und klären alle weiteren Schritte.',
 				) ),

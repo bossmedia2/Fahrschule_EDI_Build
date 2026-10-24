@@ -552,12 +552,14 @@ function fahrschule_blocks_config() {
 			),
 		),
 		'fahrschule/contact-form' => array(
-			'title' => 'Kontakt-/Anmeldeformular', 'description' => 'Echtes Formular (Name, E-Mail, Telefon, Standort, Nachricht) – Versand per E-Mail, optional zusätzlich an Odoo.',
+			'title' => 'Formular (Kontakt, Anmeldung, Bewerbung)', 'description' => 'Contact-Form-7-Formular der gewählten Art (legt das Plugin edi-integrationen an; Empfänger aus den Stammdaten, Eingänge in Flamingo). Eigener Shortcode möglich. Ohne CF7 greift ein eingebautes Formular.',
 			'icon' => 'email-alt', 'keywords' => array( 'kontakt', 'formular', 'anmeldung', 'lead' ),
 			'render' => 'fs_render_contact_form', 'pattern' => true, 'page' => 'Kontakt, Anmeldung',
 			'fields' => array(
-				'heading' => $t( 'Schreiben Sie uns', 'Überschrift', 'text' ),
-				'lead'    => $t( 'Fragen zur Ausbildung, den Kosten oder einem Standort? Wir melden uns kurzfristig bei Ihnen zurück.', 'Lead-Text', 'textarea' ),
+				'heading'       => $t( 'Schreiben Sie uns', 'Überschrift', 'text' ),
+				'lead'          => $t( 'Fragen zur Ausbildung, den Kosten oder einem Standort? Wir melden uns kurzfristig bei Ihnen zurück.', 'Lead-Text', 'textarea' ),
+				'art'           => $t( 'kontakt', 'Formular', 'select', array( 'kontakt' => 'Kontakt', 'anmeldung' => 'Anmeldung', 'bewerbung' => 'Bewerbung' ) ),
+				'formShortcode' => $t( '', 'Eigener Shortcode (optional, z. B. [contact-form-7 id="…"])', 'text' ),
 			),
 		),
 
