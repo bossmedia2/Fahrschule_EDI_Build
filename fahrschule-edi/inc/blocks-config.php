@@ -290,29 +290,23 @@ function fahrschule_blocks_config() {
 			),
 		),
 		/* Slug bleibt instagram-slider: Umbenennen bräche jede Seite, auf der der
-		   Block steht. Inhaltlich ist es der Social-Feed (TikTok per Link). */
+		   Block steht. Inhaltlich: EIN TikTok-Video im Embed Player (Iframe),
+		   erst nach Einwilligung - davor ein Platzhalter. */
 		'fahrschule/instagram-slider' => array(
-			'title' => 'Social-Feed (TikTok per Link)', 'description' => 'Video-Links einfügen, fertig: Titel und Cover holt der Editor beim Speichern von TikTok (oEmbed) und legt das Cover in die Mediathek. Beim Seitenaufruf geht keine Anfrage an TikTok. Instagram-Links ergeben eine Kachel ohne Cover.',
-			'icon' => 'share', 'keywords' => array( 'tiktok', 'instagram', 'social', 'video' ),
+			'title' => 'TikTok-Video (Player)', 'description' => 'Ein von Hand gewähltes TikTok-Video im Embed Player von TikTok (isoliertes Iframe, kein Skript in der Seite). Ohne Einwilligung steht nur ein Platzhalter mit „Video laden“ im HTML; das Iframe lädt erst danach.',
+			'icon' => 'video-alt3', 'keywords' => array( 'tiktok', 'video', 'social', 'player' ),
 			'render' => 'fs_render_instagram_slider', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Erfahrungen',
-			// Abruf je Link im Editor (inc/social-abruf.php, editor.js).
-			'abruf' => array( 'feld' => 'items', 'spalte' => 1, 'rest' => 'fahrschule/v1/social-abruf', 'knopf' => 'Beiträge aktualisieren' ),
 			'fields' => array(
-				'heading'      => $t( 'Folgen Sie uns', 'Überschrift', 'text' ),
-				// Profil aus den Stammdaten (inc/seo.php). Leerer @-Name = kein Knopf.
-				'tiktokHandle' => $t( fs_social_profil( 'tiktok' )['handle'], 'Profil: @-Name (leer = kein Knopf)', 'text' ),
-				'tiktokUrl'    => $t( fs_social_profil( 'tiktok' )['url'], 'Profil-Link', 'url' ),
-				// Nur der Link wird eingetragen; Titel, Bild-ID und Status füllt der
-				// Abruf (Spalten 3-5, im Editor nur als Statuszeile sichtbar).
-				'items'        => $rep(
-					array_fill( 0, 3, array( 'tiktok', '', '', '', '' ) ),
-					'Video',
-					array( 'Plattform (tiktok / instagram)', 'Video-Link (z. B. https://www.tiktok.com/@edi_fahrschule/video/…)', 'Titel (automatisch)', 'Bild-ID (automatisch)', 'Status (automatisch)' ),
-					array( array( 'tiktok', 'https://www.tiktok.com/@edi_fahrschule/video/1', 'ZZPROBEZZ', '', 'ok' ), 'ZZPROBEZZ' )
-				) + array( 'auto_spalten' => array( 2, 3, 4 ) ),
-				// Bis 3.1: Untertitel, Hervorhebung, Instagram-Profil. Bleiben
-				// registriert, damit Gutenberg gespeicherte Werte nicht verwirft;
-				// im Editor ausgeblendet, beim Rendern nur Rückfall fürs Profil.
+				'videoUrl'   => $t( '', 'TikTok-Video-URL (z. B. https://www.tiktok.com/@edi_fahrschule/video/…)', 'url' ),
+				'heading'    => $t( 'Folgen Sie uns', 'Überschrift (leer = ausblenden)', 'text' ),
+				// Profil aus den Stammdaten (inc/seo.php); der @-Name wird daraus gelesen.
+				'profileUrl' => $t( fs_social_profil( 'tiktok' )['url'], 'Profil-Link für den Knopf (leer = ausblenden)', 'url' ),
+				// Bis 3.2: Kacheln und Profilfelder. Bleiben registriert, damit
+				// Gutenberg gespeicherte Werte nicht verwirft; im Editor ausgeblendet
+				// und ohne Wirkung (außer als Rückfall für den Profil-Link).
+				'items'        => $rep( array(), 'Kachel (alt)', array( 'Plattform', 'Link', 'Titel', 'Bild-ID', 'Status' ) ) + array( 'legacy' => true ),
+				'tiktokHandle' => $t( '', 'TikTok: @-Name (alt)', 'text' ) + array( 'legacy' => true ),
+				'tiktokUrl'    => $t( '', 'TikTok: Profil-Link (alt)', 'url' ) + array( 'legacy' => true ),
 				'highlight'    => $t( '', 'Hervorgehobenes Wort (alt)', 'text' ) + array( 'legacy' => true ),
 				'subtitle'     => $t( '', 'Untertitel (alt)', 'textarea' ) + array( 'legacy' => true ),
 				'instaHandle'  => $t( '', 'Instagram: @-Name (alt)', 'text' ) + array( 'legacy' => true ),

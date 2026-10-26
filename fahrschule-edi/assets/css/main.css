@@ -137,7 +137,7 @@ section[data-flaeche="leiste"],
 .fs-cta-band,
 .fs-distance__out,
 .fs-loccalc__total,
-.fs-social__cover,
+.fs-ttplayer__box,
 .fs-crumbs,
 .fs-darktesti {
   --c-bg: var(--fs-brand-strong);
@@ -506,29 +506,24 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-testi-meta { color: var(--c-text); font-size: .875rem; }
 
 /* ==========================================================================
-   SOCIAL-FEED (TikTok per Link)
-   Kopf: Überschrift mit Plattform-Icon links, Profil-Knopf rechts. Darunter
-   das Raster; je Kachel das Cover formatfüllend (3:4), darauf Plattform und
-   Abspiel-Zeichen auf dem Abdunkler, darunter der Titel auf zwei Zeilen.
-   Die Cover-Fläche trägt den Leisten-Kontext (Weiß auf #b81d5e) - ohne
-   Cover ist sie die Marken-Kachel, nie ein leerer Rahmen.
+   TIKTOK-VIDEO (Embed Player)
+   Kopf: Überschrift mit TikTok-Zeichen links, Profil-Knopf rechts. Darunter
+   der Player hochkant (9:16). Ohne Einwilligung der Platzhalter auf der
+   Leisten-Fläche (Weiß auf #b81d5e, 6,22:1) - Teil der Seite, kein grauer
+   Kasten, kein Standbild.
    ========================================================================== */
 .fs-social__kopf { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
 .fs-social__titel { display: flex; align-items: center; gap: .75rem; margin: 0; font-size: clamp(2rem, 5vw, 2.5rem); font-weight: 800; color: var(--c-heading); }
 .fs-social__titel svg { color: var(--c-heading); flex: 0 0 auto; }
 .fs-social__kopf .fs-btn { margin-left: auto; }   /* bleibt rechts, auch ohne Überschrift */
-.fs-social__raster { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
-@media (min-width: 640px)  { .fs-social__raster { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1024px) { .fs-social__raster { grid-template-columns: repeat(3, 1fr); } }
-.fs-social__kachel { display: block; min-width: 0; color: inherit; text-decoration: none; border-radius: var(--fs-radius-lg); }
-.fs-social__cover { position: relative; display: block; aspect-ratio: 3 / 4; overflow: hidden; border-radius: var(--fs-radius-lg); background: var(--c-bg); }
-.fs-social__cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
-.fs-social__kachel:hover .fs-social__cover img { transform: scale(1.05); }
-.fs-social__shade { position: absolute; inset: 0; background: linear-gradient(var(--fs-scrim), transparent 35%, transparent 65%, var(--fs-scrim)); pointer-events: none; }
-.fs-social__kachel--marke .fs-social__shade { display: none; }
-.fs-social__badge { position: absolute; top: .75rem; left: .75rem; display: inline-flex; color: var(--c-text); }
-.fs-social__play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; padding: .85rem; border-radius: 9999px; background: var(--fs-scrim); color: var(--c-text); }
-.fs-social__text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: .65rem; font-weight: 600; line-height: 1.35; color: var(--c-text); }
+.fs-ttplayer { width: 100%; max-width: 22rem; aspect-ratio: 9 / 16; margin-inline: auto; border-radius: var(--fs-radius-xl); overflow: hidden; }
+.fs-ttplayer__frame { display: block; width: 100%; height: 100%; border: 0; }
+.fs-ttplayer__box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; height: 100%; padding: 2rem 1.5rem; text-align: center; background: var(--c-bg); color: var(--c-text); }
+.fs-ttplayer__marke { display: inline-flex; padding: 1rem; border-radius: 9999px; border: 2px solid var(--c-border); color: var(--c-heading); }
+.fs-ttplayer__handle { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--c-heading); }
+.fs-ttplayer__info { margin: 0; font-size: .875rem; line-height: 1.5; color: var(--c-text); }
+.fs-ttplayer__info a { color: var(--c-text); text-decoration: underline; }
+.fs-ttplayer__id { margin: 0; font-size: .8rem; font-family: monospace; color: var(--c-text); }
 
 /* ==========================================================================
    FAQ (Accordion)

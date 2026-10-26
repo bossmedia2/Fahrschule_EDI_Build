@@ -170,7 +170,7 @@ if begin 2c "Startseite nach PDF, keine Doppelung, Stammdaten (NAP)" php python 
 	python3 -I "$ROOT/bin/checks/startseite.py" "$ROOT" "$WORK"; finish $?
 fi
 
-if begin 2d "Referenzen: Blöcke, Icons, Assets, CSS-Klassen, mb_-Rückfall" python; then
+if begin 2d "Referenzen: Blöcke, Icons, Assets, CSS, mb_-Rückfall, keine Abrufe" python; then
 	python3 -I "$ROOT/bin/checks/refs.py" "$ROOT"; finish $?
 fi
 
@@ -206,7 +206,7 @@ if begin 2j "Hero: Video oder Standbild, reduzierte Bewegung, Editor-Vorschau" p
 	php "$ROOT/bin/checks/hero.php" "$THEME"; finish $?
 fi
 
-if begin 2k "Social-Feed: Link einlesen (oEmbed nachgebaut), Rückfall, kein Abruf beim Aufruf" php; then
+if begin 2k "TikTok-Player: kein Netzabruf, Iframe nur mit Zustimmung, sonst Platzhalter" php; then
 	php "$ROOT/bin/checks/social.php" "$THEME"; finish $?
 fi
 

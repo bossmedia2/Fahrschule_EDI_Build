@@ -172,28 +172,25 @@ for p in php_files:
             if fn in ('substr', 'strlen') or f"function_exists( 'mb_{fn}' )" in code:
                 continue
             mb_bad.append(f"{rel}:{n} mb_{fn}()")
-# --- Abrufe bei Dritten: nur in fs_social_abruf() ------------------------------
-# Netz- und Mediathek-Zugriffe gehören in genau eine Funktion (inc/social-abruf.php),
-# damit ein Ersatz für TikToks oEmbed eine Datei betrifft - und damit nichts
-# davon beim Seitenaufruf läuft. Kommentare zählen nicht.
-NETZ = re.compile(r'\b(wp_remote_\w+|wp_safe_remote_\w+|download_url|media_handle_sideload|media_sideload_image)\s*\(|tiktok\.com/oembed', re.I)
+# --- Gar keine Abrufe bei Dritten -------------------------------------------
+# Seit 3.3 (TikTok im Embed Player) braucht weder Theme noch Plugin einen
+# Netz- oder Mediathek-Abruf: kein wp_remote_*, kein Sideload, kein oEmbed.
+# Ein solcher Aufruf wäre ein Abruf beim Seitenaufruf oder Speichern, den
+# niemand bemerkt. Kommentare zählen nicht.
+NETZ = re.compile(r'\b(wp_remote_\w+|wp_safe_remote_\w+|download_url|media_handle_sideload|media_sideload_image)\s*\(|oembed', re.I)
 netz_bad = []
 for p in php_files:
     rel = os.path.relpath(p, root)
     if not (rel.startswith('fahrschule-edi') or rel.startswith('edi-integrationen')):
         continue
-    src = rd(p)
-    abruf = re.search(r'function fs_social_abruf\b.*?\n}\n', src, re.S)
-    for m in NETZ.finditer(src):
-        if abruf and abruf.start() <= m.start() < abruf.end():
+    for n, line in enumerate(rd(p).splitlines(), 1):
+        if line.strip().startswith(('*', '//', '/*')):
             continue
-        zeile = src.count('\n', 0, m.start()) + 1
-        text = src.splitlines()[zeile - 1].strip()
-        if text.startswith(('*', '//', '/*')) or 'function_exists' in text:
-            continue
-        netz_bad.append(f"{rel}:{zeile} {m.group(0)}")
-if netz_bad: fail("Abruf außerhalb von fs_social_abruf(): " + ", ".join(netz_bad))
-else:        ok("Netz- und Mediathek-Abrufe nur in fs_social_abruf() (inc/social-abruf.php)")
+        m = NETZ.search(line)
+        if m:
+            netz_bad.append(f"{rel}:{n} {m.group(0)}")
+if netz_bad: fail("Netzabruf in Theme/Plugin (erwartet: keiner): " + ", ".join(netz_bad))
+else:        ok("keine Netz- oder Mediathek-Abrufe in Theme und Plugin (kein wp_remote_*, Sideload, oEmbed)")
 
 if mb_bad: fail("mb_-Funktion ohne Rückfall (WordPress ersetzt nur mb_substr/mb_strlen): " + ", ".join(mb_bad))
 else:      ok("keine mb_-Funktion ohne Rückfall - Theme und Plugin laufen ohne ext-mbstring")

@@ -96,31 +96,18 @@ if($p1===false||$p2===false||$p3===false) $e404[]='Meldung, Suche oder Wege zur�
 elseif(!($p1<$p2 && $p2<$p3)) $e404[]='Reihenfolge nicht Meldung -> Suche -> Wege zurück';
 if(preg_match('#fs-jobs|Offene Stellen|job_listing#',$m)) $e404[]='Stellenangebote auf der 404';
 echo "404: ".($e404?'!! '.implode(' | ',$e404):'ok: Meldung, Suche, Wege zurück - keine Stellenangebote')."\n";
-/* ---- Social-Feed: Prüfseite mit gemischten Kacheln ----
- * Zeilen wie nach dem Abruf im Editor: zwei eingelesen (Cover aus der
- * Mediathek), einer gescheitert, ein Instagram-Link, eine leere Zeile und
- * eine Zeile im Format bis 3.1 -> fünf Kacheln, zwei davon Marken-Kacheln.
- * Den Abruf selbst prüft bin/checks/social.php. */
-$social_rows = [
-  ['tiktok','https://www.tiktok.com/@edi_fahrschule/video/7300000000000000001','Erste Fahrstunde auf der Autobahn','5001','ok'],
-  ['tiktok','https://www.tiktok.com/@edi_fahrschule/video/7300000000000000002','Ein sehr langer Titel, wie TikTok ihn liefert, mit Hashtags und allem, was dazugehört: #fahrschule #führerschein #duisburg #essen #gelsenkirchen #prüfung','5002','ok'],
-  ['tiktok','https://www.tiktok.com/@edi_fahrschule/video/7300000000000000003','','','privat, gelöscht oder kein Video (HTTP 404)'],
-  ['instagram','https://www.instagram.com/p/abc/','','','Instagram: wird nicht eingelesen (Token nötig) – Marken-Kachel mit Link'],
-  ['tiktok','','','',''],
-  ['instagram','edi-logo','','Cover im Format bis 3.1'],
-];
-$sb = fn($attrs)=>render_block(['blockName'=>'fahrschule/instagram-slider','attrs'=>$attrs,'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
+/* ---- TikTok-Video: Prüfseite ohne Einwilligung ----
+ * Im HTML nur der Platzhalter - kein Iframe, kein Skript. Den Player nach
+ * Zustimmung und die URL-Erkennung prüft bin/checks/social.php, das Laden
+ * auf Klick die Browserprüfung. */
+$tt = ['videoUrl'=>'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111?is_from_webapp=1'];
+$h = render_block(['blockName'=>'fahrschule/instagram-slider','attrs'=>$tt,'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
 $serr=[];
-$h = $sb(['items'=>$social_rows]);
-preg_match_all('#<a class="fs-social__kachel([^"]*)"([^>]*)>#',$h,$mm,PREG_SET_ORDER);
-if(count($mm)!==5) $serr[]=count($mm).' Kacheln statt 5 (leere Zeile entfällt, alle anderen erscheinen)';
-if(count(array_filter($mm,fn($m)=>str_contains($m[1],'--marke')))!==2) $serr[]='nicht genau zwei Marken-Kacheln (gescheitert, Instagram)';
-foreach($mm as $i=>$m) if(!str_contains($m[2],'target="_blank"') || !str_contains($m[2],'rel="noopener')) $serr[]='Kachel '.($i+1).': kein Link in neuem Tab';
-if(preg_match('#tiktok\.com/oembed|tiktokcdn|<script|<iframe#i',$h)) $serr[]='Abruf, Skript oder Fremdbild im Seiten-HTML';
-if(trim($sb(['items'=>[]]))!=='' || trim($sb([]))!=='') $serr[]='ohne Link blendet die Sektion nicht aus';
-echo "\nSocial-Feed (Prüfseite): ".($serr? "!! ".implode(' | ',$serr)."\n" : "ok: 6 Zeilen -> 5 Kacheln (2 Marken-Kacheln), Links in neuem Tab, kein Abruf im Seiten-HTML\n");
-fs_stub_set_page('social','Social-Feed (Prüfseite)',false,'');
-$pages['_social']=fs_fse_render_template($GLOBALS['__theme'],'page',serialize_blocks([['blockName'=>'fahrschule/instagram-slider','attrs'=>['items'=>$social_rows],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]]));
+if(preg_match('#<iframe|<script|embed\.js#i',$h)) $serr[]='Iframe oder Skript ohne Einwilligung im HTML';
+if(!str_contains($h,'data-fs-tt-load')) $serr[]='Platzhalter mit „Video laden“ fehlt';
+echo "\nSocial-Feed (Prüfseite): ".($serr? "!! ".implode(' | ',$serr)."\n" : "ok: TikTok-Video ohne Einwilligung = Platzhalter, kein Iframe, kein Skript\n");
+fs_stub_set_page('social','TikTok-Video (Prüfseite)',false,'');
+$pages['_social']=fs_fse_render_template($GLOBALS['__theme'],'page',serialize_blocks([['blockName'=>'fahrschule/instagram-slider','attrs'=>$tt,'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]]));
 
 file_put_contents($FS_OUT.'/pages.json', json_encode($pages));
 // Erwartete URL je Seite - die Browserprüfung vergleicht damit aria-current.

@@ -271,6 +271,37 @@
 			on( box.querySelector( '[data-fs-karte-load]' ), 'click', function () { fsLoadKarte( box ); } );
 		} );
 
+		/* ---------- TikTok-Video (Embed Player) ----------
+		 * Ohne Einwilligung steht im HTML nur der Platzhalter (serverseitig
+		 * entschieden). „Video laden“ setzt das Iframe ein und merkt sich die
+		 * Zustimmung für die Sitzung (Cookie ohne Ablaufdatum) - die nächste
+		 * Seite rendert das Iframe dann gleich serverseitig. */
+		function fsLoadTikTok( box ) {
+			if ( box.querySelector( 'iframe' ) ) { return; }
+			var f = document.createElement( 'iframe' );
+			f.className = 'fs-ttplayer__frame';
+			f.src = box.getAttribute( 'data-src' );
+			f.title = box.getAttribute( 'data-title' ) || 'TikTok-Video';
+			f.loading = 'lazy';
+			f.allow = 'fullscreen';
+			f.allowFullscreen = true;
+			box.innerHTML = '';
+			box.appendChild( f );
+			f.focus();
+		}
+		document.querySelectorAll( '[data-fs-tt]' ).forEach( function ( box ) {
+			on( box.querySelector( '[data-fs-tt-load]' ), 'click', function () {
+				document.cookie = 'fs_tiktok=1; path=/; SameSite=Lax';
+				fsLoadTikTok( box );
+			} );
+		} );
+		// „Alle akzeptieren“ im Banner gilt sofort, nicht erst beim nächsten Seitenaufruf.
+		if ( cookieBanner ) {
+			on( cookieBanner.querySelector( '[data-fs-consent="all"]' ), 'click', function () {
+				document.querySelectorAll( '[data-fs-tt]' ).forEach( fsLoadTikTok );
+			} );
+		}
+
 		/* ---------- Fahrlehrer-Finder ----------
 		 * Ohne JavaScript bleiben schlicht alle Karten sichtbar - die
 		 * Filterleiste ist dann wirkungslos, aber nichts ist unerreichbar. */

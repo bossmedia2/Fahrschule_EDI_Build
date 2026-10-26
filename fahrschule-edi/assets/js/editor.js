@@ -29,34 +29,6 @@
 
 	var blocks = window.FahrschuleBlocks || [];
 
-	/*
-	 * Abruf je Zeile (Social-Feed: TikTok-Link -> Titel und Cover). Läuft im
-	 * Editor über die REST-Route des Themes, nie im Frontend. Das Ergebnis
-	 * ersetzt die ganze Zeile; geschrieben wird gegen den AKTUELLEN Stand des
-	 * Blocks - wurde der Link inzwischen geändert, verfällt die Antwort.
-	 */
-	var abrufTimer = {};
-	function liesEin( abruf, clientId, i, url, neu ) {
-		if ( ! wp.apiFetch ) { return Promise.resolve(); }
-		var sel = wp.data.select( 'core/block-editor' );
-		function schreibe( zeile ) {
-			var cur = sel.getBlockAttributes( clientId );
-			if ( ! cur ) { return; }
-			var rows = ( cur[ abruf.feld ] || [] ).map( function ( z ) { return Array.isArray( z ) ? z.slice() : [ z ]; } );
-			if ( ! rows[ i ] || rows[ i ][ abruf.spalte ] !== url ) { return; }
-			rows[ i ] = zeile;
-			var u = {}; u[ abruf.feld ] = rows;
-			wp.data.dispatch( 'core/block-editor' ).updateBlockAttributes( clientId, u );
-		}
-		return wp.apiFetch( { path: '/' + abruf.rest, method: 'POST', data: { url: url, neu: !! neu } } )
-			.then( function ( zeile ) { schreibe( zeile ); } )
-			.catch( function ( e ) {
-				var cur = sel.getBlockAttributes( clientId );
-				var alt = cur && cur[ abruf.feld ] && cur[ abruf.feld ][ i ] ? cur[ abruf.feld ][ i ] : [ '', url ];
-				schreibe( [ alt[ 0 ], url, '', '', 'Abruf im Editor fehlgeschlagen: ' + ( e && e.message ? e.message : 'unbekannt' ) ] );
-			} );
-	}
-
 	blocks.forEach( function ( block ) {
 
 		// Attribut-Schema + Default-Werte aus den Feldern ableiten.
@@ -130,44 +102,21 @@
 				 * der Spaltenreihenfolge aus der Blockkonfiguration.
 				 */
 				function repeaterControl( f ) {
-					var cols  = f.columns || [];
-					var rows  = Array.isArray( attrs[ f.key ] ) ? attrs[ f.key ] : [];
-					// Automatisch gefüllte Spalten erscheinen nicht als Eingabe,
-					// sondern als Statuszeile (Social-Feed: Titel, Bild-ID, Status).
-					var auto  = f.auto || [];
-					var abruf = block.abruf && block.abruf.feld === f.key ? block.abruf : null;
+					var cols = f.columns || [];
+					var rows = Array.isArray( attrs[ f.key ] ) ? attrs[ f.key ] : [];
 
 					function write( next ) { var u = {}; u[ f.key ] = next; setAttr( u ); }
 					function clone() { return rows.map( function ( r ) { return Array.isArray( r ) ? r.slice() : [ r ]; } ); }
 
 					var rowEls = rows.map( function ( row, i ) {
 						var cells = cols.map( function ( colLabel, c ) {
-							if ( -1 !== auto.indexOf( c ) ) { return null; }
 							return el( TextControl, {
 								key:      f.key + '-' + i + '-' + c,
 								label:    colLabel,
 								value:    row[ c ] === undefined ? '' : row[ c ],
-								onChange: function ( v ) {
-									var n = clone(); n[ i ][ c ] = v;
-									if ( abruf && c === abruf.spalte ) {
-										// Neuer Link: alte Ergebnisse verwerfen, kurz nach dem Tippen einlesen.
-										auto.forEach( function ( a ) { n[ i ][ a ] = ''; } );
-										var k = props.clientId + '-' + i;
-										clearTimeout( abrufTimer[ k ] );
-										if ( /^https?:\/\//.test( v ) ) {
-											abrufTimer[ k ] = setTimeout( function () { liesEin( abruf, props.clientId, i, v, false ); }, 900 );
-										}
-									}
-									write( n );
-								}
+								onChange: function ( v ) { var n = clone(); n[ i ][ c ] = v; write( n ); }
 							} );
 						} );
-						if ( abruf && row[ abruf.spalte ] ) {
-							var st = row[ 4 ] || '';
-							cells.push( el( 'p', { key: f.key + '-' + i + '-status', style: { margin: '-4px 0 8px', fontSize: '12px', color: 'ok' === st ? '#1e6b2e' : ( st ? '#a00' : '#555' ) } },
-								'ok' === st ? '✓ ' + ( row[ 2 ] || __( 'eingelesen (ohne Titel)', 'fahrschule-edi' ) )
-									: ( st ? '✗ ' + st : __( '… wird eingelesen (spätestens beim Speichern)', 'fahrschule-edi' ) ) ) );
-						}
 						var tools = el( 'div', { key: 'tools', style: { display: 'flex', gap: '4px', marginBottom: '16px' } },
 							el( Button, { icon: 'arrow-up-alt2', isSmall: true, variant: 'tertiary',
 								disabled: 0 === i,
@@ -187,18 +136,7 @@
 						}, el( 'strong', { style: { display: 'block', marginBottom: '8px' } }, f.label + ' ' + ( i + 1 ) ), cells, tools );
 					} );
 
-					var knopf = abruf ? el( Button, {
-						key: f.key + '-abruf', variant: 'secondary', isSmall: true, icon: 'update',
-						style: { margin: '0 8px 8px 0' },
-						onClick: function () {
-							rows.forEach( function ( z, i ) {
-								if ( Array.isArray( z ) && /^https?:\/\//.test( z[ abruf.spalte ] || '' ) ) { liesEin( abruf, props.clientId, i, z[ abruf.spalte ], true ); }
-							} );
-						}
-					}, abruf.knopf ) : null;
-
 					return el( 'div', { key: f.key },
-						knopf,
 						rowEls,
 						el( Button, {
 							variant: 'secondary', isSmall: true, icon: 'plus-alt2',

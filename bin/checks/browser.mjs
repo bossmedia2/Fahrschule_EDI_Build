@@ -407,11 +407,11 @@ for (const f of fr) {
   else ok(`Fokusring auf .${f.surf}: ${f.r}:1`);
 }
 
-// ---------- 4b) Social-Feed (Prüfseite _social) --------------------------
-// Raster aus Links: Cover 3:4 formatfüllend, Titel höchstens zwei Zeilen,
-// Marken-Kachel statt leerem Rahmen, jede Kachel per Tab erreichbar.
+// ---------- 4b) TikTok-Video (Prüfseite _social, ohne Einwilligung) -------
+// Vor dem Klick: kein Iframe im DOM, keine Anfrage an TikTok. Nach „Video
+// laden“: genau die eine Anfrage des Players, Iframe mit title.
 if (pages.includes('_social.html')) {
-  console.log('\nSocial-Feed');
+  console.log('\nTikTok-Video');
   const sbad = [];
   for (const w of [320, 390, 768]) {
     await page.setViewportSize({ width: w, height: 900 });
@@ -420,42 +420,33 @@ if (pages.includes('_social.html')) {
     const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     if (ov > 0) sbad.push(`${w}px: ${ov}px horizontaler Überlauf`);
   }
+  await page.context().clearCookies();
   await page.setViewportSize({ width: 1512, height: 1000 });
+  const vorher = fremd.length;
   await page.goto('file://' + dir + '/_social.html');
   await page.addStyleTag({ content: NOANIM });
-  const st = await page.evaluate(new Function(HELPERS + `
-    const k=[...document.querySelectorAll('.fs-social__kachel')];
-    const cov=k.map(a=>a.querySelector('.fs-social__cover').getBoundingClientRect());
-    const cols=new Set(cov.map(r=>Math.round(r.left))).size;
-    const sameW=cov.every(r=>Math.abs(r.width-cov[0].width)<=1);
-    const ratio34=cov.every(r=>Math.abs(r.height/r.width-4/3)<0.02);
-    const fill=k.filter(a=>a.querySelector('img')).every(a=>{const i=a.querySelector('img').getBoundingClientRect(),c=a.querySelector('.fs-social__cover').getBoundingClientRect();return i.width>=c.width-1&&i.height>=c.height-1;});
-    const zeilen=[...document.querySelectorAll('.fs-social__text')].map(t=>{const lh=parseFloat(getComputedStyle(t).lineHeight);return Math.round(t.getBoundingClientRect().height/lh);});
-    const marke=k.filter(a=>a.classList.contains('fs-social__kachel--marke'));
-    const markeOk=marke.every(a=>{const c=a.querySelector('.fs-social__cover');return c.getBoundingClientRect().height>50 && a.querySelectorAll('svg').length>=2 && parseFloat(getComputedStyle(c).backgroundColor.split(',')[3]??'1')!==0;});
-    const notLink=k.filter(a=>a.tagName!=='A'||a.target!=='_blank'||!/noopener/.test(a.rel)).length;
-    const kopf=document.querySelector('.fs-social__kopf'); const h=kopf&&kopf.querySelector('h2'), btn=kopf&&kopf.querySelector('.fs-btn');
-    const kopfOk=!!(h&&btn&&h.getBoundingClientRect().left<btn.getBoundingClientRect().left&&h.querySelector('svg'));
-    // Icons auf dem Abdunkler bzw. der Marken-Fläche: mindestens 3:1
-    const ic=k.map(a=>{const b=a.querySelector('.fs-social__play');const fg=parse(getComputedStyle(b).color),bg=effBg(b);return ratio(over(fg,{r:bg[0],g:bg[1],b:bg[2]}),bg);});
-    return {n:k.length, cols, sameW, ratio34, fill, maxZeilen:Math.max(0,...zeilen), marke:marke.length, markeOk, notLink, kopfOk, minIcon:Math.min(...ic)};`));
-  if (st.cols !== 3 || !st.sameW) sbad.push(`Raster bei 1512px: ${st.cols} Spalten, gleich breit ${st.sameW}`);
-  if (!st.ratio34 || !st.fill) sbad.push(`Cover: 3:4 ${st.ratio34}, formatfüllend ${st.fill}`);
-  if (st.maxZeilen > 2) sbad.push(`Titel über ${st.maxZeilen} Zeilen (höchstens 2)`);
-  if (!st.marke || !st.markeOk) sbad.push(`Marken-Kachel: ${st.marke} gefunden, mit Fläche und Icons ${st.markeOk}`);
-  if (st.notLink) sbad.push(`${st.notLink} Kachel(n) ohne Link in neuem Tab`);
-  if (!st.kopfOk) sbad.push('Kopf: Überschrift mit Icon links, Profil-Knopf rechts fehlt');
-  if (st.minIcon < 3) sbad.push(`Abspiel-Zeichen nur ${st.minIcon.toFixed(2)}:1 (nötig 3:1)`);
-  const erreicht = new Set();
+  await page.waitForTimeout(200);
+  const tt = () => fremd.slice(vorher).filter(u => /tiktok\.com|tiktokcdn/.test(u));
+  if (await page.locator('.fs-ttplayer iframe').count()) sbad.push('Iframe vor dem Klick im DOM');
+  if (tt().length) sbad.push(`vor dem Klick ${tt().length} Anfrage(n) an TikTok`);
+  // Tastatur: der Knopf ist per Tab erreichbar und löst per Enter aus.
+  let erreicht = false;
   await page.focus('body');
-  for (let t = 0; t < 80; t++) {
+  for (let t = 0; t < 60 && !erreicht; t++) {
     await page.keyboard.press('Tab');
-    const idx = await page.evaluate(() => [...document.querySelectorAll('.fs-social__kachel')].indexOf(document.activeElement));
-    if (idx >= 0) erreicht.add(idx);
+    erreicht = await page.evaluate(() => document.activeElement && document.activeElement.hasAttribute('data-fs-tt-load'));
   }
-  if (erreicht.size !== st.n) sbad.push(`per Tab erreicht: ${erreicht.size} von ${st.n} Kacheln`);
-  for (const x of sbad) fail('Social-Feed: ' + x);
-  if (!sbad.length) ok(`Social-Feed: ${st.n} Kacheln im 3er-Raster, Cover 3:4 formatfüllend, Titel ≤ 2 Zeilen, ${st.marke} Marken-Kacheln, Kopf links/rechts, Abspiel-Zeichen ${st.minIcon.toFixed(2)}:1, alle per Tab und in neuem Tab, kein Überlauf bei 320/390/768px`);
+  if (!erreicht) sbad.push('„Video laden“ per Tab nicht erreichbar');
+  else await page.keyboard.press('Enter');
+  await page.waitForTimeout(400);
+  const nach = tt();
+  const player = nach.filter(u => u.startsWith('https://www.tiktok.com/player/v1/7311111111111111111?'));
+  if (player.length !== 1 || nach.length !== 1) sbad.push(`nach dem Klick ${nach.length} Anfrage(n) an TikTok, davon ${player.length} an den Player (erwartet genau 1): ${nach.join(' ')}`);
+  const titel = await page.evaluate(() => { const f = document.querySelector('.fs-ttplayer iframe'); return f ? f.title : null; });
+  if (!titel) sbad.push('Iframe nach dem Klick fehlt oder hat keinen title');
+  for (const x of sbad) fail('TikTok-Video: ' + x);
+  if (!sbad.length) ok(`TikTok-Video: vor dem Klick kein Iframe und keine Anfrage; „Video laden“ per Tastatur, danach genau eine Anfrage an den Player, Iframe-Titel „${titel}“; kein Überlauf bei 320/390/768px`);
+  fremd.length = vorher;   // die gewollte Anfrage zählt nicht als Abruf ohne Einwilligung
 }
 
 // ---------- 5) Keine Drittanbieter-Abrufe ohne Einwilligung -------------

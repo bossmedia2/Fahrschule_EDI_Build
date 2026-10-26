@@ -1,11 +1,19 @@
 <?php
 /**
- * Social-Feed: Link einfügen, fertig - der Abruf (fs_social_abruf) und
- * seine Folgen, gegen eine nachgebaute TikTok-Antwort.
+ * TikTok-Video im Embed Player: kein Netzabruf, Iframe nur mit Zustimmung,
+ * Platzhalter sonst.
  *
- * Kein echter Abruf: wp_remote_get, download_url und media_handle_sideload
- * sind im Stub nachgebaut und notieren jeden Aufruf. Die Antwort folgt dem
- * dokumentierten oEmbed-Format von TikTok (title, thumbnail_url, …).
+ *   1. Kein Netzabruf überhaupt: Theme und Plugin enthalten kein
+ *      wp_remote_*, kein Sideload, keinen oEmbed-Aufruf; das Rendern löst
+ *      keinen Abruf aus (der Stub notiert jeden).
+ *   2. Iframe ausschließlich mit Zustimmung (fs_consent=all oder fs_tiktok=1),
+ *      mit title, loading=lazy, allowfullscreen und der Player-URL aus der
+ *      Dokumentation.
+ *   3. Sonst der Platzhalter: kein <iframe>, kein <script> im HTML, Knopf
+ *      „Video laden“ als echtes <button>.
+ *   Dazu: Post-ID aus /photo/- und Tracking-URLs, unlesbare URL = leer mit
+ *   Editor-Hinweis, Editor zeigt die erkannte ID ohne Iframe, Cookie-Banner
+ *   und Datenschutzerklärung nennen TikTok.
  *
  * Aufruf: php social.php [<theme-dir>]
  */
@@ -13,10 +21,8 @@ error_reporting( E_ALL );
 $GLOBALS['__theme']  = $argv[1] ?? dirname( __DIR__, 2 ) . '/fahrschule-edi';
 $GLOBALS['__blocks'] = array();
 require __DIR__ . '/wp-stub.php';
-require __DIR__ . '/fse.php';
-if ( ! function_exists( 'parse_blocks' ) ) { function parse_blocks( $c ) { return fs_fse_parse( $c ); } }
 define( 'FAHRSCHULE_DIR', $GLOBALS['__theme'] ); define( 'FAHRSCHULE_URI', '/u' ); define( 'FAHRSCHULE_VERSION', '1' );
-foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'blocks-config', 'social-abruf' ) as $f ) { require $GLOBALS['__theme'] . '/inc/' . $f . '.php'; }
+foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'blocks-config' ) as $f ) { require $GLOBALS['__theme'] . '/inc/' . $f . '.php'; }
 
 $fails = array();
 function fail( $m ) { global $fails; $fails[] = $m; echo "  FEHLER: $m\n"; }
@@ -24,83 +30,101 @@ function ok( $m ) { echo "  ok: $m\n"; }
 set_error_handler( function ( $no, $str, $file, $line ) { fail( "PHP: $str (" . basename( $file ) . ":$line)" ); return true; } );
 
 $cfg    = fahrschule_blocks_config();
-$render = function ( $items ) use ( $cfg ) { return call_user_func( $cfg['fahrschule/instagram-slider']['render'], array( 'items' => $items ) ); };
-$tiktok = function ( $code, $daten = array() ) {
-	return function ( $u ) use ( $code, $daten ) { return array( 'response' => array( 'code' => $code ), 'body' => json_encode( $daten ) ); };
-};
-$reset = function () { $GLOBALS['__http_calls'] = array(); $GLOBALS['__downloads'] = array(); $GLOBALS['__sideloads'] = array(); $GLOBALS['__download_fail'] = false; };
+$block  = function ( $a ) use ( $cfg ) { return call_user_func( $cfg['fahrschule/instagram-slider']['render'], $a ); };
+$sauber = 'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111';
+$GLOBALS['__http_calls'] = array();
 
-// --- 1. Erfolg: Titel und Cover, Cover lokal ---------------------------------
-$reset();
-$GLOBALS['__http'] = $tiktok( 200, array( 'version' => '1.0', 'type' => 'video', 'title' => 'Erste Fahrstunde <b>auf der Autobahn</b>', 'author_name' => 'edi', 'thumbnail_url' => 'https://p16-sign.tiktokcdn-eu.com/obj/abc~tplv-photomode-image?x-expires=1700000000&x-signature=xyz' ) );
-$z = fs_social_abruf( 'https://www.tiktok.com/@edi_fahrschule/photo/7311111111111111111?is_from_webapp=1&sender_device=pc#x' );
-$e = array();
-if ( 'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111' !== $z[1] ) { $e[] = "Link nicht normalisiert: {$z[1]}"; }
-if ( false === strpos( $GLOBALS['__http_calls'][0] ?? '', rawurlencode( 'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111' ) ) || false !== strpos( $GLOBALS['__http_calls'][0], 'is_from_webapp' ) ) { $e[] = 'Anfrage nicht mit /video/ und ohne Tracking-Parameter'; }
-if ( 'Erste Fahrstunde auf der Autobahn' !== $z[2] ) { $e[] = "Titel „{$z[2]}“"; }
-if ( 'ok' !== $z[4] || ! preg_match( '/^\d+$/', $z[3] ) ) { $e[] = "Status/Bild-ID: {$z[4]} / {$z[3]}"; }
-if ( 1 !== count( $GLOBALS['__sideloads'] ) || 'edi-tiktok-7311111111111111111.jpg' !== reset( $GLOBALS['__sideloads'] ) ) { $e[] = 'Cover nicht als edi-tiktok-<id>.jpg in die Mediathek übernommen'; }
-if ( ( $GLOBALS['__meta'][ (int) $z[3] ]['_fs_social_quelle'] ?? '' ) !== $z[1] ) { $e[] = 'Quelle am Anhang nicht vermerkt'; }
-$e ? array_map( 'fail', $e ) : ok( 'Link eingelesen: /photo/ -> /video/, Tracking-Parameter weg, Titel ohne HTML, Cover als Anhang edi-tiktok-<id>.jpg in der Mediathek' );
-$erste_id = $z[3];
-
-// --- 2. Erneutes Speichern: kein zweiter Abruf, kein zweites Bild -------------
-$reset();
-$z2 = fs_social_abruf( 'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111' );
-( ! $GLOBALS['__http_calls'] && ! $GLOBALS['__sideloads'] && $z2[3] === $erste_id && 'Erste Fahrstunde auf der Autobahn' === $z2[2] )
-	? ok( 'zweites Einlesen desselben Links: kein Netzabruf, derselbe Anhang' )
-	: fail( 'zweites Einlesen ruft erneut ab oder legt ein zweites Bild an' );
-$reset();
-fs_social_abruf( 'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111', true );
-( 1 === count( $GLOBALS['__http_calls'] ) ) ? ok( '„Beiträge aktualisieren“ (neu=true) ruft erneut ab' ) : fail( '„Beiträge aktualisieren“ ruft nicht erneut ab' );
-
-// --- 3. Scheitern: Grund im Status, Marken-Kachel mit Link -------------------
-$faelle = array(
-	'privat/gelöscht (404)'     => array( $tiktok( 404 ), false, 'HTTP 404' ),
-	'Rate-Limit (429)'          => array( $tiktok( 429 ), false, '429' ),
-	'kein Netz'                 => array( null, false, 'keine Verbindung' ),
-	'Vorschaubild nicht ladbar' => array( $tiktok( 200, array( 'title' => 'T', 'thumbnail_url' => 'https://p16.tiktokcdn.com/x.jpeg' ) ), true, 'Vorschaubild nicht ladbar' ),
-);
-$e = array();
-foreach ( $faelle as $name => $f ) {
-	$reset(); $GLOBALS['__http'] = $f[0]; $GLOBALS['__download_fail'] = $f[1];
-	$z = fs_social_abruf( 'https://www.tiktok.com/@edi_fahrschule/video/7322222222222222222' );
-	if ( 'ok' === $z[4] || false === strpos( $z[4], $f[2] ) ) { $e[] = "$name: Status „{$z[4]}“"; continue; }
-	$h = $render( array( $z ) );
-	if ( ! preg_match( '#<a class="fs-social__kachel fs-social__kachel--marke" href="https://www\.tiktok\.com/@edi_fahrschule/video/7322222222222222222" target="_blank" rel="noopener#', $h ) ) { $e[] = "$name: keine Marken-Kachel mit Link"; }
-	if ( preg_match( '#<img[^>]*src=""#', $h ) ) { $e[] = "$name: leeres Bild"; }
+// --- 1. Kein Netzabruf überhaupt ---------------------------------------------
+$treffer = array();
+foreach ( array( $GLOBALS['__theme'], dirname( $GLOBALS['__theme'] ) . '/edi-integrationen' ) as $dir ) {
+	$it = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ) );
+	foreach ( $it as $file ) {
+		if ( 'php' !== $file->getExtension() ) { continue; }
+		foreach ( file( $file->getPathname() ) as $n => $zeile ) {
+			if ( preg_match( '#^\s*(\*|//|/\*)#', $zeile ) ) { continue; }
+			if ( preg_match( '/\b(wp_remote_\w+|wp_safe_remote_\w+|download_url|media_sideload_image|media_handle_sideload)\s*\(|oembed/i', $zeile, $m ) ) {
+				$treffer[] = basename( $file->getPathname() ) . ':' . ( $n + 1 ) . ' ' . $m[0];
+			}
+		}
+	}
 }
-$reset();
-foreach ( array( 'https://www.instagram.com/p/abc/' => 'Instagram', 'https://example.com/video/1' => 'kein TikTok-Link' ) as $u => $erwartet ) {
-	$z = fs_social_abruf( $u );
-	if ( false === strpos( $z[4], $erwartet ) ) { $e[] = "$u: Status „{$z[4]}“"; }
-}
-if ( $GLOBALS['__http_calls'] ) { $e[] = 'Instagram/fremder Link löst einen Abruf aus'; }
-$e ? array_map( 'fail', $e ) : ok( 'gescheitert (404, 429, kein Netz, Bild nicht ladbar), Instagram, fremder Link: Grund im Status, Marken-Kachel mit Link, nie ein leeres Bild' );
+$block( array( 'videoUrl' => $sauber ) );
+$_COOKIE['fs_consent'] = 'all'; $block( array( 'videoUrl' => $sauber ) ); unset( $_COOKIE['fs_consent'] );
+if ( $treffer ) { fail( 'Netzabruf im Code: ' . implode( ', ', $treffer ) ); }
+elseif ( $GLOBALS['__http_calls'] ) { fail( 'Rendern löst einen Abruf aus: ' . implode( ', ', $GLOBALS['__http_calls'] ) ); }
+else { ok( 'kein Netzabruf: weder wp_remote_* noch Sideload noch oEmbed in Theme und Plugin; Rendern ruft nichts ab' ); }
 
-// --- 4. Editor-Hinweis nennt Link und Grund ----------------------------------
+// --- 2. Iframe nur mit Zustimmung --------------------------------------------
+$e = array();
+foreach ( array( 'fs_consent=all' => array( 'fs_consent', 'all' ), 'fs_tiktok=1 (Video laden, Sitzung)' => array( 'fs_tiktok', '1' ) ) as $name => $c ) {
+	$_COOKIE = array( $c[0] => $c[1] );
+	$h = $block( array( 'videoUrl' => $sauber, 'heading' => 'Folgen Sie uns' ) );
+	if ( ! preg_match( '#<iframe\b([^>]*)>#', $h, $m ) ) { $e[] = "$name: kein Iframe"; continue; }
+	$soll = 'https://www.tiktok.com/player/v1/7311111111111111111?music_info=0&description=0&rel=0&autoplay=0&timestamp=0&closed_caption=1&native_context_menu=0';
+	if ( ! preg_match( '#src="([^"]+)"#', $m[1], $src ) || html_entity_decode( $src[1] ) !== $soll ) { $e[] = "$name: Player-URL weicht ab ({$m[1]})"; }
+	foreach ( array( 'title="TikTok-Video', 'loading="lazy"', 'allowfullscreen', 'allow="fullscreen"' ) as $need ) {
+		if ( false === strpos( $m[1], $need ) ) { $e[] = "$name: Iframe ohne $need"; }
+	}
+	if ( preg_match( '#<script|embed\.js|blockquote#i', $h ) ) { $e[] = "$name: fremdes Skript bzw. Profil-Embed"; }
+	if ( false !== strpos( $h, 'data-fs-tt-load' ) ) { $e[] = "$name: Platzhalter vor dem Player trotz Zustimmung"; }
+}
+$_COOKIE = array( 'fs_consent' => 'essential' );
+if ( false !== strpos( $block( array( 'videoUrl' => $sauber ) ), '<iframe' ) ) { $e[] = 'fs_consent=essential: Iframe im HTML'; }
+$_COOKIE = array();
+$e ? array_map( 'fail', $e ) : ok( 'Iframe nur mit Zustimmung (Banner oder „Video laden“): Player-URL laut Doku, title, loading=lazy, allowfullscreen; „Nur notwendige“ = kein Iframe' );
+
+// --- 3. Platzhalter sonst ----------------------------------------------------
+$h = $block( array( 'videoUrl' => $sauber ) );
+$e = array();
+if ( preg_match( '#<iframe|<script|embed\.js#i', $h ) ) { $e[] = 'Iframe oder Skript im HTML'; }
+if ( ! preg_match( '#<button type="button" class="fs-btn fs-btn--primary" data-fs-tt-load>#', $h ) ) { $e[] = 'Knopf „Video laden“ fehlt oder ist kein <button>'; }
+if ( false === strpos( $h, '@edi_fahrschule' ) || false === strpos( $h, 'fs-ttplayer__marke' ) ) { $e[] = 'Platzhalter ohne TikTok-Zeichen bzw. Handle'; }
+if ( preg_match( '#data-src="([^"]+)"#', $h, $m ) && false === strpos( $m[1], '/player/v1/7311111111111111111' ) ) { $e[] = 'data-src ohne Player-URL'; }
+// Die Player-Adresse steht nur im data-Attribut - der Browser lädt daraus nichts.
+$ohne_data = preg_replace( '#data-src="[^"]*"#', '', $h );
+if ( false !== strpos( $ohne_data, 'tiktok.com/player' ) ) { $e[] = 'Player-Adresse außerhalb von data-src'; }
+$e ? array_map( 'fail', $e ) : ok( 'ohne Zustimmung: Platzhalter mit TikTok-Zeichen, Handle und <button> „Video laden“ - kein Iframe, kein Skript im HTML' );
+
+// --- 4. Post-ID aus jeder Schreibweise ---------------------------------------
+$e = array();
+foreach ( array(
+	$sauber,
+	'https://www.tiktok.com/@edi_fahrschule/photo/7311111111111111111',
+	'https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111?is_from_webapp=1&sender_device=pc#kommentare',
+	'https://m.tiktok.com/@edi_fahrschule/video/7311111111111111111/',
+) as $u ) {
+	if ( '7311111111111111111' !== fs_tiktok_id( $u ) ) { $e[] = "$u -> „" . fs_tiktok_id( $u ) . '“'; }
+}
+foreach ( array( 'https://www.tiktok.com/@edi_fahrschule', 'https://vm.tiktok.com/ZMabc/', 'https://example.com/video/7311111111111111111', 'kein Link' ) as $u ) {
+	if ( '' !== fs_tiktok_id( $u ) ) { $e[] = "$u gilt fälschlich als lesbar"; }
+}
+$e ? array_map( 'fail', $e ) : ok( 'Post-ID: /photo/, Tracking-Parameter, Anker und m.tiktok.com ergeben dieselbe ID wie die saubere URL; Profil-, Kurz- und fremde Links gelten als unlesbar' );
+
+// --- 5. Unlesbare URL: nichts im Frontend, Grund im Editor -------------------
+$e = array();
+if ( '' !== trim( $block( array( 'videoUrl' => 'https://vm.tiktok.com/ZMabc/' ) ) ) ) { $e[] = 'Frontend rendert trotz unlesbarer URL'; }
+if ( '' !== trim( $block( array() ) ) ) { $e[] = 'Frontend rendert ohne URL'; }
 define( 'REST_REQUEST', true );
-$h = $render( array( array( 'tiktok', 'https://www.tiktok.com/@edi_fahrschule/video/1', '', '', 'privat, gelöscht oder kein Video (HTTP 404)' ), array( 'tiktok', 'https://www.tiktok.com/@edi_fahrschule/video/2', '', '', '' ) ) );
-( false !== strpos( $h, 'Link 1 (tiktok.com/@edi_fahrschule/video/1): privat, gelöscht oder kein Video (HTTP 404)' ) && false !== strpos( $h, 'Link 2: noch nicht eingelesen' ) )
-	? ok( 'Editor nennt je Link, warum er nicht gelesen wurde bzw. dass er noch aussteht' )
-	: fail( 'Editor-Hinweis nennt Link und Grund nicht' );
+$hint = $block( array( 'videoUrl' => 'https://vm.tiktok.com/ZMabc/' ) );
+if ( false === strpos( $hint, 'nicht lesbar' ) || false === strpos( $hint, 'vm.tiktok.com/ZMabc' ) ) { $e[] = 'Editor nennt die unlesbare URL nicht'; }
+// --- 6. Editor: Platzhalter mit erkannter ID, nie das Iframe ----------------
+$_COOKIE = array( 'fs_consent' => 'all' );
+$ed = $block( array( 'videoUrl' => $sauber ) );
+$_COOKIE = array();
+if ( false !== strpos( $ed, '<iframe' ) ) { $e[] = 'Editor lädt das Iframe'; }
+if ( false === strpos( $ed, 'Erkannte Post-ID: 7311111111111111111' ) ) { $e[] = 'Editor zeigt die erkannte Post-ID nicht'; }
+$e ? array_map( 'fail', $e ) : ok( 'unlesbare oder fehlende URL: Sektion leer, Editor nennt die URL; Editor zeigt Platzhalter mit erkannter Post-ID, auch mit Zustimmung kein Iframe' );
 
-// --- 5. Beim Speichern: fehlende Zeilen werden nachgetragen ------------------
-$reset();
-$GLOBALS['__http'] = $tiktok( 200, array( 'title' => 'Beim Speichern', 'thumbnail_url' => 'https://p16.tiktokcdn.com/y.jpeg' ) );
-$inhalt = '<!-- wp:fahrschule/instagram-slider {"items":[["tiktok","https://www.tiktok.com/@edi_fahrschule/video/7333333333333333333","","",""],["tiktok","https://www.tiktok.com/@edi_fahrschule/video/7311111111111111111","Erste Fahrstunde auf der Autobahn","' . $erste_id . '","ok"]]} /-->';
-$data   = fahrschule_social_beim_speichern( array( 'post_content' => $inhalt, 'post_type' => 'page' ) );
-$neu    = parse_blocks( $data['post_content'] )[0]['attrs']['items'];
-( 'Beim Speichern' === $neu[0][2] && 'ok' === $neu[0][4] && $neu[1][3] === $erste_id && 1 === count( $GLOBALS['__http_calls'] ) )
-	? ok( 'beim Speichern: Zeile ohne Status eingelesen, eingelesene Zeile unberührt (genau ein Abruf)' )
-	: fail( 'Speichern trägt fehlende Zeilen nicht nach oder ruft eingelesene erneut ab' );
-
-// --- 6. Eine Funktion, kein Abruf beim Seitenaufruf --------------------------
-$src = file_get_contents( $GLOBALS['__theme'] . '/inc/render-callbacks.php' );
-( ! preg_match( '/wp_remote_|download_url|media_handle_sideload|media_sideload_image|oembed/i', $src ) )
-	? ok( 'Render-Funktionen rufen nichts ab (kein wp_remote_*, kein Sideload, kein oEmbed)' )
-	: fail( 'Netz- oder Mediathek-Aufruf in inc/render-callbacks.php' );
+// --- 7. Banner und Datenschutzerklärung nennen TikTok ------------------------
+$banner = call_user_func( $cfg['fahrschule/cookie-banner']['render'], array() );
+ob_start(); fs_legal_datenschutz(); $ds = ob_get_clean();
+$e = array();
+if ( false === strpos( $banner, 'TikTok' ) ) { $e[] = 'Cookie-Banner nennt TikTok nicht'; }
+foreach ( array( 'TikTok Technology Limited' => 'Anbieter', 'IP-Adresse' => 'Daten', 'Drittl' => 'Drittland', 'Art. 6 Abs. 1 lit. a' => 'Rechtsgrundlage' ) as $need => $was ) {
+	if ( false === strpos( $ds, $need ) ) { $e[] = "Datenschutzerklärung ohne $was"; }
+}
+$e ? array_map( 'fail', $e ) : ok( 'Cookie-Banner nennt TikTok; Datenschutzerklärung nennt Anbieter, Daten, Drittland und Rechtsgrundlage' );
 
 echo "\n";
-if ( $fails ) { echo 'SOCIAL: ' . count( $fails ) . " Fehler\n"; exit( 1 ); }
-echo "SOCIAL: bestanden\n";
+if ( $fails ) { echo 'TIKTOK-PLAYER: ' . count( $fails ) . " Fehler\n"; exit( 1 ); }
+echo "TIKTOK-PLAYER: bestanden\n";

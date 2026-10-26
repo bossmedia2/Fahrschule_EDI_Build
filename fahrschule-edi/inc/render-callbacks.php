@@ -522,91 +522,89 @@ function fs_render_testimonials( $a ) {
 }
 
 /* -------------------------------------------------------------------------
- * SOCIAL-FEED (Block-Slug instagram-slider bleibt - Umbenennen bräche jede
- * Seite, auf der er steht). Link einfügen, fertig: siehe inc/social-abruf.php.
+ * TIKTOK-VIDEO im Embed Player (Block-Slug instagram-slider bleibt -
+ * Umbenennen bräche jede Seite, auf der er steht).
+ *
+ * Der Player ist ein reines Iframe auf www.tiktok.com/player/v1/{id}: TikToks
+ * Code läuft im fremden Origin, ohne Zugriff auf diese Seite - anders als das
+ * Profil-Embed mit embed.js. Kein Abruf, kein oEmbed: die Player-URL entsteht
+ * allein aus der Post-ID.
+ *
+ * Einwilligung serverseitig: Ohne Zustimmung steht KEIN Iframe im HTML - ein
+ * per CSS verstecktes Iframe lüde trotzdem und übertrüge IP-Adresse, User-
+ * Agent und Referer. Zustimmung heißt: fs_consent=all (Cookie-Banner, nennt
+ * TikTok) oder fs_tiktok=1 (Knopf „Video laden“, gilt für die Sitzung).
  * ---------------------------------------------------------------------- */
+
+/**
+ * Post-ID aus einer TikTok-URL: der Zahlenteil hinter /video/. /photo/ zählt
+ * wie /video/, Tracking-Parameter und Anker fallen weg. '' = nicht lesbar.
+ */
+function fs_tiktok_id( $url ) {
+	$teile = wp_parse_url( trim( (string) $url ) );
+	$host  = strtolower( isset( $teile['host'] ) ? $teile['host'] : '' );
+	if ( ! preg_match( '/(^|\.)tiktok\.com$/', $host ) ) { return ''; }
+	$pfad = str_replace( '/photo/', '/video/', isset( $teile['path'] ) ? $teile['path'] : '' );
+	return preg_match( '#/video/(\d{6,25})(?:/|$)#', $pfad, $m ) ? $m[1] : '';
+}
+
+/** Player-URL nach TikToks Dokumentation: ohne Textflächen, eigene Videos am Ende, Untertitel an. */
+function fs_tiktok_player_url( $id ) {
+	return 'https://www.tiktok.com/player/v1/' . rawurlencode( $id ) . '?music_info=0&description=0&rel=0&autoplay=0&timestamp=0&closed_caption=1&native_context_menu=0';
+}
+
+/** Darf das Iframe im HTML stehen? Nur mit Zustimmung - nie im Editor. */
+function fs_tiktok_erlaubt() {
+	if ( fs_is_editor_preview() ) { return false; }
+	$alle = isset( $_COOKIE['fs_consent'] ) && 'all' === sanitize_key( wp_unslash( $_COOKIE['fs_consent'] ) );
+	$hier = isset( $_COOKIE['fs_tiktok'] ) && '1' === (string) wp_unslash( $_COOKIE['fs_tiktok'] );
+	return $alle || $hier;
+}
+
 function fs_render_instagram_slider( $a ) {
 	$d = fs_attrs( $a, array(
-		'heading'      => 'Folgen Sie uns',
-		'tiktokHandle' => '',
-		'tiktokUrl'    => '',
-		'items'        => array(),
-		// Altfelder bis 3.1 - nur noch Rückfall für den Profil-Link.
-		'instaHandle'  => '',
-		'instaUrl'     => '',
-		'url'          => '',
+		'videoUrl'   => '',
+		'heading'    => 'Folgen Sie uns',
+		'profileUrl' => fs_social_profil( 'tiktok' )['url'],   // Stammdaten, wie die Feld-Vorgabe
+		'tiktokUrl'  => '',     // Altfeld bis 3.2 - Rückfall für den Profil-Link
 	) );
-	$profil = trim( (string) $d['tiktokUrl'] );
-	$handle = trim( (string) $d['tiktokHandle'] );
-	if ( '' === $profil ) {
-		$profil = '' !== trim( (string) $d['instaUrl'] ) ? trim( (string) $d['instaUrl'] ) : trim( (string) $d['url'] );
-		if ( '' === $handle ) { $handle = trim( (string) $d['instaHandle'] ); }
+	$url = trim( (string) $d['videoUrl'] );
+	if ( '' === $url ) {
+		return fs_editor_hint( 'TikTok-Video:', 'Erscheint, sobald eine TikTok-Video-URL eingetragen ist (…/video/<Nummer>).' );
 	}
-	$profil_pf = false !== strpos( $profil, 'instagram.com' ) ? 'instagram' : 'tiktok';
-	$name      = array( 'instagram' => 'Instagram', 'tiktok' => 'TikTok' );
-
-	/*
-	 * Kacheln aus den Zeilen [Plattform, Link, Titel, Bild-ID, Status].
-	 * Titel, Bild-ID und Status trägt fs_social_abruf() beim Speichern im
-	 * Editor ein - hier wird NICHTS abgerufen. Zeilen im Format bis 3.1
-	 * ([Plattform, Medien-Slug, Link, Bildtext]) werden weiter gelesen.
-	 */
-	$kacheln = array();
-	$hinweis = array();
-	foreach ( fs_rows( $d['items'], 5 ) as $i => $z ) {
-		$z = array_map( 'trim', array_map( 'strval', $z ) );
-		if ( '' !== $z[1] && ! preg_match( '#^https?://#', $z[1] ) ) {
-			// Altes Format: Cover aus der Mediathek, Bildtext als Titel.
-			$link = '' !== $z[2] ? $z[2] : $profil;
-			if ( '' === $link ) { continue; }
-			$kacheln[] = array( 'pf' => 'instagram' === strtolower( $z[0] ) ? 'instagram' : 'tiktok', 'link' => $link, 'titel' => $z[3], 'bild' => fs_media_by_slug( $z[1] ) );
-			continue;
-		}
-		if ( '' === $z[1] ) { continue; }
-		$pf   = false !== strpos( $z[1], 'instagram.com' ) || 'instagram' === strtolower( $z[0] ) ? 'instagram' : 'tiktok';
-		$bild = preg_match( '/^\d+$/', $z[3] ) && (int) $z[3] > 0 ? (string) wp_get_attachment_image_url( (int) $z[3], 'medium_large' ) : '';
-		if ( '' === $z[4] ) {
-			$hinweis[] = sprintf( 'Link %d: noch nicht eingelesen – Seite speichern oder „Beiträge aktualisieren“.', $i + 1 );
-		} elseif ( 'ok' !== $z[4] ) {
-			$hinweis[] = sprintf( 'Link %d (%s): %s', $i + 1, preg_replace( '#^https?://(www\.)?#', '', $z[1] ), $z[4] );
-		}
-		$kacheln[] = array( 'pf' => $pf, 'link' => $z[1], 'titel' => $z[2], 'bild' => $bild );
+	$id = fs_tiktok_id( $url );
+	if ( '' === $id ) {
+		return fs_editor_hint( 'TikTok-Video:', 'Die URL „' . $url . '“ ist nicht lesbar – erwartet wird ein TikTok-Link mit /video/<Nummer> (oder /photo/<Nummer>). Die Sektion bleibt bis dahin leer.' );
 	}
-	$hinweise = $hinweis ? fs_editor_hint( 'Social-Feed:', implode( ' · ', $hinweis ) ) : '';
-	if ( ! $kacheln ) {
-		return $hinweise ? $hinweise : fs_editor_hint( 'Social-Feed:', 'Erscheint, sobald ein Video-Link eingetragen ist. Titel und Cover kommen beim Speichern von TikTok.' );
-	}
+	$profil = '' !== trim( (string) $d['profileUrl'] ) ? trim( (string) $d['profileUrl'] ) : trim( (string) $d['tiktokUrl'] );
+	$handle = '' !== $profil ? '@' . ltrim( strtok( trim( (string) wp_parse_url( $profil, PHP_URL_PATH ), '/' ), '/' ), '@' ) : '';
+	$titel  = 'TikTok-Video' . ( '' !== $handle ? ' von ' . $handle : '' ) . ( '' !== trim( (string) $d['heading'] ) ? ': ' . trim( (string) $d['heading'] ) : '' );
+	$src    = fs_tiktok_player_url( $id );
+	$iframe = '<iframe class="fs-ttplayer__frame" src="' . esc_url( $src ) . '" title="' . esc_attr( $titel ) . '" loading="lazy" allow="fullscreen" allowfullscreen></iframe>';
 
 	ob_start(); ?>
 	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-wide" style="margin-inline:auto;">
-			<?php echo $hinweise; ?>
+			<?php if ( '' !== trim( (string) $d['heading'] ) || '' !== $profil ) : ?>
 			<div class="fs-social__kopf">
-				<?php echo '' !== trim( (string) $d['heading'] ) ? fs_el( 'h2', '', 'class="fs-social__titel"', fs_icon( $profil_pf, 30 ) . esc_html( $d['heading'] ) ) : ''; ?>
-				<?php if ( '' !== $profil && '' !== $handle ) : ?>
-				<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( $profil ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( $profil_pf, 18 ); ?> <?php echo esc_html( '@' . ltrim( $handle, '@' ) ); ?></a>
+				<?php echo '' !== trim( (string) $d['heading'] ) ? fs_el( 'h2', '', 'class="fs-social__titel"', fs_icon( 'tiktok', 30 ) . esc_html( $d['heading'] ) ) : ''; ?>
+				<?php if ( '' !== $profil ) : ?>
+				<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( $profil ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( 'tiktok', 18 ); ?> <?php echo esc_html( $handle ); ?></a>
 				<?php endif; ?>
 			</div>
-			<div class="fs-social__raster">
-				<?php foreach ( $kacheln as $k ) : ?>
-				<?php /* Cover formatfüllend, darauf Plattform und Abspiel-Zeichen;
-				         ohne Cover (Abruf gescheitert, Instagram) die Marken-Kachel -
-				         nie ein leerer Rahmen. Der Titel darunter ist der Linktext. */ ?>
-				<a class="fs-social__kachel<?php echo '' === $k['bild'] ? ' fs-social__kachel--marke' : ''; ?>" href="<?php echo esc_url( $k['link'] ); ?>" target="_blank" rel="noopener noreferrer" data-plattform="<?php echo esc_attr( $k['pf'] ); ?>">
-					<span class="fs-social__cover">
-						<?php if ( '' !== $k['bild'] ) : ?><img src="<?php echo esc_url( $k['bild'] ); ?>" alt="" width="480" height="640" loading="lazy" decoding="async"><?php endif; ?>
-						<span class="fs-social__shade" aria-hidden="true"></span>
-						<span class="fs-social__badge" aria-hidden="true"><?php echo fs_icon( $k['pf'], 16 ); ?></span>
-						<span class="fs-social__play" aria-hidden="true"><?php echo fs_icon( 'play', 28 ); ?></span>
-					</span>
-					<?php if ( '' !== $k['titel'] ) : ?>
-					<span class="fs-social__text"><?php echo esc_html( $k['titel'] ); ?></span>
-					<?php else : ?>
-					<span class="screen-reader-text"><?php echo esc_html( $name[ $k['pf'] ] . '-Beitrag öffnen' ); ?></span>
-					<?php endif; ?>
-					<span class="screen-reader-text"> (öffnet <?php echo esc_html( $name[ $k['pf'] ] ); ?> in neuem Tab)</span>
-				</a>
-				<?php endforeach; ?>
+			<?php endif; ?>
+			<div class="fs-ttplayer" data-fs-tt data-src="<?php echo esc_url( $src ); ?>" data-title="<?php echo esc_attr( $titel ); ?>">
+				<?php if ( fs_tiktok_erlaubt() ) : ?>
+				<?php echo $iframe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- oben escaped ?>
+				<?php else : ?>
+				<div class="fs-ttplayer__box">
+					<span class="fs-ttplayer__marke" aria-hidden="true"><?php echo fs_icon( 'tiktok', 40 ); ?></span>
+					<?php if ( '' !== $handle ) : ?><p class="fs-ttplayer__handle"><?php echo esc_html( $handle ); ?></p><?php endif; ?>
+					<p class="fs-ttplayer__info">Beim Laden des Videos überträgt Ihr Browser Daten (u. a. IP-Adresse) an TikTok. Mehr dazu in der <a href="<?php echo esc_url( fs_url( 'datenschutz' ) ); ?>">Datenschutzerklärung</a>.</p>
+					<button type="button" class="fs-btn fs-btn--primary" data-fs-tt-load><?php echo fs_icon( 'play', 18 ); ?> Video laden</button>
+					<?php if ( fs_is_editor_preview() ) : ?><p class="fs-ttplayer__id">Erkannte Post-ID: <?php echo esc_html( $id ); ?></p><?php endif; ?>
+				</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</section>
@@ -796,7 +794,7 @@ function fs_render_cookie_banner( $a ) {
 	<div class="fs-cookiebanner<?php echo $decided ? '' : ' is-open'; ?>" data-fs-cookiebanner role="dialog" aria-modal="false" aria-label="Cookie-Einstellungen"<?php echo $decided ? ' hidden' : ''; ?>>
 		<div class="fs-cookiebanner__inner">
 			<p class="fs-cookiebanner__text">
-				Diese Website verwendet nur technisch notwendige Cookies. Mit „Alle akzeptieren" erlauben Sie zusätzlich freiwillige Cookies (z.&nbsp;B. für Statistik oder eingebettete Inhalte), sofern diese eingerichtet sind. Mehr dazu in unserer <a href="<?php echo esc_url( fs_url( 'datenschutz' ) ); ?>">Datenschutzerklärung</a>.
+				Diese Website verwendet nur technisch notwendige Cookies. Mit „Alle akzeptieren" erlauben Sie zusätzlich die Statistik mit Matomo (sofern eingerichtet) und das Laden eingebetteter <strong>TikTok</strong>-Videos: Dabei überträgt Ihr Browser Daten wie IP-Adresse und Browserangaben an TikTok (TikTok Technology Limited, Irland), auch in Länder außerhalb der EU. Mehr dazu in unserer <a href="<?php echo esc_url( fs_url( 'datenschutz' ) ); ?>">Datenschutzerklärung</a>.
 			</p>
 			<div class="fs-cookiebanner__actions">
 				<button type="button" class="fs-btn fs-btn--outline" data-fs-consent="essential">Nur notwendige</button>
@@ -1792,6 +1790,13 @@ function fs_legal_datenschutz() { ?>
 					<?php endif; ?>
 				</div>
 				<?php endif; ?>
+				<div class="fs-legal__block">
+					<h2><?php echo ( function_exists( 'fahrschule_matomo_enabled' ) && fahrschule_matomo_enabled() ) ? '6' : '5'; ?>. Eingebettete Videos (TikTok)</h2>
+					<p>Auf einzelnen Seiten kann ein Video von TikTok eingebunden sein. Anbieter für Nutzer in der EU ist die TikTok Technology Limited, 10 Earlsfort Terrace, Dublin, D02 T380, Irland.</p>
+					<p><strong>Ohne Ihre Einwilligung</strong> lädt diese Website nichts von TikTok: An der Stelle des Videos steht nur ein Platzhalter, und es wird keine Verbindung zu TikTok aufgebaut.</p>
+					<p><strong>Erst wenn Sie „Video laden“ anklicken oder im Cookie-Banner „Alle akzeptieren“ wählen</strong>, lädt Ihr Browser den TikTok-Player. Dabei erhält TikTok insbesondere Ihre IP-Adresse, Angaben zu Browser und Gerät, die aufgerufene Seite (Referrer) sowie den Zeitpunkt; TikTok kann Cookies oder ähnliche Techniken einsetzen. TikTok übermittelt Daten nach eigenen Angaben auch in Länder außerhalb der EU bzw. des EWR (Drittländer).</p>
+					<p>Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG). Die Einwilligung über „Video laden“ gilt bis zum Schließen des Browsers; die über das Cookie-Banner können Sie jederzeit über den Link „Cookie-Einstellungen“ im Fußbereich widerrufen. Näheres zur Verarbeitung durch TikTok: <a href="https://www.tiktok.com/legal/privacy-policy-eea" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von TikTok</a>.</p>
+				</div>
 			</div>
 		</div>
 	</section>
