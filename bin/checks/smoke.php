@@ -15,8 +15,16 @@ define('FAHRSCHULE_URI', '/wp-content/themes/fahrschule-edi');
 foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config','seo','forms','security'] as $f)
   require $GLOBALS['__theme'].'/inc/'.$f.'.php';
 
+// Ohne Blockkonfiguration rendert keine Seite - dann sofort sagen, warum,
+// statt still mit null Seiten weiterzulaufen.
+$erwartet = count(fahrschule_page_map());
+try { $cfg = fahrschule_blocks_config(); }
+catch(\Throwable $e){
+  printf("FATAL: Blockkonfiguration nicht ladbar: %s (%s:%d)\n", $e->getMessage(), basename($e->getFile()), $e->getLine());
+  printf("Seiten: 0 von %d gerendert (erwartet %d) - erste Meldung: %s\n", $erwartet, $erwartet, $e->getMessage());
+  exit(1);
+}
 // run the theme's own registration loop
-$cfg = fahrschule_blocks_config();
 foreach($cfg as $name=>$c){
   $attrs=[]; if(!empty($c['fields'])) foreach($c['fields'] as $k=>$fl) $attrs[$k]=['type'=>'string','default'=>$fl['default']];
   register_block_type($name, ['attributes'=>$attrs,'render_callback'=>$c['render']]);
@@ -49,7 +57,7 @@ file_put_contents($FS_OUT.'/rendered.json', json_encode($outs));
 /* ---- Seiten: jede Registry-Seite über ihre Block-Vorlage rendern (bin/checks/fse.php) ---- */
 echo "\n".str_repeat("=",74)."\nPAGE-LEVEL SMOKE TEST (inc/pages.php registry)\n".str_repeat("=",74)."\n";
 $map = fahrschule_page_map();
-$pages=[];
+$pages=[]; $seiten_ok=0; $erste='';
 foreach($map as $key=>$pg){
   $errs=[]; $html='';
   // Kontext der jeweiligen Seite herstellen (unten im try) - sonst rendert
@@ -62,9 +70,10 @@ foreach($map as $key=>$pg){
     $tpl  = $pg['template'] ?? 'page';
     $html = fs_fse_render_template($GLOBALS['__theme'], $tpl, $content);
     $st = $errs ? '!! '.count($errs).' issue(s)' : 'OK';
-  } catch(\Throwable $e){ $st='FATAL: '.$e->getMessage(); }
+  } catch(\Throwable $e){ $st='FATAL: '.$e->getMessage().' ('.basename($e->getFile()).':'.$e->getLine().')'; }
   printf("%-24s %-38s %8d  %s\n", $key, '/'.$pg['slug'], strlen($html), $st);
   foreach(array_unique($errs) as $e) echo "      -> $e\n";
+  if($st==='OK') $seiten_ok++; elseif($erste==='') $erste="$key: ".($errs?reset($errs):$st);
   $pages[$key]=$html;
 }
 // Vorlagen ohne Registry-Seite: 404, Suche, Archiv, Einzelbeitrag.
@@ -168,3 +177,7 @@ if(substr_count($g,'aria-label="Bild vergrößern')!==4) $gerr[]='Bildknöpfe oh
 $leer=render_block(['blockName'=>'fahrschule/galerie','attrs'=>[],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]);
 if(trim($leer)!=='') $gerr[]='leere Mediathek rendert trotzdem einen Abschnitt';
 echo $gerr ? "!! ".implode(' | ',$gerr)."\n" : "ok: 4 von 8 Anhängen per Präfix, Filter nur für belegte Kategorie, leer = ausgeblendet\n";
+
+/* ---- Ergebnis: eine Zeile, die sagt, was erwartet war und was herauskam ---- */
+echo "\nSeiten: $seiten_ok von $erwartet gerendert (erwartet $erwartet)".($erste!==''?" - erste Meldung: $erste":'')."\n";
+exit($seiten_ok===$erwartet ? 0 : 1);

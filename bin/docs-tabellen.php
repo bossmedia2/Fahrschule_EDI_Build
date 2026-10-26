@@ -15,6 +15,12 @@ define( 'FAHRSCHULE_DIR', $GLOBALS['__theme'] ); define( 'FAHRSCHULE_URI', '/u' 
 foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'blocks-config' ) as $f ) {
 	require $GLOBALS['__theme'] . '/inc/' . $f . '.php';
 }
+// Nie stumm scheitern: Ohne Blockkonfiguration lässt sich keine Tabelle bauen.
+try { fahrschule_blocks_config(); fahrschule_page_map(); }
+catch ( Throwable $e ) {
+	printf( "  FEHLER: Tabellen nicht erzeugbar - erwartet: Blockkonfiguration und Seitenliste ladbar; vorgefunden: %s (%s:%d)\n", $e->getMessage(), basename( $e->getFile() ), $e->getLine() );
+	exit( 1 );
+}
 
 $cell = function ( $s ) { return str_replace( array( '|', "\n" ), array( '\|', ' ' ), (string) $s ); };
 
@@ -58,10 +64,17 @@ foreach ( array( 'bloecke' => $bloecke, 'seiten' => $seiten ) as $k => $tab ) {
 	$neu = preg_replace_callback( '#(<!-- tabelle:' . $k . ' -->).*?(<!-- /tabelle:' . $k . ' -->)#s', function ( $m ) use ( $tab ) {
 		return $m[1] . "\n" . $tab . "\n" . $m[2];
 	}, $neu, 1, $n );
-	if ( 1 !== $n ) { fwrite( STDERR, "Marker tabelle:$k fehlt in docs/BLOCKS-PATTERNS.md\n" ); exit( 2 ); }
+	if ( 1 !== $n ) { echo "  FEHLER: erwartet Marker <!-- tabelle:$k --> … <!-- /tabelle:$k --> in docs/BLOCKS-PATTERNS.md; vorgefunden: keiner\n"; exit( 2 ); }
 }
 if ( in_array( '--pruefen', $argv, true ) ) {
-	if ( $neu !== $alt ) { echo "  FEHLER: docs/BLOCKS-PATTERNS.md ist veraltet - php bin/docs-tabellen.php ausführen\n"; exit( 1 ); }
+	if ( $neu !== $alt ) {
+		// Erste abweichende Zeile zeigen: was der Code erwartet, was in der Doku steht.
+		$a = explode( "\n", $alt ); $b = explode( "\n", $neu );
+		for ( $i = 0; $i < max( count( $a ), count( $b ) ) && ( $a[ $i ] ?? null ) === ( $b[ $i ] ?? null ); $i++ ) {}
+		echo "  FEHLER: docs/BLOCKS-PATTERNS.md ist veraltet - php bin/docs-tabellen.php ausführen\n";
+		echo '    Zeile ' . ( $i + 1 ) . "\n    erwartet:    " . mb_substr( $b[ $i ] ?? '(nichts)', 0, 160 ) . "\n    vorgefunden: " . mb_substr( $a[ $i ] ?? '(nichts)', 0, 160 ) . "\n";
+		exit( 1 );
+	}
 	echo '  ok: docs/BLOCKS-PATTERNS.md entspricht Blockkonfiguration (' . count( fahrschule_blocks_config() ) . ' Blöcke) und Seitenliste (' . count( fahrschule_page_map() ) . " Seiten)\n";
 	exit( 0 );
 }

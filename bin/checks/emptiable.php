@@ -10,7 +10,12 @@ foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config
 // Eine Beispielstelle, damit die Felder des Stellen-Blocks etwas bewirken können.
 $GLOBALS['__post_types']['job_listing']=true;
 $GLOBALS['__jobs']=[new WP_Post(['ID'=>901,'post_type'=>'job_listing','post_name'=>'beispiel','post_title'=>'Beispielstelle'])];
-$cfg=fahrschule_blocks_config();
+try { $cfg=fahrschule_blocks_config(); }
+catch(\Throwable $e){
+  // Nie stumm scheitern: sagen, was erwartet war und was vorgefunden wurde.
+  printf("  FEHLER: Blockkonfiguration nicht ladbar - erwartet: fahrschule_blocks_config() liefert die Blöcke; vorgefunden: %s (%s:%d)\n", $e->getMessage(), basename($e->getFile()), $e->getLine());
+  echo "\nLEERBARKEIT: 1 Fehler\n"; exit(1);
+}
 foreach($cfg as $n=>$c){ $at=[]; if(!empty($c['fields'])) foreach($c['fields'] as $k=>$fl) $at[$k]=['type'=>((($fl['control']??'')==='repeater')?'array':'string'),'default'=>$fl['default']];
   register_block_type($n,['attributes'=>$at,'render_callback'=>$c['render']]); }
 $R=function($n,$attrs){ return render_block(['blockName'=>$n,'attrs'=>$attrs,'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]); };

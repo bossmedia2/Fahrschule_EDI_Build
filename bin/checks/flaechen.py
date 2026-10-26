@@ -26,7 +26,12 @@ if out is None:
     out = tempfile.mkdtemp(prefix='fs-flaechen-')
     subprocess.run(['php', os.path.join(root, 'bin/checks/smoke.php'), os.path.join(root, 'fahrschule-edi')],
                    env={**os.environ, 'FS_OUT': out}, capture_output=True)
-pages = json.load(open(os.path.join(out, 'pages.json'), encoding='utf-8'))
+_pj = os.path.join(out, 'pages.json')
+if not os.path.exists(_pj):
+    # Folgefehler klar benennen statt mit einem Stacktrace zu enden.
+    print(f"  FEHLER: pages.json fehlt in {out} - erwartet: vom Smoke-Test (bin/checks/smoke.php, Gate-Schritt 2b) geschrieben")
+    sys.exit(1)
+pages = json.load(open(_pj, encoding='utf-8'))
 
 KURZ = {'vollpink': 'V', 'hellpink': 'H', 'leiste': 'L', 'foto': 'F'}
 

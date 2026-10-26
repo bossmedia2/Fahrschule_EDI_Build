@@ -30,7 +30,12 @@ fails = []
 def fail(m): fails.append(m); print("  FEHLER: " + m)
 def ok(m):   print("  ok: " + m)
 
-pages = json.load(open(os.path.join(out, 'pages.json'), encoding='utf-8'))
+_pj = os.path.join(out, 'pages.json')
+if not os.path.exists(_pj):
+    # Folgefehler klar benennen statt mit einem Stacktrace zu enden.
+    print(f"  FEHLER: pages.json fehlt in {out} - erwartet: vom Smoke-Test (bin/checks/smoke.php, Gate-Schritt 2b) geschrieben")
+    sys.exit(1)
+pages = json.load(open(_pj, encoding='utf-8'))
 
 php = r'''
 $GLOBALS["__theme"]=$argv[1];
