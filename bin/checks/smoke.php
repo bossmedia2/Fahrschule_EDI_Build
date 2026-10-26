@@ -110,6 +110,9 @@ foreach($mm as $i=>$m){
   if(strpos($m[1],'target="_blank"')===false || strpos($m[1],'rel="noopener')===false) $serr[]="Kachel ".($i+1).": kein Link in neuem Tab";
   if(!preg_match('#<img[^>]+alt="([^"]+)"#',$m[2])) $serr[]="Kachel ".($i+1).": ohne Alt-Text";
   if(strpos($m[2],'<svg')===false) $serr[]="Kachel ".($i+1).": ohne Plattform-Icon";
+  if(strpos($m[2],'fs-ig__play')===false || strpos($m[2],'fs-ig__shade')===false) $serr[]="Kachel ".($i+1).": ohne Play-Zeichen/Abdunkler";
+  if(preg_match('#<(figcaption|p)\b#',$m[2])) $serr[]="Kachel ".($i+1).": Bildtext als sichtbarer Absatz statt Overlay";
+  if(!preg_match('#class="fs-ig__cap" aria-hidden="true"#',$m[2]) || strpos($m[1],'title="')===false) $serr[]="Kachel ".($i+1).": Bildtext nicht als Overlay plus Titel";
 }
 $alts=array_map(fn($m)=>preg_match('#alt="([^"]+)"#',$m[2],$x)?$x[1]:'',$mm);
 if(($alts[0]??'')!=='Logo der Fahrschule edi auf pinkem Grund' || ($alts[6]??'')!=='Letzte Kachel') $serr[]='Reihenfolge folgt nicht den Zeilen';
@@ -121,7 +124,7 @@ if(trim($sb(['items'=>[]]))!=='') $serr[]='leere Liste blendet die Sektion nicht
 if(trim($sb([]))!=='') $serr[]='Vorgabe ohne Bilder blendet die Sektion nicht aus';
 $k=$sb(['items'=>$social_rows,'instaHandle'=>'']);
 if(substr_count($k,'fs-ig__profile')!==1 || substr_count($k,'class="fs-btn fs-btn--lg fs-btn--primary"')!==1 || strpos($k,'@edi_fahrschule')===false) $serr[]='nur TikTok-Handle: nicht genau ein Profil-Knopf';
-echo "\nSocial-Feed (Prüfseite): ".($serr? "!! ".implode(' | ',$serr)."\n" : "ok: 9 Zeilen -> 7 Kacheln (ohne Bild/Beschreibung entfällt), gemischt TikTok/Instagram, Links in neuem Tab, Alt-Text, Reihenfolge, Profil-Rückfall, leer = ausgeblendet, kein Embed\n");
+echo "\nSocial-Feed (Prüfseite): ".($serr? "!! ".implode(' | ',$serr)."\n" : "ok: 9 Zeilen -> 7 Kacheln (ohne Bild/Beschreibung entfällt), gemischt TikTok/Instagram, Links in neuem Tab, Alt-Text, Bildtext als Overlay statt Absatz, Play-Zeichen auf Abdunkler, Reihenfolge, Profil-Rückfall, leer = ausgeblendet, kein Embed\n");
 fs_stub_set_page('social','Social-Feed (Prüfseite)',false,'');
 $pages['_social']=fs_fse_render_template($GLOBALS['__theme'],'page',serialize_blocks([['blockName'=>'fahrschule/instagram-slider','attrs'=>['items'=>$social_rows],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]]));
 

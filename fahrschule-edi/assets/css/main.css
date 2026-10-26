@@ -517,7 +517,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-ig__post:hover { border-color: var(--c-accent); transform: scale(1.03); }
 /* Ein Seitenverhältnis für alle Kacheln: TikTok (9:16) und Instagram (1:1, 4:5)
    stehen so in derselben Zeile, ohne dass das Raster bricht. */
-.fs-ig__post img { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; display: block; transition: transform .3s; }
+.fs-ig__frame { position: relative; display: block; aspect-ratio: 1 / 1; overflow: hidden; }
+.fs-ig__post img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
 .fs-ig__post:hover img { transform: scale(1.08); }
 /* Plattform-Kennzeichen auf eigener Fläche - auf wechselnden Fotos bliebe ein
    nacktes Icon nicht sicher bei 3:1. */
@@ -755,14 +756,16 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 /* Abstand unter der fixierten Navigation für Seiten ohne Hero */
 .fs-pagetop { padding-top: 5rem; }
 
-/* Instagram: serverseitig gerenderte Beitragstexte */
-.fs-ig__post { display: flex; flex-direction: column; background: var(--c-bg); margin: 0; color: inherit; text-decoration: none; }
-.fs-ig__post figure { margin: 0; position: relative; display: flex; flex-direction: column; height: 100%; }
-.fs-ig__post[hidden] { display: none; } /* sonst überstimmt display:flex das hidden des Karussells */
+/* Social-Kachel: das Cover ist die Kachel. */
+.fs-ig__post { display: block; background: var(--c-bg); margin: 0; color: inherit; text-decoration: none; }
+.fs-ig__post[hidden] { display: none; } /* das Karussell blendet per hidden aus */
 .fs-ig__profile { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
-.fs-ig__cap { padding: 1rem; }
-.fs-ig__cap p { color: var(--c-text); font-size: .85rem; margin-bottom: .5rem; }
-.fs-ig__meta { display: flex; gap: 1.5rem; color: var(--c-accent); font-weight: 600; font-size: .85rem; }
+/* Abdunkler oben für das Plattform-Kennzeichen und in der Mitte fürs Play-Zeichen. */
+.fs-ig__shade { position: absolute; inset: 0; background: linear-gradient(var(--fs-scrim), transparent 40%, transparent 60%, var(--fs-scrim)); pointer-events: none; }
+.fs-ig__play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; padding: .85rem; border-radius: 9999px; background: var(--fs-scrim); color: var(--c-text); pointer-events: none; }
+/* Bildtext: Overlay bei Maus und Tastatur, sonst nur Alt-Text und Titel. */
+.fs-ig__cap { position: absolute; inset: auto 0 0 0; padding: 1rem; background: var(--fs-scrim); color: var(--c-text); font-size: .9rem; line-height: 1.4; opacity: 0; transform: translateY(.5rem); transition: opacity .2s, transform .2s; pointer-events: none; }
+.fs-ig__post:hover .fs-ig__cap, .fs-ig__post:focus-visible .fs-ig__cap { opacity: 1; transform: none; }
 
 /* Skip-Link (Barrierefreiheit) */
 .fs-skip {

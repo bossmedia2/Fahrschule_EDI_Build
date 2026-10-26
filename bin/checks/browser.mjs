@@ -432,11 +432,44 @@ if (pages.includes('_social.html')) {
       const fg=parse(getComputedStyle(svg).color), bg=effBg(b); return ratio(over(fg,{r:bg[0],g:bg[1],b:bg[2]}),bg); });
     // Pfeil-Symbol gegen seine Knopffläche (SC 1.4.11, 3:1)
     const ar=[...document.querySelectorAll('.fs-ig__arrow')].map(b=>{ const fg=parse(getComputedStyle(b).color), bg=effBg(b); return ratio(over(fg,{r:bg[0],g:bg[1],b:bg[2]}),bg); });
-    return {n:cards.length, vis:vis.length, dots, notLink, minIcon: ic.length?Math.min(...ic):0, minArrow: ar.length?Math.min(...ar):99};`));
+    // Cover füllt die Kachel: quadratisch, alle sichtbaren gleich breit (Raster hält).
+    const rs=vis.map(c=>c.querySelector('.fs-ig__frame').getBoundingClientRect());
+    const square=rs.every(r=>Math.abs(r.width-r.height)<=2);
+    const sameW=rs.every(r=>Math.abs(r.width-rs[0].width)<=1);
+    const fill=vis.every(c=>{const i=c.querySelector('img').getBoundingClientRect(), f=c.querySelector('.fs-ig__frame').getBoundingClientRect(); return i.width>=f.width-1 && i.height>=f.height-1;});
+    return {n:cards.length, vis:vis.length, dots, notLink, minIcon: ic.length?Math.min(...ic):0, minArrow: ar.length?Math.min(...ar):99, square, sameW, fill};`));
   if (st.vis !== 3 || st.dots !== st.n) sbad.push(`Karussell: ${st.vis} sichtbar (erwartet 3), ${st.dots} Punkte für ${st.n} Kacheln`);
   if (st.notLink) sbad.push(`${st.notLink} Kachel(n) ohne Link in neuem Tab`);
   if (st.minArrow < 3) sbad.push(`Karussell-Pfeil nur ${st.minArrow.toFixed(2)}:1 gegen seinen Knopf (nötig 3:1)`);
   if (st.minIcon < 3) sbad.push(`Plattform-Icon nur ${st.minIcon.toFixed(2)}:1 gegen seine Fläche (nötig 3:1)`);
+  if (!st.square || !st.sameW || !st.fill) sbad.push(`Raster: quadratisch ${st.square}, gleich breit ${st.sameW}, Cover füllt ${st.fill}`);
+  // Bildtext-Overlay: bei Maus sichtbar und lesbar (weiß auf Abdunkler, schlimmstenfalls über Weiß).
+  await page.hover('.fs-ig__post:not([hidden])');
+  await page.waitForTimeout(300);
+  const cap = await page.evaluate(new Function(HELPERS + `
+    const c=[...document.querySelectorAll('.fs-ig__post:not([hidden]) .fs-ig__cap')].find(x=>parseFloat(getComputedStyle(x).opacity)>0.9);
+    if(!c) return null; const fg=parse(getComputedStyle(c).color), bg=effBg(c); return ratio(over(fg,{r:bg[0],g:bg[1],b:bg[2]}),bg);`));
+  if (cap === null) sbad.push('Bildtext-Overlay erscheint nicht bei Maus über der Kachel');
+  else if (cap < 4.5) sbad.push(`Bildtext-Overlay nur ${cap.toFixed(2)}:1 (nötig 4,5:1)`);
+  // Ohne JavaScript (= Editor-Vorschau): alle Kacheln im Raster, 4 und 9 Kacheln.
+  for (const n of [4, 9]) {
+    const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1512, height: 1000 } });
+    const p2 = await ctx.newPage();
+    await p2.route(/^(?!file:|data:|blob:|about:)/, r => { fremd.push(r.request().url()); r.abort(); });
+    await p2.goto('file://' + dir + '/_social.html');
+    const g = await p2.evaluate((n) => {
+      // Auf genau n Kacheln bringen (die Prüfseite hat 7): kürzen bzw. klonen.
+      const track = document.querySelector('.fs-ig__track');
+      document.querySelectorAll('.fs-ig__post').forEach((c, i) => { if (i >= n) c.remove(); });
+      while (track.children.length < n) track.appendChild(track.children[0].cloneNode(true));
+      const t = [...document.querySelectorAll('.fs-ig__post')];
+      const r = t.map(c => c.getBoundingClientRect());
+      const cols = new Set(r.map(x => Math.round(x.left))).size;
+      return { cols, same: r.every(x => Math.abs(x.width - r[0].width) <= 1 && Math.abs(x.width - x.height) <= 2) };
+    }, n);
+    if (g.cols !== 3 || !g.same) sbad.push(`${n} Kacheln ohne JavaScript: ${g.cols} Spalten, gleich groß/quadratisch ${g.same}`);
+    await ctx.close();
+  }
   // Tastatur: jede sichtbare Kachel per Tab erreichbar, beim Weiterblättern auch die übrigen.
   const erreicht = new Set();
   for (let r = 0; r < st.n; r++) {
@@ -451,7 +484,7 @@ if (pages.includes('_social.html')) {
   }
   if (erreicht.size !== st.n) sbad.push(`per Tab erreicht: ${erreicht.size} von ${st.n} Kacheln`);
   for (const x of sbad) fail('Social-Feed: ' + x);
-  if (!sbad.length) ok(`Social-Feed: ${st.n} Kacheln, Fenster von 3 mit ${st.dots} Punkten, alle per Tab erreichbar und Links in neuem Tab, Icon ${st.minIcon.toFixed(2)}:1, kein Überlauf bei 320/390/768px`);
+  if (!sbad.length) ok(`Social-Feed: ${st.n} Kacheln, Fenster von 3 mit ${st.dots} Punkten, Cover quadratisch und vollflächig, Bildtext-Overlay ${cap.toFixed(2)}:1, 4/9 Kacheln ohne JS im 3er-Raster, alle per Tab erreichbar und Links in neuem Tab, Icon ${st.minIcon.toFixed(2)}:1, kein Überlauf bei 320/390/768px`);
 }
 
 // ---------- 5) Keine Drittanbieter-Abrufe ohne Einwilligung -------------

@@ -589,11 +589,17 @@ function fs_render_instagram_slider( $a ) {
 			<div class="fs-ig__track" id="fs-ig-track" aria-live="polite" data-fs-ig-track>
 				<?php foreach ( $kacheln as $k ) : ?>
 				<a class="fs-ig__post" href="<?php echo esc_url( $k['link'] ); ?>" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr( $k['text'] ); ?>" data-plattform="<?php echo esc_attr( $k['plattform'] ); ?>">
-					<figure>
-						<span class="fs-ig__badge"><?php echo fs_icon( $k['plattform'], 14 ); ?> <?php echo esc_html( $name[ $k['plattform'] ] ); ?></span>
+					<?php /* Cover füllt die Kachel; Plattform und Play-Zeichen liegen auf
+					         einem Abdunkler. Der Bildtext ist Alt-Text und Titel - sichtbar
+					         nur als Overlay bei Maus/Tastatur, nicht als Absatz unter dem Bild
+					         (aria-hidden: der Link liest ihn schon über den Alt-Text vor). */ ?>
+					<span class="fs-ig__frame">
 						<img src="<?php echo esc_url( $k['bild'] ); ?>" alt="<?php echo esc_attr( $k['text'] ); ?>" width="500" height="500" loading="lazy" decoding="async">
-						<figcaption class="fs-ig__cap"><p><?php echo esc_html( $k['text'] ); ?></p></figcaption>
-					</figure>
+						<span class="fs-ig__shade" aria-hidden="true"></span>
+						<span class="fs-ig__badge"><?php echo fs_icon( $k['plattform'], 14 ); ?> <?php echo esc_html( $name[ $k['plattform'] ] ); ?></span>
+						<span class="fs-ig__play" aria-hidden="true"><?php echo fs_icon( 'play', 28 ); ?></span>
+						<span class="fs-ig__cap" aria-hidden="true"><?php echo esc_html( $k['text'] ); ?></span>
+					</span>
 				</a>
 				<?php endforeach; ?>
 			</div>
