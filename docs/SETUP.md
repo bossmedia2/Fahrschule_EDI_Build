@@ -1,11 +1,11 @@
 # Einrichtung und Live-Checkliste
 
-Abschnitt 0 beschreibt die Einrichtung von Theme 3.0 (Block-Theme). Die
+Abschnitt 0 beschreibt die Einrichtung von Theme 3.1 (Block-Theme). Die
 Abschnitte 1–9 sind die manuelle Checkliste für die Live-Instanz.
 
 ---
 
-## 0. Einrichtung Theme 3.0
+## 0. Einrichtung Theme 3.1
 
 ### 0.1 Plugins (nicht im Theme-ZIP)
 
@@ -42,17 +42,39 @@ Stellen im Backend aus (*Job Listings → Neu*). Angezeigt werden sie unter
 ### 0.2 Theme
 
 1. *Design → Themes → Theme hochladen* → `dist/fahrschule-edi.zip` → aktivieren.
-2. Beim Aktivieren entstehen alle Seiten der Registry samt Inhalt (Block-Markup)
-   und Vorlage. Bestehende Seiten werden nicht überschrieben; Seiten aus
-   Installationen vor 3.0 mit leerem Inhalt füllt der erste Admin-Aufruf
-   (Abschnitt 8).
-3. Header, Footer und Vorlagen bearbeiten: *Design → Editor*.
+2. Beim Aktivieren entstehen alle Seiten der Registry, Elternseiten zuerst,
+   jede mit Vorlage und Inhalt: dem eigenen Block-Stapel der Registry oder
+   dem Startmuster ihrer Vorlage. Die Startseite wird gesetzt. Ein
+   Einmal-Hinweis im Backend listet die angelegten Seiten.
+3. Bestehende Seiten werden nie überschrieben; eine zweite Aktivierung ändert
+   nichts. Seiten bestehender Installationen mit leerem Inhalt füllt der
+   erste Admin-Aufruf (Abschnitt 8).
+4. Header, Footer und Vorlagen bearbeiten: *Design → Editor*. Neue Seiten:
+   im Muster-Dialog ein Startmuster wählen (Kategorie „Fahrschule edi –
+   Seiten“) und rechts die passende Vorlage.
+5. **Fläche je Abschnitt:** Jeder Block hat rechts das Feld „Fläche“
+   (Vollpink, Hellpink, Leiste, Foto). Faustregel: nach zwei Vollpink ein
+   Hellpink; Leiste nur für schmale Bänder; Foto braucht einen Medien-Slug.
 
-### 0.3 Bilder
+### 0.3 Bilder und Hero-Video
 
 `bin/edi-bilder.py` im Bildordner ausführen und nur `umbenannt/` importieren.
 Vorher die Slug-Prüfung aus `umbenannt/bericht.txt` laufen lassen.
-Einzelheiten: `docs/assets_image_list.md`.
+Einzelheiten: `docs/assets_image_list.md`. Der Test des Skripts läuft
+manuell, nicht im Gate: `python3 bin/checks/test_edi_bilder.py`.
+
+**Hero der Startseite** – Video und Standbild gehören in die Mediathek:
+
+- [ ] Prüfen, ob das Video schon da ist:
+      `wp post list --post_type=attachment --name=edi-video-hero --format=count`
+      (0 = fehlt).
+- [ ] `edi-video-hero.mp4` hochladen (optional zusätzlich eine WebM mit dem
+      Slug `edi-video-hero-webm`).
+- [ ] Ein Standbild `edi-video-hero-standbild.jpg` (oder `.webp`) hochladen –
+      es ist Poster, Hintergrund, Editor-Vorschau und das Bild für Besucher
+      mit „Bewegung reduzieren“.
+- Solange etwas fehlt, nennt ein Hinweis im Backend die Datei. Ohne beides
+  zeigt der Hero Vollpink.
 
 ### 0.4 Vor dem Livegang beim Kunden zu klären
 
@@ -69,9 +91,12 @@ Einzelheiten: `docs/assets_image_list.md`.
 - [ ] **Einwilligungen** für Fotos mit Minderjährigen (Bild-Briefing).
 - [ ] **Vollständige Namen** der Fahrlehrer, Standort von Abdullah und Mesut.
 - [ ] **Social-Feed** (Erfahrungen): je Kachel ein Coverbild (`edi-social-<nnn>`,
-      quadratisch) hochladen und im Block eine Bildbeschreibung eintragen –
-      ohne beides erscheint die Kachel nicht. Ist keine Kachel gefüllt, entfällt
-      die ganze Sektion.
+      quadratisch; ein Galeriebild `edi-galerie-…` geht auch) hochladen und im
+      Block eine Bildbeschreibung eintragen – ohne beides erscheint die Kachel
+      nicht. Die Beschreibung ist Alt-Text und erscheint als Overlay bei Maus
+      bzw. Tastatur. Ist keine Kachel gefüllt, entfällt die ganze Sektion.
+      Pflegt niemand den Feed, Sektion entfernen – der schwebende
+      TikTok-Knopf bleibt.
 
 ---
 
@@ -244,7 +269,7 @@ Startseite, Unterseite und Editor-Vorgabe zugleich.
 Bis 2.x rendert das Theme leere Seiten zur Laufzeit aus der Registry. Ab 3.0
 rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 
-- [ ] Theme 3.0.0 einspielen und einmal das Backend aufrufen. Die Migration
+- [ ] Theme 3.1.0 einspielen und einmal das Backend aufrufen. Die Migration
       (`fahrschule_migrate_content()`) füllt jede Registry-Seite mit **leerem**
       Inhalt und setzt ihre Vorlage. Seiten **mit** Inhalt bleiben unangetastet.
 - [ ] Unter **Seiten** jede Seite mit eigenem Inhalt öffnen. Die Vorlage liefert
@@ -257,9 +282,24 @@ rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 - **Warum:** Was im Editor gespeichert ist, liegt in der Datenbank der
   Live-Instanz – darauf hatte keine Session Zugriff.
 
+### 8.1 Update auf 3.1
+
+- [ ] **404-Vorlage zurücksetzen**, falls die Live-Seite bei einer unbekannten
+      URL zuerst „Offene Stellen“ zeigt: Diese Ausgabe kommt nicht aus dem
+      Theme (`templates/404.html` enthält nur die Fehlerseite: Meldung,
+      Suche, Wege zurück), sondern aus einer im Site-Editor gespeicherten
+      oder älteren Vorlage. *Design → Editor → Vorlagen → Seite: 404* → ⋮ →
+      „Anpassungen zurücksetzen“. Ebenso jede andere Vorlage mit dem Hinweis
+      „angepasst“ prüfen.
+- [ ] Bestehende Seiten: Blöcke ohne gewählte Fläche zeigen jetzt Vollpink.
+      Seiten mit eigenem Inhalt öffnen und je Abschnitt die Fläche setzen
+      (Faustregel siehe 0.2). Leere Bereichsseiten füllt die Migration
+      (Inhaltsstand 4) mit dem Startmuster.
+- [ ] Startseite: Hero-Video und Standbild hochladen (0.3).
+
 ## 9. Cache leeren
 
-- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.0.0`
+- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.1.0`
       ausgeliefert (Browser laden die geänderte `main.css` damit automatisch), ein
       Page-Cache würde aber weiter das alte HTML zeigen.
 
@@ -276,7 +316,7 @@ rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 | 5 | `readme.html` löschen, `Options -Indexes`, `.md`-Dateien schützen | ⬜ Nein – erfordert Server-Zugriff |
 | 6 | `DISABLE_WP_CRON` + echter Server-Cronjob | ⬜ Nein – erfordert Server-Zugriff |
 | 7 | „Discourage indexing" in Produktion ausgeschaltet prüfen | ⬜ Nein – erfordert Live-Zugriff |
-| 8 | Theme 3.0.0 einspielen, Migration auslösen, Seiten mit eigenem Inhalt auf Doppelungen prüfen | ⬜ Nein – erfordert Live-Zugriff |
+| 8 | Theme 3.1.0 einspielen, Migration auslösen, Seiten mit eigenem Inhalt auf Doppelungen und Flächen prüfen, 404-Vorlage zurücksetzen | ⬜ Nein – erfordert Live-Zugriff |
 | 9 | Page-Cache/CDN leeren | ⬜ Nein – erfordert Live-Zugriff |
 
 Theme-seitig bereits umgesetzt (siehe `inc/security.php`): XML-RPC deaktiviert,

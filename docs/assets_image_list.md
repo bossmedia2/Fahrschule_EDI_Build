@@ -118,9 +118,10 @@ python3 /pfad/zu/bin/edi-bilder.py --verkleinern  # zusätzlich lange Kante 2560
     (Kamera, ggf. GPS);
   - behält das Original, wenn die neue Datei größer wäre.
 
-Geprüft wird das Skript im Gate (`bin/checks/test_edi_bilder.py`) an einem
+Geprüft wird das Skript mit `python3 bin/checks/test_edi_bilder.py` an einem
 nachgebauten Ordner mit allen oben genannten Sonderfällen, zweimal
-hintereinander.
+hintereinander. Der Test läuft manuell, nicht im Gate: Das Skript ist ein
+Werkzeug für den Bildordner, kein Teil von Theme oder Plugin.
 
 ---
 
@@ -145,7 +146,9 @@ von außen überschreiben:
 | `fac_klassenraum` | `edi-raum-klassenraum` | Fuhrpark & Einrichtungen |
 | `fac_empfang` | `edi-raum-empfang` | Fuhrpark & Einrichtungen |
 | `fac_buero` | `edi-raum-buero` | Fuhrpark & Einrichtungen |
-| `video_hero` | `edi-video-hero` | Startseite, Hero-Video |
+| `video_hero` | `edi-video-hero` | Startseite, Hero-Video (MP4) |
+| `video_hero_webm` | `edi-video-hero-webm` | Startseite, Hero-Video (WebM, optional) |
+| `video_hero_bild` | `edi-video-hero-standbild` | Startseite, Standbild: Poster, Hintergrund, Editor, reduzierte Bewegung |
 | `video_team` | `edi-video-team` | Team-Spirit-Abschnitt |
 | `grad_auto` … `grad_motorrad` | `edi-galerie-absolventen-001` … `-003` | Absolventen-Galerie |
 

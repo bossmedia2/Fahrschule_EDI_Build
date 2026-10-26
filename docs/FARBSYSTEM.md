@@ -1,12 +1,21 @@
 # Farbsystem – Fahrschule edi
 
-Stand Theme 3.0.0 (Oktober 2026). Übersicht der Rohpalette, der
+Stand Theme 3.1.0 (Oktober 2026). Übersicht der Rohpalette, der
 Kontext-Tokens, der Flächen und der Kontrastnachweise. Grundsatz: **Pink, Rosé
 und Weiß, keine Blautöne, keine Verläufe, alle Text/Hintergrund-Paare
 WCAG-AA-konform – nachgemessen vom Gate, nicht geschätzt.**
 
 Abschnitt 1 und 4–8 dokumentieren die Geschichte des Systems. Den aktuellen
 Stand beschreiben Abschnitt 2 und 3.
+
+**Neu in 3.1 – Pink im Fokus:**
+- Kein „Pink Tief“ (`#6d0d45`, bis 3.0 `--fs-brand-deep`) mehr; der Wert
+  lebt nur noch als Schattenfarbe (`rgba(109,13,69,…)` in `box-shadow`).
+- Vier Flächen je Abschnitt, gewählt im Feld „Fläche“, im Rhythmus Vollpink,
+  Vollpink, Hellpink.
+- `--fs-brand-strong` nur für Button-Füllungen und schmale Leisten,
+  `--fs-heading` nur für Text auf hellem Grund (auch die Schrift weißer
+  Buttons).
 
 ---
 
@@ -75,7 +84,18 @@ Erlaubt bleiben:
 Wer eine neue Farbe braucht, legt ein neues `--c-*`-Token in `:root` an und
 belegt es in **jedem** Kontextsatz.
 
-Ergänzend misst `bin/checks/browser.mjs` gerendert, auf **jeder** Seite:
+Seit 3.1 prüft `tokens.py` außerdem:
+- `#6d0d45` bzw. `--fs-brand-deep` steht nur in `box-shadow`, nicht in der
+  Palette von `theme.json`;
+- `:hover`- und `:focus`-Regeln setzen Farben nur aus `--c-*`, damit kein
+  Hover in eine fremde Farbe springt.
+
+`bin/checks/kontrast.py` rechnet jedes Token-Paar jeder Fläche und ihrer
+Karte aus (Abschnitt 3); `bin/checks/flaechen.py` druckt die Flächenfolge
+jeder Seite und bricht bei dreimal Vollpink ab.
+
+Ergänzend misst `bin/checks/browser.mjs` gerendert, auf **jeder** Seite bei
+390, 768, 1024, 1280, 1512 und 1920 px:
 - Flyouts offen, mit Leiste oben und gescrollt;
 - den Mauszeiger auf dem aktiven Eintrag;
 - das Schubfach bei 390 px, über den echten Burger geöffnet;
@@ -87,9 +107,8 @@ Ergänzend misst `bin/checks/browser.mjs` gerendert, auf **jeder** Seite:
 |---|---|---|
 | `--fs-brand` | `#d12487` | Signatur-Hintergrund (Kundenvorgabe) |
 | `--fs-brand-accent` | `#e62775` | Akzent für Flächen, Icons, Rahmen – nie Text |
-| `--fs-brand-strong` | `#b81d5e` | Button-Füllung, Akzenttext auf Hell, dunkle Fläche |
-| `--fs-brand-deep` | `#6d0d45` | tiefe Variante: Text auf Weiß, Fokussaum |
-| `--fs-heading` | `#8a1245` | Überschriften auf Hell |
+| `--fs-brand-strong` | `#b81d5e` | nur Button-Füllung und schmale Leisten (Fläche „Leiste“) |
+| `--fs-heading` | `#8a1245` | nur Text auf hellem Grund: Überschriften, Schrift weißer Buttons, aktiver Eintrag, Fokussaum |
 | `--fs-light` | `#ffffff` | Karte, Button, Formularfeld, Flyout |
 | `--fs-rose` | `#fbdce9` | helle Sektionsfläche |
 | `--fs-tint` | `#fdeaf3` | zarter Akzent: Karten auf Pink, aktiver Eintrag |
@@ -107,14 +126,32 @@ Ergänzend misst `bin/checks/browser.mjs` gerendert, auf **jeder** Seite:
 | Fokus (neu 3.0.0) | `--c-focus-ring` · `--c-focus-halo` |
 | Formular (neu 3.0.0) | `--c-field-bg` |
 
+### Die vier Flächen eines Abschnitts (neu 3.1)
+
+Jeder Inhaltsblock hat das Feld „Fläche“. Es setzt nur `data-flaeche` am
+Abschnitt (`fs_flaeche_anwenden()`, `inc/helpers.php`); Hintergrund und alle
+`--c-*` kommen aus `main.css`. Die Regeln `section[data-flaeche=…]` sind
+spezifischer als die Grundfläche einer Komponente – die Wahl gewinnt immer.
+
+| Fläche | Wert | Kontextsatz | Hintergrund | Text · Buttons |
+|---|---|---|---|---|
+| Vollpink (Vorgabe) | `vollpink` | wie `.fs-surface-brand` | `#d12487` | Weiß, nur deckend · weiße Buttons mit `#8a1245` |
+| Hellpink | `hellpink` | wie `.fs-surface-light` | `#fbdce9` | `#3a3a44`, Überschrift `#8a1245` · Buttons `#b81d5e` mit Weiß |
+| Leiste | `leiste` | wie `.fs-ctx-deep` | `#b81d5e` | Weiß · weiße Buttons mit `#8a1245` – nur schmale Bänder |
+| Foto | `foto` | wie Vollpink | Bild (Medien-Slug) + `--fs-scrim` | Weiß; ohne Bild Vollpink |
+
+Auf Vollpink gibt es nur deckendes Weiß, keine getönte Zweitfarbe (Weiß
+erreicht dort 4,87 : 1, ohne Reserve). Die Altwerte `brand`/`light` werden
+als Vollpink/Hellpink gelesen.
+
 ### Die Kontextsätze
 
 | Satz | gilt für | Fläche | Text | aktiver Eintrag | Hover |
 |---|---|---|---|---|---|
-| `:root` / `.fs-surface-brand` | Seitengrund, Pinksektionen, `.fs-loccalc` | `#d12487` | Weiß | `#6d0d45` auf Weiß | Weiß auf `#b81d5e` |
-| `.fs-surface-light` | Rosé-Sektionen, Footer | `#fbdce9` | `#3a3a44` | `#8a1245` auf `#fdeaf3` | Weiß auf `#b81d5e` |
-| `.fs-ctx-light` | Flyout, gescrollte Leiste, Cookie-Banner | Weiß | `#3a3a44` | `#8a1245` auf `#fdeaf3` | Weiß auf `#b81d5e` |
-| `.fs-ctx-deep` | Schubfach, Brotkrumen, CTA-Band, Ergebnisfelder, Instagram, Bewertungskarte | `#b81d5e` | Weiß | `#6d0d45` auf Weiß | Weiß auf heller Schleier |
+| `:root` / `.fs-surface-brand` / Vollpink, Foto | Seitengrund, Pinksektionen, `.fs-loccalc` | `#d12487` | Weiß | `#8a1245` auf Weiß | Weiß auf `#b81d5e` |
+| `.fs-surface-light` / Hellpink | Rosé-Sektionen, Footer | `#fbdce9` | `#3a3a44` | `#8a1245` auf `#fdeaf3` | Weiß auf `#b81d5e` |
+| `.fs-ctx-light` | Flyout, gescrollte Leiste, Cookie-Banner | Weiß | `#3a3a44` | `#8a1245` auf `#fbdce9` | `#8a1245` auf `#fdeaf3` |
+| `.fs-ctx-deep` / Leiste | Schubfach, Brotkrumen, CTA-Band, Ergebnisfelder, Social-Kachel, Bewertungskarte | `#b81d5e` | Weiß | `#8a1245` auf Weiß | Weiß auf heller Schleier |
 | Karten-Sammelregel | `.fs-card`, `.fs-teaser`, Formulare … | `--c-card` | `--c-card-text` | `--c-card-heading` auf `#fdeaf3` | Weiß auf Kartenakzent |
 
 Der aktive Eintrag steht im CSS **nach** dem Hover und behält seine Farben
@@ -122,35 +159,38 @@ deshalb auch unter dem Mauszeiger.
 
 ---
 
-## 3. Kontrastnachweis (aus den Werten berechnet, im Gate gerendert nachgemessen)
+## 3. Kontrastnachweis (gerechnet von `bin/checks/kontrast.py`, gerendert nachgemessen)
 
-| Kontext | Element | Paar | Kontrast |
-|---|---|---|---|
-| brand | Text, Überschrift | `#ffffff` auf `#d12487` | 4,87 : 1 |
-| brand | Karten-Text | `#3a3a44` auf `#fdeaf3` | 9,76 : 1 |
-| brand | Karten-Überschrift | `#8a1245` auf `#fdeaf3` | 8,10 : 1 |
-| brand | Button-Label, aktiver Eintrag | `#6d0d45` auf `#ffffff` | 11,71 : 1 |
-| brand | Hover-Eintrag | `#ffffff` auf `#b81d5e` | 6,22 : 1 |
-| light (Rosé) | Fließtext | `#3a3a44` auf `#fbdce9` | 8,84 : 1 |
-| light (Rosé) | Überschrift | `#8a1245` auf `#fbdce9` | 7,33 : 1 |
-| light (Rosé) | Akzent | `#b81d5e` auf `#fbdce9` | 4,89 : 1 |
-| light (Rosé) | Karten-Text | `#3a3a44` auf `#ffffff` | 11,24 : 1 |
-| ctx-light | Text | `#3a3a44` auf `#ffffff` | 11,24 : 1 |
-| ctx-light | Überschrift | `#8a1245` auf `#ffffff` | 9,32 : 1 |
-| light, ctx-light | aktiver Eintrag | `#8a1245` auf `#fdeaf3` | 8,10 : 1 |
-| alle hellen | Button-Label, Hover-Eintrag | `#ffffff` auf `#b81d5e` | 6,22 : 1 |
-| ctx-deep | Text | `#ffffff` auf `#b81d5e` | 6,22 : 1 |
-| ctx-deep | Akzent | `#fdeaf3` auf `#b81d5e` | 5,40 : 1 |
-| ctx-deep | aktiver Eintrag | `#6d0d45` auf `#ffffff` | 11,71 : 1 |
-| ctx-deep | Hover-Eintrag | `#ffffff` auf `#c23d75` (Schleier 14 %) | 4,98 : 1 |
-| Karte | Akzent | `#b81d5e` auf `#fdeaf3` | 5,40 : 1 |
+Jedes Paar, das das System erzeugen kann, je Fläche und für eine Karte auf
+dieser Fläche. Mindestens 4,5 : 1 für Text, 3 : 1 für den Fokusring.
 
-> **Brand-Fläche:** Auf `#d12487` erreicht selbst reines Weiß nur 4,87 : 1.
+| Fläche | Text | Überschrift | Akzent | Button | Button Hover | aktiv | Hover | Fokus |
+|---|---|---|---|---|---|---|---|---|
+| Vollpink | 4,87 | 4,87 | 4,87 | 9,32 | 8,10 | 9,32 | 6,22 | 4,87 |
+| Karte auf Vollpink | 9,76 | 8,10 | 5,40 | 6,22 | 9,32 | 8,10 | 6,22 | 8,10 |
+| Hellpink | 8,84 | 7,33 | 4,89 | 6,22 | 9,32 | 8,10 | 6,22 | 7,33 |
+| Karte auf Hellpink | 11,24 | 9,32 | 6,22 | 6,22 | 9,32 | 8,10 | 6,22 | 9,32 |
+| Leiste | 6,22 | 6,22 | 5,40 | 9,32 | 8,10 | 9,32 | 4,99 | 6,22 |
+| Karte auf Leiste | 9,76 | 8,10 | 5,40 | 6,22 | 9,32 | 8,10 | 6,22 | 8,10 |
+| Weiß (Menü, Banner) | 11,24 | 9,32 | 6,22 | 6,22 | 9,32 | 7,33 | 8,10 | 9,32 |
+| Foto: Weiß auf Abdunkler über weißem Bild | 4,76 | | | | | | | |
+
+Referenz – Weiß auf den Pinkstufen:
+
+| Grund | Kontrast | Einsatz |
+|---|---|---|
+| `#6d0d45` (Pink Tief, entfernt) | 11,71 : 1 | – nur noch Schattenfarbe |
+| `#b81d5e` (`--fs-brand-strong`) | 6,22 : 1 | Leiste, Button-Füllung |
+| `#d12487` (`--fs-brand`) | 4,87 : 1 | Vollpink |
+| `#e62775` (`--fs-brand-accent`) | 4,28 : 1 | nur großer Text, Flächen, Icons |
+
+> **Vollpink:** Auf `#d12487` erreicht selbst reines Weiß nur 4,87 : 1.
 > Das erfüllt AA, aber ohne Reserve. Deshalb gibt es dort **nur eine
-> Textfarbe**. Für längere Fließtexte sind die Rosé-Flächen die bessere Wahl.
+> Textfarbe**, deckendes Weiß. Für längere Fließtexte ist Hellpink die
+> bessere Wahl; der Rhythmus Vollpink, Vollpink, Hellpink sorgt dafür.
 
-Fokusring (SC 1.4.11, ≥ 3 : 1, vom Gate gemessen): brand 4,87 · light 9,21 ·
-ctx-light 11,71 · ctx-deep 6,22.
+Fokusring (SC 1.4.11, ≥ 3 : 1, vom Gate gemessen): Vollpink 4,87 · Hellpink 9,21 ·
+Weiß 11,71 · Leiste 6,22.
 
 ---
 

@@ -10,13 +10,51 @@ er auf die drei bestehenden Fachdokumente:
 - **BLOCKS-PATTERNS.md** – jeder Block einzeln mit Feldern, Icons, Zielseite
 - **SEO-UND-AUDIT.md** – der ursprüngliche Code-Audit und die SEO-Grundlagen im Detail
 
-Stand: Theme 3.0.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung der Runde 4 in
-Abschnitt 0; die Abschnitte 1–3 beschreiben die Komponenten im heutigen Zustand,
-Änderungsverlauf in `CHANGELOG.md`.
+Stand: Theme 3.1.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung der
+Überarbeitung (3.1) und der Runde 4 (3.0) in Abschnitt 0; die Abschnitte 1–3
+beschreiben die Komponenten im heutigen Zustand, Änderungsverlauf in
+`CHANGELOG.md`.
 
 ---
 
-## 0. Stand 3.0 auf einen Blick
+## 0. Stand 3.1 auf einen Blick
+
+**Neu in 3.1 (Überarbeitung):**
+
+- **Pink im Fokus:**
+  - kein „Pink Tief“ (`#6d0d45`) mehr, nur noch als Schattenfarbe;
+  - Feld „Fläche“ an jedem Inhaltsblock: Vollpink, Hellpink, Leiste, Foto;
+  - Rhythmus Vollpink, Vollpink, Hellpink. Die Folge jeder Seite druckt der
+    Gate; dreimal Vollpink bricht ihn.
+- **Vorlagen und Startmuster:**
+  - 10 auswählbare Vorlagen mit neuen Titeln;
+  - 11 Startmuster (eins je Vorlage plus Landingpage) aus einer Quelle mit
+    der Seitenanlage.
+- **Seitenanlage:**
+  - legt jede Seite mit Elternseite, Vorlage und Inhalt an und setzt die
+    Startseite;
+  - meldet die angelegten Seiten einmal; eine zweite Aktivierung ändert
+    nichts.
+- **404:** Meldung, Suche, Wege zurück. Zeigt die Live-Seite dort Stellen,
+  ist eine gespeicherte Vorlage schuld (SETUP.md 8.1).
+- **Hero:**
+  - Video und Standbild aus der Mediathek;
+  - kein autoplay, bei „Bewegung reduzieren“ das Standbild;
+  - der Editor zeigt das Standbild;
+  - ohne Medien Vollpink statt dunklem Schleier.
+- **Social:** Das Cover füllt die Kachel. Plattform und Play-Zeichen liegen
+  auf einem Abdunkler, der Bildtext ist Overlay und Alt-Text.
+- **Tooling:**
+  - `bin/gate.sh` ist der einzige Einstieg, aus jedem Verzeichnis;
+  - Ergebnistabelle mit Dauer, `--schnell` ohne Browser, Browser bei sechs
+    Breiten;
+  - der Bild-Skript-Test läuft manuell.
+- **Bereits vor 3.1 erledigt:** Das Briefing setzte Theme 2.0 voraus. Die
+  Block-Skripte hingen schon an `enqueue_block_editor_assets` (kein
+  `editor_script`); Vorlagenwahl und Seitenanlage mit Inhalt gab es seit 3.0.
+  3.1 hat sie ausgebaut, der Gate sichert sie ab.
+
+**Aus 3.0 (Runde 4):**
 
 - **Block-Theme:** Header, Footer und 19 Vorlagen sind unter *Design → Editor*
   bearbeitbar. Kein PHP-Template mehr neben `templates/`.

@@ -56,7 +56,8 @@ und zeigt keine Stellen. Ein Hinweis im Backend nennt, was fehlt.
 ## Prüfen und bauen
 
 ```bash
-bin/gate.sh                 # volle Prüfkette inkl. Browser (Playwright)
+bin/gate.sh                 # volle Prüfkette inkl. Browser (Playwright), aus jedem Verzeichnis
+bin/gate.sh --schnell       # dasselbe ohne Browser
 php bin/docs-tabellen.php   # Block-/Seitentabelle in docs/BLOCKS-PATTERNS.md erneuern
 bin/build-zip.sh            # -> dist/fahrschule-edi.zip, dist/edi-integrationen.zip
 ```

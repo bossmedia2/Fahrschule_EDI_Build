@@ -1,6 +1,6 @@
 # Fahrschule edi – Blöcke, Vorlagen, Seiten
 
-Stand Theme 3.0.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
+Stand Theme 3.1.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
 **assets_image_list.md** (Bilder, Bild-Skript), **SETUP.md** (Einrichtung).
 
 Die beiden Tabellen unten erzeugt `php bin/docs-tabellen.php` aus dem Code;
@@ -30,16 +30,16 @@ doppelt da.
 
 | Vorlage | ergänzt nach dem Inhalt | für |
 |---|---|---|
-| Übersicht / Landingpage (`page-uebersicht`) | Handlungsaufruf | Führerscheinklassen, Leistungen, Standorte, Über uns |
-| Bereich (`page-bereich`) | Kacheln aller Unterseiten des Bereichs + Handlungsaufruf | PKW, Motorrad, LKW & Bus |
-| Kurs / Führerscheinklasse (`page-kurs`) | Geschwisterklassen + Handlungsaufruf | die 15 Klassenseiten |
+| Übersichtsseite (`page-uebersicht`) | Handlungsaufruf | Führerscheinklassen, Leistungen, Standorte, Über uns |
+| Bereichsseite (`page-bereich`) | Kacheln aller Unterseiten des Bereichs (Hellpink) + Handlungsaufruf | PKW, Motorrad, LKW & Bus |
+| Kursseite (Führerscheinklasse) (`page-kurs`) | Geschwisterklassen (Hellpink) + Handlungsaufruf | die 15 Klassenseiten |
 | Beruf & Weiterbildung (`page-beruf`) | Handlungsaufruf | Berufskraftfahrer, Fahrlehrerausbildung, ASF & FES |
-| Standort (`page-standort`) | Karte (Zwei-Klick) + Handlungsaufruf | Duisburg, Essen, Gelsenkirchen |
-| Team (`page-team`) | – | Team |
-| Kontakt / Anmeldung (`page-kontakt`) | Standorte kompakt | Kontakt, Anmeldung |
+| Standortseite (`page-standort`) | Karte (Zwei-Klick, Hellpink) + Handlungsaufruf | Duisburg, Essen, Gelsenkirchen |
+| Teamseite (`page-team`) | – | Team |
+| Kontakt & Anmeldung (`page-kontakt`) | Standorte kompakt (Hellpink) | Kontakt, Anmeldung |
 | FAQ (`page-faq`) | Handlungsaufruf | FAQ |
 | Theorieunterricht (`page-theorie`) | Handlungsaufruf | Theorieunterricht |
-| Rechtliches (`page-recht`) | – | Impressum, Datenschutz |
+| Rechtstext (`page-recht`) | – | Impressum, Datenschutz |
 
 Dazu die Vorlagen ohne Auswahl: `front-page`, `page` (Standard), `404`,
 `search`, `archive`, `single`, `index`, `single-job_listing`,
@@ -51,11 +51,48 @@ Erfahrungen). Titel und Einleitung kommen aus der Registry
 (`inc/pages.php`), sonst aus dem Seitentitel.
 
 **Seiteninhalt bei der Anlage.** `fahrschule_create_pages()` legt beim
-Aktivieren alle Registry-Seiten an. Dabei schreibt es deren Block-Stapel als
-Block-Markup in `post_content` und setzt die Vorlage (`_wp_page_template`).
-Danach gehört der Inhalt dem Editor, die Registry schreibt nie darüber. Eine
-Einmal-Migration (`fahrschule_migrate_content()`) füllt Seiten aus
-Installationen vor 3.0, deren Inhalt noch leer ist.
+Aktivieren alle Registry-Seiten an, Elternseiten zuerst:
+
+- `post_content` ist der Block-Stapel der Seite aus der Registry; hat die
+  Seite keinen eigenen (Bereichsseiten), das **Startmuster ihrer Vorlage**.
+- Die Vorlage wird gesetzt (`_wp_page_template`, Registry-Schlüssel
+  `template`), die Startseite als `page_on_front`.
+- Ein Einmal-Hinweis im Admin listet die angelegten Seiten.
+- Eine zweite Aktivierung ändert nichts: vorhandene Seiten bleiben, wie sie
+  sind.
+
+Danach gehört der Inhalt dem Editor, die Registry schreibt nie darüber. Die
+Migration (`fahrschule_migrate_content()`, Inhaltsstand 4) füllt nur Seiten
+bestehender Installationen, deren Inhalt noch leer ist.
+
+**Startmuster** (Muster-Dialog beim Anlegen einer Seite, Kategorie
+„Fahrschule edi – Seiten“): elf Stück, eins je auswählbarer Vorlage plus
+eine Landingpage. Inhalt in `fahrschule_startmuster()` (`inc/pages.php`) –
+dieselbe Quelle wie die Seitenanlage; `patterns/seite-*.php` geben nur das
+Markup aus.
+
+| Startmuster | Vorlage | Blöcke |
+|---|---|---|
+| Übersichtsseite | `page-uebersicht` | page-teasers, services, testimonials |
+| Bereichsseite | `page-bereich` | services |
+| Kursseite (Führerscheinklasse) | `page-kurs` | kurs-details (Felder leer), faq |
+| Beruf & Weiterbildung | `page-beruf` | faq, contact-form |
+| Standortseite | `page-standort` | location-hero, location-content, location-calculator |
+| Teamseite | `page-team` | about-team, fahrlehrer-finder |
+| Theorieunterricht | `page-theorie` | theory-schedule |
+| FAQ | `page-faq` | faq |
+| Kontakt & Anmeldung | `page-kontakt` | contact-form |
+| Rechtstext | `page-recht` | legal |
+| Landingpage | `page` (Standard) | vertrauensleiste, klassen-kacheln, testimonials, anmeldung |
+
+**Fläche je Abschnitt.** Jeder Inhaltsblock hat das Feld „Fläche“:
+Vollpink (Vorgabe) · Hellpink · Leiste (nur schmale Bänder) · Foto (mit
+Medien-Slug im Feld darunter). Das Feld setzt nur den Farbkontext, siehe
+FARBSYSTEM.md. Seitenanlage und Startmuster verteilen die Flächen im
+Rhythmus **Vollpink, Vollpink, Hellpink** über die ganze Seite, also mit
+den Vorlagenblöcken (`fahrschule_rhythmus()`); nie stehen drei Vollpink
+hintereinander. Ohne eigenen Abschnitt bzw. mit fester Fläche: Navigation,
+Footer, Badges, Brotkrumen, Stellen-Einzelansicht, die Heroes.
 
 ---
 
@@ -211,13 +248,27 @@ Unterseite hat, steht dort voll und auf der Startseite als Anriss: Label,
 
 ## 6. Prüfkette
 
-`bin/gate.sh` bricht beim ersten Fehler ab:
+`bin/gate.sh` ist der einzige Einstieg; er läuft aus jedem Verzeichnis und
+druckt am Ende eine Tabelle (Schritt, Ergebnis, Dauer). Ein Fehler bricht
+nicht ab, macht aber den Exit-Code ungleich 0. `--schnell` überspringt nur
+den Browser.
 
-1. PHP- und JS-Syntax.
-2. Smoke-Test: rendert alle Blöcke und jede Seite über ihre Block-Vorlage
-   (`bin/checks/fse.php` bildet `template-canvas` nach).
-3. Startseite/NAP, Referenzen, Kontext-Tokens, Formulare, Bild-Skript,
-   Editierbarkeit, Struktur (Block-Theme ohne PHP-Vorlagen daneben).
-4. Browser: Layout, Zoom, Kontrast in allen Zuständen auf jeder Seite,
-   keine Abrufe bei Dritten.
-5. ZIP unter 2 MB.
+1. Syntax: `php -l`, `node --check`.
+2. Inhalt und Struktur:
+   - kein `editor_script`, Bild-Skript nicht in der Kette;
+   - Smoke-Test: alle Blöcke und jede Seite über ihre Block-Vorlage
+     (`bin/checks/fse.php` bildet `template-canvas` nach), 404-Folge,
+     keine toten internen Links;
+   - Startseite/NAP, Referenzen, Struktur (Vorlagen, 11 Startmuster),
+     Formulare, Editierbarkeit;
+   - Seitenanlage (zwei Aktivierungen), Hero (Video/Standbild), Doku-Tabellen.
+3. Farben: Kontext-Tokens (kein Pink Tief, Hover nur aus `--c-*`), Kontrast
+   rechnerisch je Fläche, Flächenfolge je Seite.
+4. Browser bei 390, 768, 1024, 1280, 1512 und 1920 px: Überlauf, Kontrast in
+   allen Zuständen inkl. offener Menüs, Fokusring, Social-Raster, keine
+   Abrufe bei Dritten.
+5. Tailwind: entfällt (keine Quelle; das CSS ist handgeschrieben).
+6. Build: Theme- und Plugin-ZIP, Theme unter 2 MB.
+
+Jedes Prüfskript läuft auch allein, aus jedem Verzeichnis. Manuell, nicht
+im Gate: `python3 bin/checks/test_edi_bilder.py` (Bild-Skript).

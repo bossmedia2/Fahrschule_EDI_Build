@@ -62,7 +62,7 @@ echo "\nLeeres Element bleibt stehen:\n"; foreach(array_slice($emptyEl,0,14) as 
 if(count($emptyEl)>14) echo "   ... +".(count($emptyEl)-14)." weitere\n";
 
 /* ---- Wiederholfelder: eigene Zeilen wirken, Leeren entfernt den Abschnitt ---- */
-$repBad = [];
+$repBad = []; $repN = 0;
 foreach($cfg as $name=>$c){
   if(empty($c['fields'])) continue;
   /* Dieselbe Ausnahme wie oben: Bloecke, deren Ausgabe an externen Daten
@@ -76,6 +76,7 @@ foreach($cfg as $name=>$c){
     $probe = 'ZZPROBEZZ';
     $row   = array_fill(0, $cols, $probe);
     if(!empty($f['probe'])){ [$row,$probe] = $f['probe']; }   // Schlüssel-Spalten: gültige Testzeile
+    $repN++;
     $custom = $R($name,[$key=>[$row]]);
     $empty  = $R($name,[$key=>[]]);
     $base   = $mbe ? $custom : $R($name,[]);   // leerer Grundzustand: gegen die Probezeile messen
@@ -90,7 +91,7 @@ foreach($cfg as $name=>$c){
     }
   }
 }
-printf("\nWiederholfelder geprüft: %d\n", count($repBad)? count($repBad) : 0);
+printf("\nWiederholfelder geprüft: %d\n", $repN);
 foreach($repBad as $x) echo "  FEHLER: $x\n";
 if(!$repBad) echo "  ok: alle Wiederholfelder sind bearbeitbar und leerbar\n";
 

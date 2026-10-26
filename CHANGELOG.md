@@ -1,5 +1,60 @@
 # Änderungsverlauf
 
+## 3.1.0 – Theme (Oktober 2026): Überarbeitung
+
+**Pink im Fokus**
+- „Pink Tief“ (`#6d0d45`, `--fs-brand-deep`) entfernt, auch aus der Palette
+  in `theme.json`; nur noch als Schattenfarbe erlaubt.
+  - Schrift weißer Buttons, aktiver Eintrag, Fokussaum: `--fs-heading`.
+  - Regler, Zeitleiste, TikTok-Schließen: `--fs-brand-strong`.
+- Flyout-Hover: zarter Ton mit Überschriftenfarbe; aktiver Eintrag Rosé.
+  Alle Hover-/Fokusfarben kommen aus Kontext-Tokens.
+- Feld „Fläche“ an jedem Inhaltsblock, zentral angelegt:
+  - Werte Vollpink (Vorgabe), Hellpink, Leiste, Foto (mit Medien-Slug);
+  - Altwerte `brand`/`light` werden weiter gelesen.
+- Rhythmus Vollpink, Vollpink, Hellpink für Seitenanlage und Startmuster,
+  mit den Vorlagenblöcken.
+
+**Vorlagen, Startmuster, Seitenanlage**
+- Vorlagentitel wie im Briefing (Übersichtsseite … Rechtstext).
+- 11 Startmuster (eigene Kategorie) aus `fahrschule_startmuster()`. Dieselbe
+  Quelle füllt Seiten ohne eigenen Registry-Stapel (Bereichsseiten).
+- Einmal-Hinweis mit den angelegten Seiten.
+- Inhaltsstand 4 füllt leere Bereichsseiten bestehender Installationen.
+- 404: Meldung, dann Suche, dann Wege zurück.
+
+**Hero**
+- Video (MP4, optional WebM) und Standbild aus der Mediathek.
+- Ohne autoplay; `frontend.js` startet nur ohne „Bewegung reduzieren“, sonst
+  bleibt das Standbild.
+- Der Editor zeigt das Standbild.
+- Ohne Medien Vollpink statt dunklem Schleier; der Admin-Hinweis nennt die
+  fehlende Datei.
+
+**Social-Feed**
+- Das Cover füllt die Kachel; Plattform und Play-Zeichen auf einem
+  Abdunkler.
+- Der Bildtext ist Alt-Text und Titel; sichtbar nur als Overlay bei Maus und
+  Tastatur.
+
+**Prüfkette**
+- `bin/gate.sh` ist der einzige Einstieg und läuft aus jedem Verzeichnis.
+  - Er druckt eine Tabelle mit Schritt, Ergebnis und Dauer; bei einem Fehler
+    ist der Exit-Code ungleich 0.
+  - `--schnell` lässt nur den Browser aus.
+- Alle Prüfskripte verankern ihre Pfade am eigenen Ort und laufen allein.
+- Neue Prüfungen:
+  - `kontrast.py`: alle Token-Paare je Fläche und Karte;
+  - `flaechen.py`: Folge je Seite;
+  - `seitenanlage.php`: zwei Aktivierungen;
+  - `hero.php`;
+  - kein `editor_script`;
+  - keine toten internen Links;
+  - 404-Folge;
+  - Social-Raster mit 4 und 9 Kacheln.
+- Browser bei 390, 768, 1024, 1280, 1512 und 1920 px.
+- `test_edi_bilder.py` läuft manuell, nicht mehr im Gate.
+
 ## 3.0.0 – Theme · 2.0.0 – Begleit-Plugin (Oktober 2026)
 
 **Block-Theme**
