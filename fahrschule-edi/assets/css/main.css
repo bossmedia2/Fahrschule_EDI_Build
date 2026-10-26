@@ -5,9 +5,11 @@
      ------------------------------------------------------------------ */
   --fs-brand:        #d12487; /* Signatur-Hintergrund (Vorgabe Kunde) */
   --fs-brand-accent: #e62775; /* Akzent für Flächen, Icons, Rahmen */
-  --fs-brand-strong: #b81d5e; /* Button-Füllung & Akzenttext auf hellem Grund */
-  --fs-brand-deep:   #6d0d45; /* Tiefe Variante für helle Pinkflächen */
-  --fs-heading:      #8a1245; /* Überschriften auf hellem Grund */
+  --fs-brand-strong: #b81d5e; /* NUR Button-Füllung und schmale Leisten (Weiß darauf 6,22:1) */
+  --fs-heading:      #8a1245; /* NUR Text auf hellem Grund (auch Text weißer Buttons) */
+  /* Kein „Pink Tief“ mehr (#6d0d45, bis 3.0 --fs-brand-deep): Es ließ die
+     Seite dunkel wirken. Erlaubt ist der Wert nur noch als Schattenfarbe
+     (rgba(109,13,69,…) in box-shadow) - geprüft von bin/checks/tokens.py. */
 
   --fs-light:        #ffffff; /* Karte, Button, Formularfeld, Flyout - NICHT mehr für große Flächen */
   --fs-rose:         #fbdce9; /* helle Sektionsfläche (ersetzt Weiß) */
@@ -38,19 +40,19 @@
   --c-card-text:     var(--fs-on-light);
   --c-card-heading:  var(--fs-heading);
   --c-card-accent:   var(--fs-brand-strong);
-  --c-card-border:   rgba(109,13,69,.25);
+  --c-card-border:   rgba(138,18,69,.25);
   --c-btn-bg:        var(--fs-light);
-  --c-btn-text:      var(--fs-brand-deep);
+  --c-btn-text:      var(--fs-heading);
   --c-btn-bg-hover:  var(--fs-tint);
   /* Zustände in Menüs/Listen: aktiver Eintrag und Hover. Jeder Kontextsatz
      unten belegt sie neu - Menüs lesen nie die Basis-Palette direkt. */
   --c-active-bg:     var(--fs-light);
-  --c-active-text:   var(--fs-brand-deep);
+  --c-active-text:   var(--fs-heading);
   --c-hover-bg:      var(--fs-brand-strong);
   --c-hover-text:    var(--fs-light);
   /* Fokusring: Kern + Saum, auf hellen Flächen getauscht. */
   --c-focus-ring:    var(--fs-light);
-  --c-focus-halo:    var(--fs-brand-deep);
+  --c-focus-halo:    var(--fs-heading);
   /* Formularfelder sind auf jeder Fläche weiß. */
   --c-field-bg:      var(--fs-light);
 
@@ -67,33 +69,40 @@
    keine Komponente mehr in einem Kontext landen, in dem sie unlesbar wird.
    Alle Kombinationen erfüllen WCAG AA (>= 4.5:1).
    ========================================================================== */
+/* section[data-flaeche=…]: die im Editor gewählte Fläche eines Abschnitts
+   (Feld „Fläche“, fs_flaeche_anwenden). Element + Attribut ist spezifischer
+   als die Grundfläche einer Komponente (.fs-lochero, .fs-trustbar …) - die
+   Wahl gewinnt immer. */
 .fs-surface-brand,
-.fs-loccalc {
+.fs-loccalc,
+section[data-flaeche="vollpink"],
+section[data-flaeche="foto"] {
   background: var(--fs-brand);
   --c-bg: var(--fs-brand);
   --c-text: var(--fs-light); --c-heading: var(--fs-light); --c-accent: var(--fs-light);
   --c-border: rgba(255,255,255,.35);
   --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
-  --c-card-border: rgba(109,13,69,.25);
-  --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
-  --c-active-bg: var(--fs-light); --c-active-text: var(--fs-brand-deep);
+  --c-card-border: rgba(138,18,69,.25);
+  --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-heading); --c-btn-bg-hover: var(--fs-tint);
+  --c-active-bg: var(--fs-light); --c-active-text: var(--fs-heading);
   --c-hover-bg: var(--fs-brand-strong); --c-hover-text: var(--fs-light);
-  --c-focus-ring: var(--fs-light); --c-focus-halo: var(--fs-brand-deep);
+  --c-focus-ring: var(--fs-light); --c-focus-halo: var(--fs-heading);
   color: var(--c-text);
 }
-.fs-surface-light {
+.fs-surface-light,
+section[data-flaeche="hellpink"] {
   background: var(--fs-rose);
   --c-bg: var(--fs-rose);
   --c-text: var(--fs-on-light); --c-heading: var(--fs-heading); --c-accent: var(--fs-brand-strong);
-  --c-border: rgba(109,13,69,.25);
+  --c-border: rgba(138,18,69,.25);
   --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(138,18,69,.25);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
   --c-active-bg: var(--fs-tint); --c-active-text: var(--fs-heading);
   --c-hover-bg: var(--fs-brand-strong); --c-hover-text: var(--fs-light);
-  --c-focus-ring: var(--fs-brand-deep); --c-focus-halo: var(--fs-light);
+  --c-focus-ring: var(--fs-heading); --c-focus-halo: var(--fs-light);
   color: var(--c-text);
 }
 
@@ -111,16 +120,19 @@
 .fs-cookiebanner {
   --c-bg: var(--fs-light);
   --c-text: var(--fs-on-light); --c-heading: var(--fs-heading); --c-accent: var(--fs-brand-strong);
-  --c-border: rgba(109,13,69,.25);
+  --c-border: rgba(138,18,69,.25);
   --c-card: var(--fs-light); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
   --c-card-border: rgba(138,18,69,.25);
   --c-btn-bg: var(--fs-brand-strong); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--fs-heading);
-  --c-active-bg: var(--fs-tint); --c-active-text: var(--fs-heading);
-  --c-hover-bg: var(--fs-brand-strong); --c-hover-text: var(--fs-light);
-  --c-focus-ring: var(--fs-brand-deep); --c-focus-halo: var(--fs-light);
+  /* Hover im Flyout: zarter Ton, Schrift bleibt Überschriftenfarbe (kein
+     Sprung in eine fremde Farbe); der aktive Eintrag hebt sich mit Rosé ab. */
+  --c-active-bg: var(--fs-rose); --c-active-text: var(--fs-heading);
+  --c-hover-bg: var(--fs-tint); --c-hover-text: var(--c-heading);
+  --c-focus-ring: var(--fs-heading); --c-focus-halo: var(--fs-light);
 }
 .fs-ctx-deep,
+section[data-flaeche="leiste"],
 .fs-drawer,
 .fs-cta-band,
 .fs-distance__out,
@@ -133,12 +145,21 @@
   --c-border: rgba(255,255,255,.35);
   --c-card: var(--fs-tint); --c-card-text: var(--fs-on-light);
   --c-card-heading: var(--fs-heading); --c-card-accent: var(--fs-brand-strong);
-  --c-card-border: rgba(109,13,69,.25);
-  --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-brand-deep); --c-btn-bg-hover: var(--fs-tint);
+  --c-card-border: rgba(138,18,69,.25);
+  --c-btn-bg: var(--fs-light); --c-btn-text: var(--fs-heading); --c-btn-bg-hover: var(--fs-tint);
   /* Hover auf dunkler Fläche: heller Schleier statt zweiter Pinkstufe. */
-  --c-active-bg: var(--fs-light); --c-active-text: var(--fs-brand-deep);
+  --c-active-bg: var(--fs-light); --c-active-text: var(--fs-heading);
   --c-hover-bg: rgba(255,255,255,.14); --c-hover-text: var(--fs-light);
-  --c-focus-ring: var(--fs-light); --c-focus-halo: var(--fs-brand-deep);
+  --c-focus-ring: var(--fs-light); --c-focus-halo: var(--fs-heading);
+}
+/* Leiste: kräftiges Pink als Fläche - nur für schmale Bänder gedacht. */
+section[data-flaeche="leiste"] { background: var(--fs-brand-strong); }
+/* Foto: Bild aus der Mediathek (--fs-flaeche-bild), darüber der einheitliche
+   Abdunkler; Text und Buttons wie auf Vollpink (weiß). */
+section[data-flaeche="foto"] {
+  background-color: var(--fs-brand);
+  background-image: linear-gradient(var(--fs-scrim), var(--fs-scrim)), var(--fs-flaeche-bild, none);
+  background-size: cover; background-position: center;
 }
 /* Karten schalten den Kontext erneut um (heller Block auf farbiger Fläche). */
 .fs-card, .fs-value, .fs-philo, .fs-teaser, .fs-faq__item, .fs-calc, .fs-stat,
@@ -157,7 +178,7 @@
   --c-btn-bg: var(--c-card-accent); --c-btn-text: var(--fs-light); --c-btn-bg-hover: var(--c-card-heading);
   --c-active-bg: var(--fs-tint); --c-active-text: var(--c-card-heading);
   --c-hover-bg: var(--c-card-accent); --c-hover-text: var(--fs-light);
-  --c-focus-ring: var(--fs-brand-deep); --c-focus-halo: var(--fs-light);
+  --c-focus-ring: var(--fs-heading); --c-focus-halo: var(--fs-light);
 }
 
 /* ---------- Reset / Base ---------- */
@@ -309,7 +330,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-nav__actions { display: flex; align-items: center; gap: .75rem; flex-shrink: 0; }
 .fs-nav__cta { display: none; }
 .fs-nav__burger { background: none; border: 0; color: var(--c-heading); padding: .5rem; border-radius: var(--fs-radius); transition: background .2s; }
-.fs-nav__burger:hover, .fs-nav__burger:focus-visible { background: var(--fs-brand-strong); color: var(--fs-light); }
+.fs-nav__burger:hover, .fs-nav__burger:focus-visible { background: var(--c-hover-bg); color: var(--c-hover-text); }
 /* Breakpoint auf 1240px: bei 4 Dropdowns + FAQ + Kontakt braucht die
    Linkzeile rund 600px. Bei 1180px blieben davon nur 597px übrig — 9px zu
    wenig, weshalb die Leiste dort umbrach. Unterhalb übernimmt der Drawer. */
@@ -560,8 +581,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 .fs-tiktok svg { color: var(--fs-light); width: 1.5rem; height: 1.5rem; }
 .fs-tiktok .t1 { color: var(--fs-light); font-weight: 700; font-size: .85rem; line-height: 1.1; display: block; }
 .fs-tiktok .t2 { color: rgba(255,255,255,.9); font-size: .75rem; line-height: 1.1; display: block; }
-.fs-tiktok__close { position: absolute; top: -.5rem; right: -.5rem; background: var(--fs-brand-deep); border: 1px solid var(--fs-brand-accent); color: var(--c-accent); border-radius: 9999px; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; }
-.fs-tiktok__close:hover { background: var(--fs-brand-accent); color: var(--fs-light); }
+.fs-tiktok__close { position: absolute; top: -.5rem; right: -.5rem; background: var(--fs-brand-strong); border: 1px solid var(--fs-brand-accent); color: var(--c-accent); border-radius: 9999px; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; }
+.fs-tiktok__close:hover { background: var(--c-btn-bg); color: var(--c-btn-text); }
 
 /* Solange das Cookie-Banner offen ist, weicht der TikTok-Badge (ebenfalls
    unten fixiert) zur Seite, statt sich mit dem Banner zu überlagern. */
@@ -594,7 +615,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-timeline { max-width: 48rem; margin-inline: auto; position: relative; }
 .fs-timeline::before { content: ""; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--c-accent); }
 .fs-timeline__item { display: flex; gap: 2rem; padding-bottom: 2rem; }
-.fs-timeline__dot { width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--fs-brand-accent); border: 4px solid var(--fs-brand-deep); flex: 0 0 auto; z-index: 1; }
+.fs-timeline__dot { width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--fs-brand-accent); border: 4px solid var(--fs-brand-strong); flex: 0 0 auto; z-index: 1; }
 .fs-timeline__year { color: var(--c-accent); font-weight: 700; font-size: 1.125rem; }
 .fs-timeline__item h3 { font-size: 1.5rem; font-weight: 800; color: var(--c-heading); margin: .25rem 0; }
 .fs-timeline__item p { color: var(--c-text); }
@@ -665,7 +686,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 
 /* Distanz-/Slider-Rechner */
 .fs-distance { max-width: 42rem; margin-inline: auto; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--fs-radius-xl); padding: 3rem; }
-.fs-range { width: 100%; height: .5rem; border-radius: 9999px; appearance: none; -webkit-appearance: none; background: var(--fs-brand-deep); cursor: pointer; accent-color: var(--c-accent); }
+.fs-range { width: 100%; height: .5rem; border-radius: 9999px; appearance: none; -webkit-appearance: none; background: var(--fs-brand-strong); cursor: pointer; accent-color: var(--c-accent); }
 .fs-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 1.25rem; height: 1.25rem; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
 .fs-range::-moz-range-thumb { width: 1.25rem; height: 1.25rem; border: 0; border-radius: 9999px; background: var(--fs-brand-accent); cursor: pointer; }
 /* Dunkler Einsatz in einer hellen Karte: ohne eigenen Kontext blieben Text
@@ -848,7 +869,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 
 /* Aktive Auswahl (Pills) */
 .fs-pill { background: var(--c-card); color: var(--c-card-text); border: 1px solid var(--c-card-border); }
-.fs-pill:hover { border-color: var(--fs-brand-accent); }
+.fs-pill:hover { border-color: var(--c-card-accent); }
 .fs-pill.is-active { background: var(--fs-brand-strong); color: var(--fs-light); border-color: var(--fs-brand-strong); }
 
 /* Navigation folgt der hellen Fläche, sobald sie hinterlegt ist.
@@ -859,7 +880,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-nav.is-scrolled { background: var(--fs-rose); }
 .fs-nav__toplink { color: var(--c-text); }
 /* Das Flyout ist immer hell, unabhängig vom Zustand der Leiste. */
-.fs-nav__menu { background: var(--fs-light); border: 1px solid rgba(109,13,69,.15); }
+.fs-nav__menu { background: var(--fs-light); border: 1px solid rgba(138,18,69,.15); }
 .fs-nav__menu a { color: var(--c-text); }
 .fs-drawer { color: var(--c-text); }
 
@@ -928,7 +949,7 @@ body.fs-cookie-open .fs-tiktok { display: none; }
 .fs-lightbox__nav--prev { left: 1.5rem; }
 .fs-lightbox__nav--next { right: 1.5rem; }
 .fs-lightbox__nav { top: 50%; transform: translateY(-50%); }
-.fs-lightbox__close:hover, .fs-lightbox__nav:hover { background: var(--fs-brand); }
+.fs-lightbox__close:hover, .fs-lightbox__nav:hover { background: var(--c-hover-bg); }
 
 /* ==========================================================================
    KURS: Textkarten + Seitenleiste „Kurzdaten“ (Vorlage page-kurs)

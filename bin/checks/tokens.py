@@ -94,7 +94,53 @@ for sel, body, line in all_rules:
             if inside or (is_container and prop == 'color'):
                 hits.append((line, one.strip(), prop, val))
 
+# 3) Kein „Pink Tief“ mehr: #6d0d45 / --fs-brand-deep / rgba(109,13,69,…) nur
+#    noch als Schattenfarbe (box-shadow). Gilt für alle Stylesheets und theme.json.
+DEEP = re.compile(r'#6d0d45|--fs-brand-deep|rgba?\(\s*109\s*,\s*13\s*,\s*69', re.I)
+deep = []
+theme = os.path.join(root, 'fahrschule-edi')
+for rel in ('assets/css/main.css', 'assets/css/editor.css'):
+    p = os.path.join(theme, rel)
+    if not os.path.exists(p):
+        continue
+    for sel, body, line in rules(open(p, encoding='utf-8').read()):
+        for prop, val in decls(body):
+            if DEEP.search(prop + ':' + val) and prop != 'box-shadow':
+                deep.append(f"{rel}:{line}  {sel.strip()[:60]}  {{ {prop}: {val} }}")
+tj = open(os.path.join(theme, 'theme.json'), encoding='utf-8').read()
+if DEEP.search(tj) or '"brand-deep"' in tj:
+    deep.append('theme.json: Palette enthält noch Pink Tief (#6d0d45)')
+for root_dir in ('inc', 'patterns', 'templates', 'parts'):
+    for dp, _, fn in os.walk(os.path.join(theme, root_dir)):
+        for f in fn:
+            t = open(os.path.join(dp, f), encoding='utf-8').read()
+            if DEEP.search(t) or 'brand-deep' in t:
+                deep.append(f"{root_dir}/{f}: Pink Tief im Markup")
+
+# 4) Hover/Fokus nur aus dem Kontext: ein :hover, das eine Rohfarbe setzt,
+#    springt in eine Farbe, die zur Fläche nicht passen muss.
+HOVER_RAW = re.compile(r'var\(\s*--fs-(?!scrim)|#[0-9a-f]{3,8}\b|rgba?\(', re.I)
+hover = []
+for sel, body, line in all_rules:
+    if ':hover' not in sel and ':focus' not in sel:
+        continue
+    for prop, val in decls(body):
+        if prop in COLOR_PROPS and HOVER_RAW.search(val):
+            hover.append((line, sel.strip()[:70], prop, val))
+
 print(f"  Kontext-Container im Stylesheet: {len(containers)}")
+for x in deep:
+    print("  FEHLER: Pink Tief außerhalb eines Schattens: " + x)
+if not deep:
+    print("  ok: kein Pink Tief (#6d0d45) außerhalb von box-shadow, nicht in der Palette")
+for line, sel, prop, val in hover:
+    print(f"  FEHLER: main.css:{line}  {sel}  {{ {prop}: {val} }} – Hover/Fokus nur über --c-*")
+if not hover:
+    print("  ok: Hover und Fokus setzen Farben nur aus Kontext-Tokens")
+if deep or hover:
+    hits = hits or []
+    print(f"\nKONTEXT-TOKENS: {len(deep) + len(hover) + len(hits)} Fehler")
+    sys.exit(1)
 if hits:
     for line, sel, prop, val in hits:
         print(f"  FEHLER: main.css:{line}  {sel}  {{ {prop}: {val} }}")

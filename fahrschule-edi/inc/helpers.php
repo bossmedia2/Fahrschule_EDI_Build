@@ -294,6 +294,58 @@ function fs_editor_hint( $title, $text ) {
 	return '<div class="fs-editor-hint"><strong>' . esc_html( $title ) . '</strong> ' . esc_html( $text ) . '</div>';
 }
 
+/*
+ * Fläche je Abschnitt (Feld „Fläche“, an jedem Inhaltsblock).
+ *
+ * Vier Flächen: vollpink (Signaturpink, Vorgabe) · hellpink (Rosé) ·
+ * leiste (kräftiges Pink, für schmale Bänder) · foto (Bild mit Abdunkler).
+ * Das Feld setzt NUR den Kontext: data-flaeche am ersten <section> des
+ * Blocks. Hintergrund und alle --c-*-Tokens kommen aus main.css
+ * (section[data-flaeche=…]); die Regeln dort sind spezifischer als die
+ * Grundfläche, die ein Block von sich aus mitbringt.
+ */
+const FS_FLAECHEN = array( 'vollpink', 'hellpink', 'leiste', 'foto' );
+
+/** Feldwert normalisieren; brand/light sind die Werte bis Theme 3.0. */
+function fs_flaeche_wert( $v ) {
+	$alt = array( 'brand' => 'vollpink', 'light' => 'hellpink', 'deep' => 'leiste' );
+	$v   = isset( $alt[ $v ] ) ? $alt[ $v ] : (string) $v;
+	return in_array( $v, FS_FLAECHEN, true ) ? $v : 'vollpink';
+}
+
+/**
+ * Setzt die gewählte Fläche auf den ersten <section> eines gerenderten Blocks.
+ * Foto ohne auflösbares Bild fällt auf Vollpink zurück (mit Editor-Hinweis) -
+ * nie eine leere, dunkle Fläche.
+ */
+function fs_flaeche_anwenden( $html, $a ) {
+	if ( '' === trim( (string) $html ) ) { return $html; }
+	$f     = fs_flaeche_wert( isset( $a['flaeche'] ) ? $a['flaeche'] : 'vollpink' );
+	$style = '';
+	$hint  = '';
+	if ( 'foto' === $f ) {
+		$bild = fs_media_by_slug( isset( $a['flaeche_bild'] ) ? trim( (string) $a['flaeche_bild'] ) : '' );
+		if ( '' === $bild ) {
+			$f    = 'vollpink';
+			$hint = fs_editor_hint( 'Fläche „Foto“:', 'Kein Bild gefunden – bitte einen Medien-Slug eintragen. Bis dahin Vollpink.' );
+		} else {
+			$style = '--fs-flaeche-bild:url(' . esc_url( $bild ) . ')';
+		}
+	}
+	$out = preg_replace_callback( '#<section\b([^>]*)>#', function ( $m ) use ( $f, $style ) {
+		$attrs = preg_replace( '#\sdata-flaeche="[^"]*"#', '', $m[1] );
+		if ( '' !== $style ) {
+			if ( preg_match( '#\sstyle="([^"]*)"#', $attrs ) ) {
+				$attrs = preg_replace( '#\sstyle="([^"]*)"#', ' style="$1;' . esc_attr( $style ) . '"', $attrs, 1 );
+			} else {
+				$attrs .= ' style="' . esc_attr( $style ) . '"';
+			}
+		}
+		return '<section' . $attrs . ' data-flaeche="' . $f . '">';
+	}, $html, 1 );
+	return $hint . $out;
+}
+
 /** "A, B und C" - Aufzählung für Fließtext. */
 function fs_aufzaehlung( $teile ) {
 	$teile = array_values( array_filter( array_map( 'trim', (array) $teile ), 'strlen' ) );

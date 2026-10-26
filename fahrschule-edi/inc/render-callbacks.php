@@ -460,7 +460,6 @@ function fs_render_testimonials( $a ) {
 		'heading'  => 'Kundenbewertungen',
 		'subtitle' => 'Lesen Sie, was unsere zufriedenen Fahrschüler über uns berichten',
 		'reviews_url' => 'https://www.google.com/search?q=Fahrschule+edi+Duisburg+Bewertungen',
-		'flaeche'  => 'light',
 	) );
 	/*
 	 * Bewusst leer: Hier standen zuvor vier weitere erfundene Namen und
@@ -474,7 +473,7 @@ function fs_render_testimonials( $a ) {
 	$t = array();
 
 	ob_start(); ?>
-	<section class="fs-section <?php echo 'brand' === $d['flaeche'] ? 'fs-surface-brand' : 'fs-surface-light'; ?>">
+	<section class="fs-section fs-surface-light">
 		<div class="fs-container fs-z">
 			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
 				. fs_el( 'h2', $d['heading'] )
@@ -1855,7 +1854,6 @@ function fs_render_page_teasers( $a ) {
 		'heading'  => '',
 		'subtitle' => '',
 		'seiten'   => array(),
-		'flaeche'  => 'brand',
 	) );
 	/* Seite => Icon. Label, Überschrift und erster Satz kommen wortgleich aus
 	   dem PDF-Abschnitt der jeweiligen Unterseite (kein eigener Teasertext).
@@ -1872,7 +1870,7 @@ function fs_render_page_teasers( $a ) {
 	// Ein oder zwei Teaser stehen zentriert statt links im Viererraster.
 	$cols = count( $teasers ) < 3 ? ' fs-teasers--wenige' : ' fs-teasers--3';
 	ob_start(); ?>
-	<section class="fs-section <?php echo 'light' === $d['flaeche'] ? 'fs-surface-light' : 'fs-surface-brand'; ?>">
+	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-z">
 			<?php if ( $d['eyebrow'] || $d['heading'] || $d['subtitle'] ) : ?>
 			<div class="fs-head">
@@ -2603,7 +2601,6 @@ function fs_render_seiten_anriss( $a ) {
 		'heading'   => '',
 		'text'      => '',
 		'btn_label' => 'Mehr erfahren',
-		'flaeche'   => 'brand',
 	) );
 	$map = fahrschule_page_map();
 	$key = sanitize_key( $d['seite'] );
@@ -2615,10 +2612,9 @@ function fs_render_seiten_anriss( $a ) {
 	if ( '' === $d['eyebrow'] ) { $d['eyebrow'] = $pdf ? $pdf['label'] : ''; }
 	if ( '' === $d['heading'] ) { $d['heading'] = $pdf ? $pdf['headline'] : $pg['title']; }
 	if ( '' === $d['text'] ) { $d['text'] = $pdf ? $pdf['paragraphs'][0] : ( isset( $pg['lead'] ) ? $pg['lead'] : '' ); }
-	$flaeche = 'light' === $d['flaeche'] ? 'fs-surface-light' : 'fs-surface-brand';
 	$marker  = $pdf ? ' data-pdf-teaser="' . esc_attr( $pdf['id'] ) . '"' : '';
 	ob_start(); ?>
-	<section class="fs-section <?php echo esc_attr( $flaeche ); ?>"<?php echo $marker; ?>>
+	<section class="fs-section fs-surface-brand"<?php echo $marker; ?>>
 		<div class="fs-container fs-anriss">
 			<?php echo fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' ); ?>
 			<?php echo fs_el( 'h2', $d['heading'] ); ?>

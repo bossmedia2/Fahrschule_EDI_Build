@@ -77,7 +77,7 @@ function fahrschule_blocks_config() {
 	$pdf  = 'fahrschule_pdf';
 	$head = $t( '1', 'Abschnittskopf (Label + Überschrift) anzeigen', 'select', array( '1' => 'Ja', '0' => 'Nein – steht bereits im Seitenkopf' ) );
 
-	return array(
+	$bloecke = array(
 
 		/* ---- Hierarchie: Bereiche (Ebene 1) & Klassen (Ebene 2) ---- */
 		'fahrschule/bereich-uebersicht' => array(
@@ -286,7 +286,6 @@ function fahrschule_blocks_config() {
 				'eyebrow'  => $t( 'Was unsere Schüler sagen', 'Eyebrow', 'text' ),
 				'heading'  => $t( 'Kundenbewertungen', 'Überschrift', 'text' ),
 				'subtitle' => $t( 'Lesen Sie, was unsere zufriedenen Fahrschüler über uns berichten', 'Untertitel', 'textarea' ),
-				'flaeche'  => $t( 'light', 'Fläche', 'select', array( 'light' => 'Rosé', 'brand' => 'Pink' ) ),
 			),
 		),
 		/* Slug bleibt instagram-slider: Umbenennen bräche jede Seite, auf der der
@@ -694,7 +693,6 @@ function fahrschule_blocks_config() {
 				'heading'   => $t( '', 'Überschrift (leer = PDF/Seitentitel)', 'text' ),
 				'text'      => $t( '', 'Text (leer = erster PDF-Absatz/Einleitung)', 'textarea' ),
 				'btn_label' => $t( 'Mehr erfahren', 'Button-Text', 'text' ),
-				'flaeche'   => $t( 'brand', 'Fläche', 'select', array( 'brand' => 'Pink', 'light' => 'Rosé' ) ),
 			),
 		),
 		'fahrschule/page-teasers' => array(
@@ -709,7 +707,6 @@ function fahrschule_blocks_config() {
 					array( 'klassen', 'award' ), array( 'leistungen', 'check-circle' ), array( 'berufskraftfahrer', 'truck' ),
 					array( 'asf-fes', 'shield' ), array( 'moderne-ausbildung', 'zap' ), array( 'team', 'users' ),
 				), 'Teaser', array( 'Seite (Schlüssel, z. B. asf-fes)', 'Icon' ), array( array( 'ueber-uns', 'heart' ), '/ueber-uns/' ) ),
-				'flaeche'  => $t( 'brand', 'Fläche', 'select', array( 'brand' => 'Pink', 'light' => 'Rosé' ) ),
 			),
 		),
 		'fahrschule/instructor-training' => array(
@@ -738,4 +735,49 @@ function fahrschule_blocks_config() {
 			),
 		),
 	);
+
+	return fahrschule_flaeche_felder( $bloecke, $t );
+}
+
+/**
+ * Feld „Fläche“ an jedem Inhaltsblock - an EINER Stelle statt in 40 Einträgen.
+ *
+ * Ausgenommen sind Blöcke ohne eigenen Abschnitt oder mit fester Fläche
+ * (Navigation, Fußzeile, Brotkrumen, Badges, Heroes mit Foto/Video). Sie
+ * tragen 'flaeche_fest': die Fläche, die sie in der Abschnittsfolge
+ * zählen ('' = kein Abschnitt). Der Render-Aufruf wird umhüllt: erst der
+ * Block, dann fs_flaeche_anwenden() - so gilt die Fläche im Frontend, in der
+ * Editor-Vorschau und in den Prüfungen gleichermaßen.
+ */
+function fahrschule_flaeche_felder( $bloecke, $t ) {
+	$fest = array(
+		'fahrschule/navigation'    => '',
+		'fahrschule/footer'        => '',
+		'fahrschule/tiktok-badge'  => '',
+		'fahrschule/cookie-banner' => '',
+		'fahrschule/breadcrumbs'   => '',
+		'fahrschule/stelle'        => '',
+		'fahrschule/video-hero'    => 'foto',
+		'fahrschule/hero'          => 'vollpink',
+		'fahrschule/location-hero' => 'vollpink',
+	);
+	// Schmale Bänder sind von Haus aus Leiste; alles andere Vollpink.
+	$vorgabe = array( 'fahrschule/vertrauensleiste' => 'leiste' );
+	$wahl    = array( 'vollpink' => 'Vollpink (Signatur)', 'hellpink' => 'Hellpink (Rosé)', 'leiste' => 'Leiste (kräftiges Pink, nur schmale Bänder)', 'foto' => 'Foto (Bild mit Abdunkler)' );
+
+	foreach ( $bloecke as $name => &$cfg ) {
+		if ( array_key_exists( $name, $fest ) ) {
+			$cfg['flaeche_fest'] = $fest[ $name ];
+			continue;
+		}
+		$cfg['fields']['flaeche']      = $t( isset( $vorgabe[ $name ] ) ? $vorgabe[ $name ] : 'vollpink', 'Fläche', 'select', $wahl );
+		$cfg['fields']['flaeche_bild'] = $t( '', 'Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001)', 'text' );
+		$cfg['fields']['flaeche_bild']['zustand'] = 'nur_foto';
+		$render        = $cfg['render'];
+		$cfg['render'] = static function ( $a, $content = '', $block = null ) use ( $render ) {
+			return fs_flaeche_anwenden( call_user_func( $render, $a, $content, $block ), $a );
+		};
+	}
+	unset( $cfg );
+	return $bloecke;
 }

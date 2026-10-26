@@ -78,21 +78,21 @@ function fahrschule_page_map() {
 			/* Zwölf Abschnitte in der Reihenfolge des Briefings (AP 4). Was eine
 			   eigene Unterseite hat, steht hier als Anriss (Label, Überschrift,
 			   erster Absatz wortgleich aus dem PDF) - voll nur auf der Unterseite.
-			   Pink und Rosé wechseln sich ab. */
+			   Flächen im Rhythmus Vollpink, Vollpink, Hellpink (fahrschule_rhythmus). */
 			'blocks' => array(
 				array( 'fahrschule/video-hero', array() ),                                                    // 1  F1
 				array( 'fahrschule/vertrauensleiste', array() ),                                              // 2
 				array( 'fahrschule/klassen-kacheln', array() ),                                               // 3  F3
-				array( 'fahrschule/seiten-anriss', array( 'seite' => 'ueber-uns', 'flaeche' => 'brand' ) ),          // 4  F2
-				array( 'fahrschule/seiten-anriss', array( 'seite' => 'leistungen', 'flaeche' => 'light' ) ),         // 5  F4
-				array( 'fahrschule/seiten-anriss', array( 'seite' => 'moderne-ausbildung', 'flaeche' => 'brand' ) ), // 6  F7
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'ueber-uns' ) ),          // 4  F2
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'leistungen' ) ),         // 5  F4
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'moderne-ausbildung' ) ), // 6  F7
 				array( 'fahrschule/page-teasers', array(                                                      // 7  F5 + F6
-					'seiten' => array( array( 'berufskraftfahrer', 'truck' ), array( 'asf-fes', 'shield' ) ), 'flaeche' => 'light',
+					'seiten' => array( array( 'berufskraftfahrer', 'truck' ), array( 'asf-fes', 'shield' ) ),
 				) ),
 				array( 'fahrschule/locations', array( 'kompakt' => '1' ) ),                                   // 8  F8
-				array( 'fahrschule/seiten-anriss', array( 'seite' => 'team', 'flaeche' => 'light' ) ),               // 9  F9
-				array( 'fahrschule/seiten-anriss', array( 'seite' => 'theorieunterricht', 'flaeche' => 'brand' ) ),  // 10
-				array( 'fahrschule/testimonials', array( 'flaeche' => 'light' ) ),                            // 11
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'team' ) ),               // 9  F9
+				array( 'fahrschule/seiten-anriss', array( 'seite' => 'theorieunterricht' ) ),  // 10
+				array( 'fahrschule/testimonials', array() ),                                                      // 11
 				array( 'fahrschule/anmeldung', array() ),                                                     // 12 F10
 			),
 		),
@@ -709,7 +709,8 @@ function fahrschule_page_content( $key ) {
 	$map = fahrschule_page_map();
 	if ( empty( $map[ $key ]['blocks'] ) ) { return ''; }
 	$blocks = array();
-	foreach ( $map[ $key ]['blocks'] as $b ) {
+	$tpl    = isset( $map[ $key ]['template'] ) ? $map[ $key ]['template'] : 'page';
+	foreach ( fahrschule_rhythmus( $map[ $key ]['blocks'], $tpl ) as $b ) {
 		$blocks[] = array(
 			'blockName'    => $b[0],
 			'attrs'        => isset( $b[1] ) ? $b[1] : array(),
@@ -719,6 +720,79 @@ function fahrschule_page_content( $key ) {
 		);
 	}
 	return serialize_blocks( $blocks );
+}
+
+/*
+ * Flächenrhythmus: Vollpink, Vollpink, Hellpink.
+ *
+ * Gilt für die ganze Seite - Vorlagenblöcke vor und nach dem Seiteninhalt
+ * zählen mit (Seitenkopf, Klassenliste, Aufruf). Blöcke mit gesetzter Fläche
+ * behalten sie; alle anderen bekommen Vollpink, außer es stünden sonst drei
+ * Vollpink in Folge - dann Hellpink. bin/checks/flaechen.py prüft die
+ * gerenderte Folge jeder Seite.
+ */
+
+/** Fläche, die ein Block in der Folge zählt ('' = kein eigener Abschnitt). */
+function fahrschule_block_flaeche( $name, $attrs, $cfg ) {
+	if ( ! isset( $cfg[ $name ] ) ) { return ''; }
+	if ( array_key_exists( 'flaeche_fest', $cfg[ $name ] ) ) { return $cfg[ $name ]['flaeche_fest']; }
+	$f = fs_flaeche_wert( isset( $attrs['flaeche'] ) ? $attrs['flaeche'] : $cfg[ $name ]['fields']['flaeche']['default'] );
+	if ( 'foto' === $f && '' === fs_media_by_slug( isset( $attrs['flaeche_bild'] ) ? (string) $attrs['flaeche_bild'] : '' ) ) { $f = 'vollpink'; }
+	return $f;
+}
+
+/** Flächen der Vorlagenblöcke vor und nach core/post-content. */
+function fahrschule_vorlage_flaechen( $tpl, $cfg ) {
+	$file = FAHRSCHULE_DIR . '/templates/' . $tpl . '.html';
+	if ( ! is_file( $file ) ) { $file = FAHRSCHULE_DIR . '/templates/page.html'; }
+	preg_match_all( '#<!--\s+wp:([a-z0-9-]+/[a-z0-9-]+|post-content)(?:\s+(\{.*?\}))?\s+/?-->#', (string) file_get_contents( $file ), $m, PREG_SET_ORDER );
+	$teile = array( array(), array() );
+	$nach  = 0;
+	foreach ( $m as $b ) {
+		if ( 'post-content' === $b[1] ) { $nach = 1; continue; }
+		$f = fahrschule_block_flaeche( $b[1], isset( $b[2] ) ? (array) json_decode( $b[2], true ) : array(), $cfg );
+		if ( '' !== $f ) { $teile[ $nach ][] = $f; }
+	}
+	return $teile;
+}
+
+/** Ergänzt fehlende Flächen eines Block-Stapels ([name, attrs]) im Rhythmus. */
+function fahrschule_rhythmus( $blocks, $tpl ) {
+	if ( ! function_exists( 'fahrschule_blocks_config' ) ) { return $blocks; }
+	$cfg = fahrschule_blocks_config();
+	list( $vor, $nach ) = fahrschule_vorlage_flaechen( $tpl, $cfg );
+	$dreimal = static function ( $folge ) {
+		$lauf = 0;
+		foreach ( $folge as $f ) {
+			$lauf = 'vollpink' === $f ? $lauf + 1 : 0;
+			if ( $lauf >= 3 ) { return true; }
+		}
+		return false;
+	};
+	$folge = $vor;
+	$auto  = array();                     // Index im Stapel => Position in $folge
+	foreach ( $blocks as $i => $b ) {
+		$a = isset( $b[1] ) ? $b[1] : array();
+		// Nur Blöcke mit Vorgabe Vollpink werden verteilt; eine andere Vorgabe
+		// (Leiste der Vertrauensleiste) ist Absicht des Blocks.
+		if ( isset( $cfg[ $b[0] ]['fields']['flaeche'] ) && ! isset( $a['flaeche'] ) && 'vollpink' === $cfg[ $b[0] ]['fields']['flaeche']['default'] ) {
+			$n            = count( $folge );
+			$a['flaeche'] = ( $n >= 2 && 'vollpink' === $folge[ $n - 1 ] && 'vollpink' === $folge[ $n - 2 ] ) ? 'hellpink' : 'vollpink';
+			$blocks[ $i ] = array( $b[0], $a );
+			$auto[ $i ]   = $n;
+		}
+		$f = fahrschule_block_flaeche( $b[0], $a, $cfg );
+		if ( '' !== $f ) { $folge[] = $f; }
+	}
+	// Ende: mit den Vorlagenblöcken danach darf keine Dreierfolge entstehen -
+	// sonst den letzten automatisch gesetzten Vollpink-Block auf Hellpink.
+	foreach ( array_reverse( $auto, true ) as $i => $pos ) {
+		if ( ! $dreimal( array_merge( $folge, $nach ) ) ) { break; }
+		if ( 'vollpink' !== $folge[ $pos ] ) { continue; }
+		$blocks[ $i ][1]['flaeche'] = 'hellpink';
+		$folge[ $pos ]              = 'hellpink';
+	}
+	return $blocks;
 }
 
 /** _wp_page_template für eine Registry-Seite; leer für Standard und Startseite. */
