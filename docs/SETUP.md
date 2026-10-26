@@ -1,11 +1,11 @@
 # Einrichtung und Live-Checkliste
 
-Abschnitt 0 beschreibt die Einrichtung von Theme 3.2 (Block-Theme). Die
+Abschnitt 0 beschreibt die Einrichtung von Theme 3.3 (Block-Theme). Die
 Abschnitte 1–9 sind die manuelle Checkliste für die Live-Instanz.
 
 ---
 
-## 0. Einrichtung Theme 3.2
+## 0. Einrichtung Theme 3.3
 
 ### 0.0 Prüfkette auf dem eigenen Rechner
 
@@ -107,18 +107,22 @@ manuell, nicht im Gate: `python3 bin/checks/test_edi_bilder.py`.
   - [ ] Absatz zu Bewerbungsdaten ergänzen.
 - [ ] **Einwilligungen** für Fotos mit Minderjährigen (Bild-Briefing).
 - [ ] **Vollständige Namen** der Fahrlehrer, Standort von Abdullah und Mesut.
-- [ ] **Social-Feed** (Erfahrungen): im Block unter „Video“ drei TikTok-Links
-      einfügen (`https://www.tiktok.com/@edi_fahrschule/video/…`) und
-      speichern. Titel und Cover kommen von selbst; die Statuszeile je Link
-      zeigt „✓ Titel“ oder den Grund, warum er nicht gelesen wurde (privat,
-      gelöscht, Rate-Limit). „Beiträge aktualisieren“ liest alle neu ein.
-      Ein Profil, das die neuesten Videos selbst liefert, gibt es bei TikTok
-      nicht – „die neuesten drei“ sind die drei zuletzt eingefügten Links.
-      Ohne Link entfällt die Sektion; der schwebende TikTok-Knopf bleibt.
-- [ ] **Datenschutzerklärung – Social-Feed:** Beim Seitenaufruf geht keine
-      Anfrage an TikTok (Cover liegen in der Mediathek); erst der Klick führt
-      zu TikTok. Beim Speichern im Editor ruft der Server TikToks
-      oEmbed-Schnittstelle ab – ohne Besucherdaten.
+- [ ] **TikTok-Video** (Erfahrungen): im Block „TikTok-Video (Player)“ die
+      URL eines Videos eintragen (`https://www.tiktok.com/@edi_fahrschule/video/…`;
+      `/photo/…` und Links mit `?is_from_webapp=…` gehen auch). Der Editor
+      zeigt den Platzhalter mit der erkannten Post-ID – ist die URL nicht
+      lesbar, sagt er das. Das Video ist von Hand gewählt und aktualisiert
+      sich nicht; für ein neues Video die URL austauschen.
+- [ ] **Datenschutz – TikTok juristisch prüfen lassen:** Cookie-Banner und
+      Datenschutzerklärung (Abschnitt „Eingebettete Videos (TikTok)“) nennen
+      Anbieter (TikTok Technology Limited, Dublin), Daten, Drittland,
+      Rechtsgrundlage und Widerruf. Ohne Einwilligung steht kein Iframe im
+      HTML; „Video laden“ gilt für die Sitzung, „Alle akzeptieren“ bis zum
+      Widerruf. Die Formulierung ist ein Entwurf nach TikToks eigenen
+      Angaben, keine Rechtsberatung.
+- **Betrieb:** TikTok begrenzt die Nutzung des Players je Domain. Mit einem
+  Player ist das unkritisch; fällt er doch aus, zeigt das Iframe TikToks
+  eigene Meldung – daran lässt sich von außen nichts ändern.
 
 ---
 
@@ -291,7 +295,7 @@ Startseite, Unterseite und Editor-Vorgabe zugleich.
 Bis 2.x rendert das Theme leere Seiten zur Laufzeit aus der Registry. Ab 3.0
 rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 
-- [ ] Theme 3.2.0 einspielen und einmal das Backend aufrufen. Die Migration
+- [ ] Theme 3.3.0 einspielen und einmal das Backend aufrufen. Die Migration
       (`fahrschule_migrate_content()`) füllt jede Registry-Seite mit **leerem**
       Inhalt und setzt ihre Vorlage. Seiten **mit** Inhalt bleiben unangetastet.
 - [ ] Unter **Seiten** jede Seite mit eigenem Inhalt öffnen. Seit 3.2 steht
@@ -337,7 +341,7 @@ ohne Seitenkopf und Handlungsaufruf.
 
 ## 9. Cache leeren
 
-- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.2.0`
+- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.3.0`
       ausgeliefert (Browser laden die geänderte `main.css` damit automatisch), ein
       Page-Cache würde aber weiter das alte HTML zeigen.
 
@@ -354,7 +358,7 @@ ohne Seitenkopf und Handlungsaufruf.
 | 5 | `readme.html` löschen, `Options -Indexes`, `.md`-Dateien schützen | ⬜ Nein – erfordert Server-Zugriff |
 | 6 | `DISABLE_WP_CRON` + echter Server-Cronjob | ⬜ Nein – erfordert Server-Zugriff |
 | 7 | „Discourage indexing" in Produktion ausgeschaltet prüfen | ⬜ Nein – erfordert Live-Zugriff |
-| 8 | Theme 3.2.0 einspielen, Seiten aus Startmuster neu aufbauen (Sammelaktion), angepasste Vorlagen (404 u. a.) zurücksetzen, Flächen prüfen | ⬜ Nein – erfordert Live-Zugriff |
+| 8 | Theme 3.3.0 einspielen, Seiten aus Startmuster neu aufbauen (Sammelaktion), angepasste Vorlagen (404 u. a.) zurücksetzen, Flächen prüfen | ⬜ Nein – erfordert Live-Zugriff |
 | 9 | Page-Cache/CDN leeren | ⬜ Nein – erfordert Live-Zugriff |
 
 Theme-seitig bereits umgesetzt (siehe `inc/security.php`): XML-RPC deaktiviert,

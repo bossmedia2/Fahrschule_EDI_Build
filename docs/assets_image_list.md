@@ -34,7 +34,6 @@ erst lokal umbenennen, dann einmal importieren, sonst hängt WordPress `-1` an.
 | Räumlichkeiten | `edi-raum-<name>` | `edi-raum-klassenraum` |
 | Hero | `edi-hero-<nr>` | `edi-hero-1` |
 | Galerie | `edi-galerie-<nnn>` oder `edi-galerie-<kategorie>-<nnn>` | `edi-galerie-012`, `edi-galerie-fuhrpark-012` |
-| Social-Feed-Cover | `edi-tiktok-<video-id>` | legt der Abruf selbst an – nicht hochladen |
 | Teilen-Vorschau | `edi-og.jpg` | 1200×630 |
 
 **Kursbilder laufen automatisch.** Der Teil nach `edi-kurs-` ist exakt der
@@ -52,10 +51,9 @@ Porträt erschiene dann still als Wechselbild. `-b` erzeugt WordPress nie.
 Kategorien, die tatsächlich Bilder haben. Unkategorisierte Bilder stehen
 unter „Alle“.
 
-**Social-Feed** (Block „Social-Feed (TikTok per Link)“, Seite Erfahrungen):
-nichts hochladen. Den Video-Link einfügen und speichern – Titel und Cover
-holt der Editor von TikTok, das Cover landet als `edi-tiktok-<video-id>.jpg`
-in der Mediathek. Instagram-Links ergeben eine Kachel ohne Cover.
+**TikTok-Video** (Block „TikTok-Video (Player)“, Seite Erfahrungen): keine
+Bilder. Der Block spielt das Video in TikToks Player; ein Cover gibt es
+nicht, ohne Einwilligung steht ein gestalteter Platzhalter.
 
 ---
 

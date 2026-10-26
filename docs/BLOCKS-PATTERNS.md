@@ -1,6 +1,6 @@
 # Fahrschule edi – Blöcke, Vorlagen, Seiten
 
-Stand Theme 3.2.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
+Stand Theme 3.3.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
 **assets_image_list.md** (Bilder, Bild-Skript), **SETUP.md** (Einrichtung).
 
 Die beiden Tabellen unten erzeugt `php bin/docs-tabellen.php` aus dem Code;
@@ -280,18 +280,19 @@ Exit-Code ungleich 0, übersprungene Schritte stehen am Ende als Liste.
      (`bin/checks/fse.php` bildet `template-canvas` nach), 404-Folge,
      keine toten internen Links;
    - Startseite/NAP, Referenzen (auch: keine `mb_`-Funktion ohne Rückfall,
-     Netzabrufe nur in `fs_social_abruf()`), Struktur (Vorlagen, 11
+     gar keine Netzabrufe in Theme und Plugin), Struktur (Vorlagen, 11
      Startmuster), Vorlagen nur Rahmen, Formulare, Editierbarkeit;
    - Seitenanlage (zwei Aktivierungen, Rahmen im Inhalt, Neuaufbau nur auf
-     Bestätigung), Hero (Video/Standbild), Social-Feed (Abruf nachgebaut),
+     Bestätigung), Hero (Video/Standbild), TikTok-Player (Iframe nur mit
+     Zustimmung, sonst Platzhalter),
      Doku-Tabellen;
    - Theme ohne mbstring: alle Seiten noch einmal mit abgeschalteten
      `mb_`-Funktionen.
 3. Farben: Kontext-Tokens (kein Pink Tief, Hover nur aus `--c-*`), Kontrast
    rechnerisch je Fläche, Flächenfolge je Seite.
 4. Browser bei 390, 768, 1024, 1280, 1512 und 1920 px: Überlauf, Kontrast in
-   allen Zuständen inkl. offener Menüs, Fokusring, Social-Raster, keine
-   Abrufe bei Dritten.
+   allen Zuständen inkl. offener Menüs, Fokusring, TikTok-Player (vor dem
+   Klick keine Anfrage, danach genau eine), keine Abrufe bei Dritten.
 5. Tailwind: entfällt (keine Quelle; das CSS ist handgeschrieben).
 6. Build: Theme- und Plugin-ZIP, Theme unter 2 MB.
 

@@ -151,7 +151,7 @@ als Vollpink/Hellpink gelesen.
 | `:root` / `.fs-surface-brand` / Vollpink, Foto | Seitengrund, Pinksektionen, `.fs-loccalc` | `#d12487` | Weiß | `#8a1245` auf Weiß | Weiß auf `#b81d5e` |
 | `.fs-surface-light` / Hellpink | Rosé-Sektionen, Footer | `#fbdce9` | `#3a3a44` | `#8a1245` auf `#fdeaf3` | Weiß auf `#b81d5e` |
 | `.fs-ctx-light` | Flyout, gescrollte Leiste, Cookie-Banner | Weiß | `#3a3a44` | `#8a1245` auf `#fbdce9` | `#8a1245` auf `#fdeaf3` |
-| `.fs-ctx-deep` / Leiste | Schubfach, Brotkrumen, CTA-Band, Ergebnisfelder, Social-Kachel, Bewertungskarte | `#b81d5e` | Weiß | `#8a1245` auf Weiß | Weiß auf heller Schleier |
+| `.fs-ctx-deep` / Leiste | Schubfach, Brotkrumen, CTA-Band, Ergebnisfelder, TikTok-Platzhalter, Bewertungskarte | `#b81d5e` | Weiß | `#8a1245` auf Weiß | Weiß auf heller Schleier |
 | Karten-Sammelregel | `.fs-card`, `.fs-teaser`, Formulare … | `--c-card` | `--c-card-text` | `--c-card-heading` auf `#fdeaf3` | Weiß auf Kartenakzent |
 
 Der aktive Eintrag steht im CSS **nach** dem Hover und behält seine Farben

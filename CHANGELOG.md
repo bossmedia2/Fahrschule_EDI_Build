@@ -1,5 +1,32 @@
 # Änderungsverlauf
 
+## 3.3.0 – Theme (Oktober 2026)
+
+**TikTok: ein Video im Embed Player statt Social-Raster**
+- Block „TikTok-Video (Player)“ (Slug `instagram-slider` bleibt) mit drei
+  Feldern: Video-URL, Überschrift, Profil-Link.
+  - Die Post-ID kommt aus `/video/` bzw. `/photo/`; Tracking-Parameter
+    spielen keine Rolle.
+  - Unlesbare URL: Die Sektion bleibt leer, der Editor nennt den Grund.
+- Isoliertes Iframe auf `www.tiktok.com/player/v1/{id}` mit den Parametern
+  aus TikToks Dokumentation, mit `title`, `loading="lazy"` und
+  `allowfullscreen`.
+- Einwilligung wird serverseitig geprüft:
+  - Ohne Zustimmung steht kein Iframe im HTML, sondern ein Platzhalter mit
+    „Video laden“ (gilt für die Sitzung).
+  - „Alle akzeptieren“ im Cookie-Banner lädt den Player sofort.
+  - Der Editor zeigt den Platzhalter mit der erkannten Post-ID.
+- Cookie-Banner nennt TikTok; neuer Abschnitt in der Datenschutzerklärung.
+- Ersatzlos entfernt:
+  - Kacheln und Marken-Kachel;
+  - oEmbed-Abruf, Cover-Sideload, REST-Route, Speicher-Filter
+    (`inc/social-abruf.php`).
+- Prüfungen:
+  - `social.php` (kein Netzabruf, Iframe nur mit Zustimmung, Platzhalter
+    sonst);
+  - `refs.py`: gar keine Abrufe in Theme und Plugin;
+  - Browser: vor dem Klick keine Anfrage, danach genau eine.
+
 ## 3.2.0 – Theme (Oktober 2026)
 
 **Portabilität: läuft ohne ext-mbstring**
