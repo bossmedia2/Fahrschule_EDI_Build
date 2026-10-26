@@ -183,7 +183,7 @@ function fahrschule_blocks_config() {
 
 		/* ---- Startseite ---- */
 		'fahrschule/video-hero' => array(
-			'title' => 'Video Hero', 'description' => 'Vollflächiger Hero mit Hintergrundvideo (Startseite) – PDF-Abschnitt F1.',
+			'title' => 'Video Hero', 'description' => 'Vollflächiger Hero mit Hintergrundvideo und Standbild (Startseite) – PDF-Abschnitt F1. Video und Standbild kommen aus der Mediathek (edi-video-hero.mp4, edi-video-hero-standbild).',
 			'icon' => 'video-alt3', 'keywords' => array( 'hero', 'video', 'start' ),
 			'render' => 'fs_render_video_hero', 'pattern' => true, 'page' => 'Startseite',
 			'fields' => array(
@@ -195,7 +195,8 @@ function fahrschule_blocks_config() {
 				'btn1_url'   => $t( '@anmeldung', 'Button 1 Link', 'text' ),
 				'btn2_label' => $t( 'Mehr erfahren', 'Button 2 Text', 'text' ),
 				'btn2_url'   => $t( '@klassen', 'Button 2 Link', 'text' ),
-				'video_url'  => $t( fs_media( 'video_hero' ), 'Video-URL', 'url' ),
+				'video_url'  => $t( fs_media( 'video_hero' ), 'Video-URL (Mediathek: edi-video-hero.mp4)', 'url' ),
+				'standbild'  => $t( fs_media( 'video_hero_bild' ), 'Standbild-URL (Poster, Editor, reduzierte Bewegung; Mediathek: edi-video-hero-standbild)', 'url' ),
 			),
 		),
 		'fahrschule/hero' => array(

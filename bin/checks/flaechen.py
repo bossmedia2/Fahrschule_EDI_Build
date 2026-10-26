@@ -36,6 +36,8 @@ def flaeche(attrs):
     if a.get('data-flaeche') in KURZ:
         return a['data-flaeche']
     cls = set((a.get('class') or '').split())
+    if 'fs-vhero--ohne-medien' in cls:      # Hero ohne Video und Standbild
+        return 'vollpink'
     if cls & {'fs-vhero', 'fs-surface-foto'}:
         return 'foto'
     if cls & {'fs-ctx-deep', 'fs-trustbar', 'fs-surface-leiste'}:

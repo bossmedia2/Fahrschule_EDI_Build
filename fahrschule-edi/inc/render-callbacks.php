@@ -134,16 +134,32 @@ function fs_render_video_hero( $a ) {
 		'btn2_label' => 'Mehr erfahren',
 		'btn2_url'   => '@klassen',
 		'video_url'  => fs_media( 'video_hero' ),
+		'standbild'  => fs_media( 'video_hero_bild' ),
 	) );
 	$heading = fs_highlight( $d['heading'], $d['highlight'] );
+	$video   = trim( (string) $d['video_url'] );
+	$bild    = trim( (string) $d['standbild'] );
+	// Editor-Vorschau ohne Video: das Standbild genügt, und ein laufendes
+	// Video im Editor hängt an keinem Frontend-Skript (harte Regel 2).
+	$mit_video = '' !== $video && ! fs_is_editor_preview();
+	$webm      = $mit_video ? fs_media( 'video_hero_webm' ) : '';
+	$hint      = ( '' === $video && '' === $bild )
+		? fs_editor_hint( 'Hero:', 'Weder Video (edi-video-hero.mp4) noch Standbild (edi-video-hero-standbild) in der Mediathek – bis dahin Vollpink.' )
+		: '';
 	/* Absätze im Textfeld durch Leerzeilen getrennt (PDF-Abschnitt F1: vier Absätze). */
 	$paragraphs = array_filter( array_map( 'trim', preg_split( '/\R\s*\R/u', (string) $d['text'] ) ) );
 	ob_start(); ?>
-	<section class="fs-vhero" data-pdf-section="F1">
-		<video class="fs-vhero__media" autoplay muted loop playsinline preload="metadata" aria-label="Imagevideo der Fahrschule edi">
-			<source src="<?php echo esc_url( $d['video_url'] ); ?>" type="video/mp4">
+	<?php echo $hint; ?>
+	<section class="fs-vhero<?php echo ( '' === $video && '' === $bild ) ? ' fs-vhero--ohne-medien' : ''; ?>" data-pdf-section="F1"<?php echo '' !== $bild ? ' style="background-image:url(' . esc_url( $bild ) . ')"' : ''; ?>>
+		<?php if ( $mit_video ) : ?>
+		<?php /* Kein autoplay: frontend.js startet das Video nur ohne
+		         „Bewegung reduzieren“. Bis dahin (und ohne JS) steht das Poster. */ ?>
+		<video class="fs-vhero__media" muted playsinline loop preload="metadata" aria-hidden="true" data-fs-hero-video<?php echo '' !== $bild ? ' poster="' . esc_url( $bild ) . '"' : ''; ?>>
+			<?php if ( $webm ) : ?><source src="<?php echo esc_url( $webm ); ?>" type="video/webm"><?php endif; ?>
+			<source src="<?php echo esc_url( $video ); ?>" type="video/mp4">
 		</video>
-		<div class="fs-vhero__overlay"></div>
+		<?php endif; ?>
+		<?php if ( '' !== $video || '' !== $bild ) : ?><div class="fs-vhero__overlay"></div><?php endif; ?>
 		<div class="fs-container fs-vhero__inner">
 			<?php echo fs_el( 'span', $d['badge'], 'class="fs-badge fs-fade-up"' ); ?>
 			<?php echo fs_el( 'h1', '', 'class="fs-fade-up"', $heading ); ?>

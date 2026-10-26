@@ -97,7 +97,10 @@ done_step "${PIPESTATUS[0]}"
 step 2h "Seitenanlage: zwei Aktivierungen, Eltern, Vorlage, Inhalt, Startseite"
 php "$ROOT/bin/checks/seitenanlage.php" "$THEME"; done_step $?
 
-step 2i "Doku: Block- und Seitentabelle aktuell"
+step 2i "Hero: Video oder Standbild, reduzierte Bewegung, Editor-Vorschau"
+php "$ROOT/bin/checks/hero.php" "$THEME"; done_step $?
+
+step 2j "Doku: Block- und Seitentabelle aktuell"
 php "$ROOT/bin/docs-tabellen.php" --pruefen 2>/dev/null; done_step $?
 
 # --- 3 Farben ----------------------------------------------------------------

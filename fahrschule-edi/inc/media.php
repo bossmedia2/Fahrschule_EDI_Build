@@ -41,9 +41,14 @@ function fahrschule_media_map() {
 		// SYSTEM-REPORT.md.
 		'logo_schalke'  => 'edi-partner-schalke',
 
-		/* --- Videos: noch keine eigenen Dateien vorhanden --- */
-		'video_hero'    => 'edi-video-hero',
-		'video_team'    => 'edi-video-team',
+		/* --- Videos (Mediathek) ---
+		 * Hero: MP4 (Pflicht), WebM (optional, kleiner) und ein Standbild -
+		 * es ist Poster, Hintergrund, Editor-Vorschau und das Bild bei
+		 * reduzierter Bewegung. Ohne beides zeigt der Hero Vollpink. */
+		'video_hero'      => 'edi-video-hero',
+		'video_hero_webm' => 'edi-video-hero-webm',
+		'video_hero_bild' => 'edi-video-hero-standbild',
+		'video_team'      => 'edi-video-team',
 
 		/* --- Standorte ---
 		 * Essen und Gelsenkirchen sind über die alte Seite eindeutig
@@ -147,7 +152,7 @@ function fs_media_by_slug( $slug, $fallback = '' ) {
 
 	// 2) Mitgeliefertes Bild im Theme (Logo, Partnerlogos, Favicons).
 	if ( '' === $url ) {
-		foreach ( array( 'webp', 'jpg', 'png', 'svg' ) as $ext ) {
+		foreach ( array( 'webp', 'jpg', 'png', 'svg', 'mp4', 'webm' ) as $ext ) {
 			if ( file_exists( get_template_directory() . '/assets/images/' . $slug . '.' . $ext ) ) {
 				$url = get_template_directory_uri() . '/assets/images/' . $slug . '.' . $ext;
 				break;
@@ -194,6 +199,18 @@ function fahrschule_media_notice() {
 		if ( ! is_string( $value ) || 0 !== strpos( $value, 'http' ) ) { continue; }
 		$host = wp_parse_url( $value, PHP_URL_HOST );
 		if ( $host && $host !== $home ) { $external++; }
+	}
+	// Hero: Video und Standbild gehören in die Mediathek. Fehlt beides,
+	// zeigt die Startseite nur Vollpink statt Bild.
+	$fehlt = array();
+	foreach ( array( 'video_hero' => 'edi-video-hero.mp4', 'video_hero_bild' => 'edi-video-hero-standbild (JPG/WebP)' ) as $key => $datei ) {
+		if ( '' === fs_media( $key ) ) { $fehlt[] = $datei; }
+	}
+	if ( $fehlt ) {
+		printf(
+			'<div class="notice notice-warning"><p><strong>Fahrschule edi:</strong> Für den Startseiten-Hero fehlt in der Mediathek: %s. Datei mit genau diesem Namen hochladen – sie erscheint dann automatisch.</p></div>',
+			esc_html( implode( ', ', $fehlt ) )
+		);
 	}
 	if ( ! $external ) { return; }
 	printf(

@@ -93,7 +93,7 @@ gibt der Block nichts aus, etwa die Galerie ohne Bilder.
 | `footer` | Footer | Logo-URL | nein | parts/footer.html |
 | `tiktok-badge` | TikTok Badge | TikTok-URL · Zeile 1 · Zeile 2 | nein | parts/footer.html |
 | `cookie-banner` | Cookie-Banner | – | nein | parts/footer.html |
-| `video-hero` | Video Hero | Badge · Überschrift · Hervorgehobenes Wort · Text (Absätze durch Leerzeile trennen) · Button 1 Text · Button 1 Link · Button 2 Text · Button 2 Link · Video-URL | nein | / |
+| `video-hero` | Video Hero | Badge · Überschrift · Hervorgehobenes Wort · Text (Absätze durch Leerzeile trennen) · Button 1 Text · Button 1 Link · Button 2 Text · Button 2 Link · Video-URL (Mediathek: edi-video-hero.mp4) · Standbild-URL (Poster, Editor, reduzierte Bewegung; Mediathek: edi-video-hero-standbild) | nein | / |
 | `hero` | Hero (hell) | Badge · Überschrift · Hervorgehobenes Wort · Text · Button 1 Text · Button 1 Link · Button 2 Text · Button 2 Link | nein | nur als Pattern/Block einfügbar |
 | `license-classes` | Führerscheinklassen (Karten) | Führerscheinklasse (Liste) · Eyebrow · Überschrift · Untertitel · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /preise |
 | `calculator` | Führerschein-Rechner | Eyebrow · Überschrift · Untertitel · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /preise |

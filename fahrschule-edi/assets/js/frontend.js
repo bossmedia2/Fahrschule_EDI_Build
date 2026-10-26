@@ -21,6 +21,24 @@
 			window.addEventListener( 'scroll', onScroll, { passive: true } );
 		}
 
+		/* ---------- Hero-Video ----------
+		 * Kein autoplay im Markup: gestartet wird nur, wenn der Nutzer keine
+		 * reduzierte Bewegung wünscht - sonst bleibt das Standbild (Poster
+		 * und Hintergrund; das Video blendet main.css dann aus). Wechselt die
+		 * Einstellung, hält das Video an bzw. läuft wieder. */
+		var heroVideos = document.querySelectorAll( '[data-fs-hero-video]' );
+		if ( heroVideos.length ) {
+			var still = window.matchMedia ? window.matchMedia( '(prefers-reduced-motion: reduce)' ) : null;
+			var heroSync = function () {
+				heroVideos.forEach( function ( v ) {
+					if ( still && still.matches ) { v.pause(); }
+					else { var p = v.play(); if ( p && p.catch ) { p.catch( function () {} ); } }
+				} );
+			};
+			heroSync();
+			if ( still && still.addEventListener ) { still.addEventListener( 'change', heroSync ); }
+		}
+
 		/* ---------- Mobile Drawer ---------- */
 		var burger  = document.querySelector( '[data-fs-burger]' );
 		var drawer  = document.querySelector( '[data-fs-drawer]' );
