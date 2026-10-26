@@ -201,49 +201,6 @@
 			paint();
 		} );
 
-		/* ---------- Social-Feed (Karussell) ----------
-		 * Alle Kacheln stehen bereits im HTML (Editor und Seite ohne JS zeigen
-		 * sie vollständig). Hier wird nur ein Fenster von drei Kacheln
-		 * eingeblendet; die übrigen bekommen hidden. Die Reihenfolge im Fenster
-		 * läuft über CSS order, damit das Blättern ringförmig bleibt, ohne das
-		 * Markup umzubauen. */
-		document.querySelectorAll( '[data-fs-ig]' ).forEach( function ( section ) {
-			var track = section.querySelector( '[data-fs-ig-track]' );
-			var dots  = section.querySelector( '[data-fs-ig-dots]' );
-			if ( ! track ) { return; }
-			var cards = [].slice.call( track.querySelectorAll( '.fs-ig__post' ) );
-			var n = cards.length, current = 0, sichtbar = 3;
-			if ( n <= sichtbar ) { return; }
-
-			function render() {
-				cards.forEach( function ( c, i ) {
-					var off = ( i - current + n ) % n;
-					c.hidden = off >= sichtbar;
-					c.style.order = off;
-				} );
-				if ( dots ) {
-					[].slice.call( dots.children ).forEach( function ( d, i ) {
-						d.classList.toggle( 'is-active', i === current );
-						d.setAttribute( 'aria-current', i === current ? 'true' : 'false' );
-					} );
-				}
-			}
-			if ( dots ) {
-				dots.textContent = '';
-				cards.forEach( function ( _, idx ) {
-					var d = document.createElement( 'button' );
-					d.type = 'button';
-					d.className = 'fs-ig__dot';
-					d.setAttribute( 'aria-label', 'Beitrag ' + ( idx + 1 ) + ' anzeigen' );
-					d.addEventListener( 'click', function () { current = idx; render(); } );
-					dots.appendChild( d );
-				} );
-			}
-			on( section.querySelector( '[data-fs-ig-next]' ), 'click', function () { current = ( current + 1 ) % n; render(); } );
-			on( section.querySelector( '[data-fs-ig-prev]' ), 'click', function () { current = ( current - 1 + n ) % n; render(); } );
-			render();
-		} );
-
 		/* ---------- TikTok-Badge schließen ---------- */
 		var badge = document.querySelector( '[data-fs-tiktok]' );
 		if ( badge ) {

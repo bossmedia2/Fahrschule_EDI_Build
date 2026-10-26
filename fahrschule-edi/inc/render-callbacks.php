@@ -522,101 +522,92 @@ function fs_render_testimonials( $a ) {
 }
 
 /* -------------------------------------------------------------------------
- * INSTAGRAM SLIDER
+ * SOCIAL-FEED (Block-Slug instagram-slider bleibt - Umbenennen bräche jede
+ * Seite, auf der er steht). Link einfügen, fertig: siehe inc/social-abruf.php.
  * ---------------------------------------------------------------------- */
 function fs_render_instagram_slider( $a ) {
 	$d = fs_attrs( $a, array(
 		'heading'      => 'Folgen Sie uns',
-		'highlight'    => '',
-		'subtitle'     => '',
-		'instaHandle'  => '',
-		'instaUrl'     => '',
 		'tiktokHandle' => '',
 		'tiktokUrl'    => '',
 		'items'        => array(),
+		// Altfelder bis 3.1 - nur noch Rückfall für den Profil-Link.
+		'instaHandle'  => '',
+		'instaUrl'     => '',
 		'url'          => '',
 	) );
-	if ( '' === trim( $d['instaUrl'] ) && '' !== trim( $d['url'] ) ) { $d['instaUrl'] = $d['url']; } // Altfeld bis 3.0
-	$profil = array( 'instagram' => $d['instaUrl'], 'tiktok' => $d['tiktokUrl'] );
-	$name   = array( 'instagram' => 'Instagram', 'tiktok' => 'TikTok' );
+	$profil = trim( (string) $d['tiktokUrl'] );
+	$handle = trim( (string) $d['tiktokHandle'] );
+	if ( '' === $profil ) {
+		$profil = '' !== trim( (string) $d['instaUrl'] ) ? trim( (string) $d['instaUrl'] ) : trim( (string) $d['url'] );
+		if ( '' === $handle ) { $handle = trim( (string) $d['instaHandle'] ); }
+	}
+	$profil_pf = false !== strpos( $profil, 'instagram.com' ) ? 'instagram' : 'tiktok';
+	$name      = array( 'instagram' => 'Instagram', 'tiktok' => 'TikTok' );
 
 	/*
-	 * Eine Kachel braucht Bild UND Beschreibung: ohne Bild gibt es nichts zu
-	 * zeigen, ohne Beschreibung fehlt der Alt-Text (WCAG). Keine Kachel lädt
-	 * etwas von TikTok oder Instagram - das Bild kommt aus der Mediathek, der
-	 * Klick öffnet den Beitrag in einem neuen Tab.
+	 * Kacheln aus den Zeilen [Plattform, Link, Titel, Bild-ID, Status].
+	 * Titel, Bild-ID und Status trägt fs_social_abruf() beim Speichern im
+	 * Editor ein - hier wird NICHTS abgerufen. Zeilen im Format bis 3.1
+	 * ([Plattform, Medien-Slug, Link, Bildtext]) werden weiter gelesen.
 	 */
 	$kacheln = array();
-	$fehlt   = array();
-	foreach ( fs_rows( $d['items'], 4 ) as $i => $row ) {
-		list( $plattform, $slug, $link, $text ) = array_map( 'trim', $row );
-		$plattform = 'instagram' === strtolower( $plattform ) ? 'instagram' : 'tiktok';
-		$bild      = '' !== $slug ? fs_media_by_slug( $slug ) : '';
-		if ( '' === $bild ) { continue; }
-		if ( '' === $text ) { $fehlt[] = $i + 1; continue; }
-		$kacheln[] = array(
-			'plattform' => $plattform,
-			'bild'      => $bild,
-			'link'      => '' !== $link ? $link : $profil[ $plattform ],
-			'text'      => $text,
-		);
+	$hinweis = array();
+	foreach ( fs_rows( $d['items'], 5 ) as $i => $z ) {
+		$z = array_map( 'trim', array_map( 'strval', $z ) );
+		if ( '' !== $z[1] && ! preg_match( '#^https?://#', $z[1] ) ) {
+			// Altes Format: Cover aus der Mediathek, Bildtext als Titel.
+			$link = '' !== $z[2] ? $z[2] : $profil;
+			if ( '' === $link ) { continue; }
+			$kacheln[] = array( 'pf' => 'instagram' === strtolower( $z[0] ) ? 'instagram' : 'tiktok', 'link' => $link, 'titel' => $z[3], 'bild' => fs_media_by_slug( $z[1] ) );
+			continue;
+		}
+		if ( '' === $z[1] ) { continue; }
+		$pf   = false !== strpos( $z[1], 'instagram.com' ) || 'instagram' === strtolower( $z[0] ) ? 'instagram' : 'tiktok';
+		$bild = preg_match( '/^\d+$/', $z[3] ) && (int) $z[3] > 0 ? (string) wp_get_attachment_image_url( (int) $z[3], 'medium_large' ) : '';
+		if ( '' === $z[4] ) {
+			$hinweis[] = sprintf( 'Link %d: noch nicht eingelesen – Seite speichern oder „Beiträge aktualisieren“.', $i + 1 );
+		} elseif ( 'ok' !== $z[4] ) {
+			$hinweis[] = sprintf( 'Link %d (%s): %s', $i + 1, preg_replace( '#^https?://(www\.)?#', '', $z[1] ), $z[4] );
+		}
+		$kacheln[] = array( 'pf' => $pf, 'link' => $z[1], 'titel' => $z[2], 'bild' => $bild );
 	}
-	$hinweis = $fehlt ? fs_editor_hint( 'Social-Feed', 'Kachel ' . implode( ', ', $fehlt ) . ': Bildbeschreibung fehlt – ohne sie erscheint die Kachel nicht.' ) : '';
+	$hinweise = $hinweis ? fs_editor_hint( 'Social-Feed:', implode( ' · ', $hinweis ) ) : '';
 	if ( ! $kacheln ) {
-		return $hinweis ? $hinweis : fs_editor_hint( 'Social-Feed', 'Erscheint, sobald eine Kachel ein Bild (Medien-Slug) und eine Bildbeschreibung hat.' );
+		return $hinweise ? $hinweise : fs_editor_hint( 'Social-Feed:', 'Erscheint, sobald ein Video-Link eingetragen ist. Titel und Cover kommen beim Speichern von TikTok.' );
 	}
 
-	$knoepfe = array();
-	foreach ( array( 'instagram' => 'instaHandle', 'tiktok' => 'tiktokHandle' ) as $p => $feld ) {
-		if ( fs_has( $d, $feld ) && '' !== trim( $profil[ $p ] ) ) {
-			$knoepfe[ $p ] = '@' . ltrim( trim( $d[ $feld ] ), '@' );
-		}
-	}
-	$heading = fs_highlight( $d['heading'], $d['highlight'] );
 	ob_start(); ?>
-	<section class="fs-section fs-surface-light" data-fs-ig>
+	<section class="fs-section fs-surface-brand">
 		<div class="fs-container fs-wide" style="margin-inline:auto;">
-			<?php echo $hinweis; ?>
-			<?php if ( fs_has( $d, 'heading' ) || fs_has( $d, 'subtitle' ) ) : ?>
-			<div class="fs-head">
-				<?php if ( fs_has( $d, 'heading' ) ) : ?><div class="fs-ig__head"><?php echo fs_el( 'h2', '', '', $heading ); ?></div><?php endif; ?>
-				<?php echo fs_el( 'p', $d['subtitle'] ); ?>
+			<?php echo $hinweise; ?>
+			<div class="fs-social__kopf">
+				<?php echo '' !== trim( (string) $d['heading'] ) ? fs_el( 'h2', '', 'class="fs-social__titel"', fs_icon( $profil_pf, 30 ) . esc_html( $d['heading'] ) ) : ''; ?>
+				<?php if ( '' !== $profil && '' !== $handle ) : ?>
+				<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( $profil ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( $profil_pf, 18 ); ?> <?php echo esc_html( '@' . ltrim( $handle, '@' ) ); ?></a>
+				<?php endif; ?>
 			</div>
-			<?php endif; ?>
-			<?php /* Alle Kacheln stehen im HTML - Editor-Vorschau und Seite ohne
-			         JavaScript zeigen sie vollständig; frontend.js blendet im
-			         Karussell ein Fenster von drei ein. */ ?>
-			<div class="fs-ig__track" id="fs-ig-track" aria-live="polite" data-fs-ig-track>
+			<div class="fs-social__raster">
 				<?php foreach ( $kacheln as $k ) : ?>
-				<a class="fs-ig__post" href="<?php echo esc_url( $k['link'] ); ?>" target="_blank" rel="noopener noreferrer" title="<?php echo esc_attr( $k['text'] ); ?>" data-plattform="<?php echo esc_attr( $k['plattform'] ); ?>">
-					<?php /* Cover füllt die Kachel; Plattform und Play-Zeichen liegen auf
-					         einem Abdunkler. Der Bildtext ist Alt-Text und Titel - sichtbar
-					         nur als Overlay bei Maus/Tastatur, nicht als Absatz unter dem Bild
-					         (aria-hidden: der Link liest ihn schon über den Alt-Text vor). */ ?>
-					<span class="fs-ig__frame">
-						<img src="<?php echo esc_url( $k['bild'] ); ?>" alt="<?php echo esc_attr( $k['text'] ); ?>" width="500" height="500" loading="lazy" decoding="async">
-						<span class="fs-ig__shade" aria-hidden="true"></span>
-						<span class="fs-ig__badge"><?php echo fs_icon( $k['plattform'], 14 ); ?> <?php echo esc_html( $name[ $k['plattform'] ] ); ?></span>
-						<span class="fs-ig__play" aria-hidden="true"><?php echo fs_icon( 'play', 28 ); ?></span>
-						<span class="fs-ig__cap" aria-hidden="true"><?php echo esc_html( $k['text'] ); ?></span>
+				<?php /* Cover formatfüllend, darauf Plattform und Abspiel-Zeichen;
+				         ohne Cover (Abruf gescheitert, Instagram) die Marken-Kachel -
+				         nie ein leerer Rahmen. Der Titel darunter ist der Linktext. */ ?>
+				<a class="fs-social__kachel<?php echo '' === $k['bild'] ? ' fs-social__kachel--marke' : ''; ?>" href="<?php echo esc_url( $k['link'] ); ?>" target="_blank" rel="noopener noreferrer" data-plattform="<?php echo esc_attr( $k['pf'] ); ?>">
+					<span class="fs-social__cover">
+						<?php if ( '' !== $k['bild'] ) : ?><img src="<?php echo esc_url( $k['bild'] ); ?>" alt="" width="480" height="640" loading="lazy" decoding="async"><?php endif; ?>
+						<span class="fs-social__shade" aria-hidden="true"></span>
+						<span class="fs-social__badge" aria-hidden="true"><?php echo fs_icon( $k['pf'], 16 ); ?></span>
+						<span class="fs-social__play" aria-hidden="true"><?php echo fs_icon( 'play', 28 ); ?></span>
 					</span>
+					<?php if ( '' !== $k['titel'] ) : ?>
+					<span class="fs-social__text"><?php echo esc_html( $k['titel'] ); ?></span>
+					<?php else : ?>
+					<span class="screen-reader-text"><?php echo esc_html( $name[ $k['pf'] ] . '-Beitrag öffnen' ); ?></span>
+					<?php endif; ?>
+					<span class="screen-reader-text"> (öffnet <?php echo esc_html( $name[ $k['pf'] ] ); ?> in neuem Tab)</span>
 				</a>
 				<?php endforeach; ?>
 			</div>
-			<?php if ( count( $kacheln ) > 3 ) : ?>
-			<div class="fs-ig__nav">
-				<button type="button" class="fs-ig__arrow" data-fs-ig-prev aria-label="Vorherige Beiträge" aria-controls="fs-ig-track"><?php echo fs_icon( 'chevron-left', 24 ); ?></button>
-				<div class="fs-ig__dots" data-fs-ig-dots></div>
-				<button type="button" class="fs-ig__arrow" data-fs-ig-next aria-label="Nächste Beiträge" aria-controls="fs-ig-track"><?php echo fs_icon( 'chevron-right', 24 ); ?></button>
-			</div>
-			<?php endif; ?>
-			<?php if ( $knoepfe ) : ?>
-			<div class="fs-center fs-mt-8 fs-ig__profile">
-				<?php foreach ( $knoepfe as $p => $handle ) : ?>
-				<a class="fs-btn fs-btn--lg fs-btn--primary" href="<?php echo esc_url( $profil[ $p ] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo fs_icon( $p, 20 ); ?> <?php echo esc_html( $handle ); ?><span class="fs-visually-hidden"> auf <?php echo esc_html( $name[ $p ] ); ?></span></a>
-				<?php endforeach; ?>
-			</div>
-			<?php endif; ?>
 		</div>
 	</section>
 	<?php

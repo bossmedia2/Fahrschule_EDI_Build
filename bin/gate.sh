@@ -93,13 +93,13 @@ if command -v php >/dev/null 2>&1; then
 fi
 need php "$php_ok" "PHP ≥ 8.0 (CLI)${phpver:+, gefunden $phpver}" "sudo apt install php-cli"
 if [ "$php_ok" -eq 0 ]; then
-	# mbstring: das Theme braucht es nicht (Rückfall, Schritt 2l beweist es).
+	# mbstring: das Theme braucht es nicht (Rückfall, Schritt 2m beweist es).
 	# Gemeldet wird es trotzdem - ein Hoster ohne mbstring ist ein Hinweis wert.
 	if php -r 'exit(extension_loaded("mbstring")?0:1);'; then
 		echo "  ok: PHP-Erweiterung mbstring"
 	else
 		HINWEISE=$((HINWEISE+1))
-		printf '  HINWEIS: PHP-Erweiterung mbstring fehlt – das Theme läuft ohne (Rückfall, Schritt 2l), die Kette auch.\n         nachrüsten: sudo apt install php%s-mbstring\n' "$phpver"
+		printf '  HINWEIS: PHP-Erweiterung mbstring fehlt – das Theme läuft ohne (Rückfall, Schritt 2m), die Kette auch.\n         nachrüsten: sudo apt install php%s-mbstring\n' "$phpver"
 	fi
 	php -r 'exit(function_exists("json_encode")?0:1);' || { echo "  FEHLT: PHP-JSON"; RES[php]=skip; WHY[php]="PHP-JSON fehlt"; }
 fi
@@ -206,7 +206,11 @@ if begin 2j "Hero: Video oder Standbild, reduzierte Bewegung, Editor-Vorschau" p
 	php "$ROOT/bin/checks/hero.php" "$THEME"; finish $?
 fi
 
-if begin 2k "Doku: Block- und Seitentabelle aktuell" php; then
+if begin 2k "Social-Feed: Link einlesen (oEmbed nachgebaut), Rückfall, kein Abruf beim Aufruf" php; then
+	php "$ROOT/bin/checks/social.php" "$THEME"; finish $?
+fi
+
+if begin 2l "Doku: Block- und Seitentabelle aktuell" php; then
 	out=$(php "$ROOT/bin/docs-tabellen.php" --pruefen 2>&1); rc=$?
 	echo "$out"
 	[ "$rc" -ne 0 ] && [ -z "$out" ] && echo "  FEHLER: docs-tabellen.php endete mit Code $rc ohne Ausgabe"
@@ -217,7 +221,7 @@ fi
 # Rendern noch einmal, alle mb_-Funktionen abgeschaltet (in PHP 8 existiert
 # eine abgeschaltete Funktion nicht). WordPress ersetzt dann nur mb_substr
 # und mb_strlen - genau das tut der Stub auch.
-if begin 2l "Theme ohne mbstring: alle Seiten rendern mit abgeschalteten mb_-Funktionen" php; then
+if begin 2m "Theme ohne mbstring: alle Seiten rendern mit abgeschalteten mb_-Funktionen" php; then
 	mbf=$(php -r 'echo implode(",", array_filter(get_defined_functions()["internal"], fn($f) => str_starts_with($f, "mb_")));')
 	mkdir -p "$WORK/ohne-mb"
 	out=$(FS_OUT="$WORK/ohne-mb" php -d "disable_functions=${mbf}" "$ROOT/bin/checks/smoke.php" "$THEME" 2>&1); rc=$?

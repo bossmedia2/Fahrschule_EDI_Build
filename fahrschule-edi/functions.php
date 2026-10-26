@@ -22,6 +22,7 @@ require_once FAHRSCHULE_DIR . '/inc/media.php';
 require_once FAHRSCHULE_DIR . '/inc/pages.php';
 require_once FAHRSCHULE_DIR . '/inc/neu-aufbauen.php';   // Seite ausdrücklich aus Startmuster neu aufbauen
 require_once FAHRSCHULE_DIR . '/inc/render-callbacks.php';
+require_once FAHRSCHULE_DIR . '/inc/social-abruf.php';   // Social-Feed: TikTok-Link einlesen (nur im Editor)
 require_once FAHRSCHULE_DIR . '/inc/blocks-config.php';
 require_once FAHRSCHULE_DIR . '/inc/seo.php';
 require_once FAHRSCHULE_DIR . '/inc/forms.php';
@@ -72,7 +73,7 @@ function fahrschule_register_assets() {
 	wp_register_script(
 		'fahrschule-editor',
 		FAHRSCHULE_URI . '/assets/js/editor.js',
-		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n', 'wp-data' ),
+		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n', 'wp-data', 'wp-api-fetch' ),
 		FAHRSCHULE_VERSION,
 		true
 	);
@@ -124,6 +125,7 @@ function fahrschule_editor_assets() {
 					'default' => $f['default'],
 					'options' => isset( $f['options'] ) ? $f['options'] : array(),
 					'columns' => isset( $f['columns'] ) ? $f['columns'] : array(),
+					'auto'    => isset( $f['auto_spalten'] ) ? $f['auto_spalten'] : array(),
 				);
 			}
 		}
@@ -135,6 +137,7 @@ function fahrschule_editor_assets() {
 			'keywords'    => isset( $cfg['keywords'] ) ? $cfg['keywords'] : array(),
 			'category'    => 'fahrschule',
 			'fields'      => $fields,
+			'abruf'       => isset( $cfg['abruf'] ) ? $cfg['abruf'] : null,
 		);
 	}
 	wp_localize_script( 'fahrschule-editor', 'FahrschuleBlocks', $editor_blocks );

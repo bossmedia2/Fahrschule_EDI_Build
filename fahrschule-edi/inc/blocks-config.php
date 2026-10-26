@@ -290,31 +290,33 @@ function fahrschule_blocks_config() {
 			),
 		),
 		/* Slug bleibt instagram-slider: Umbenennen bräche jede Seite, auf der der
-		   Block steht. Inhaltlich ist es der Social-Feed beider Plattformen. */
+		   Block steht. Inhaltlich ist es der Social-Feed (TikTok per Link). */
 		'fahrschule/instagram-slider' => array(
-			'title' => 'Social-Feed (Instagram/TikTok)', 'description' => 'Karussell aus Kacheln; jede Kachel trägt ihre Plattform (tiktok/instagram), ein Bild aus der Mediathek, einen Link und eine Bildbeschreibung. Kein Embed, kein Abruf bei TikTok oder Instagram. Ohne Kachel mit Bild und Beschreibung entfällt die Sektion.',
-			'icon' => 'share', 'keywords' => array( 'instagram', 'tiktok', 'social', 'slider' ),
+			'title' => 'Social-Feed (TikTok per Link)', 'description' => 'Video-Links einfügen, fertig: Titel und Cover holt der Editor beim Speichern von TikTok (oEmbed) und legt das Cover in die Mediathek. Beim Seitenaufruf geht keine Anfrage an TikTok. Instagram-Links ergeben eine Kachel ohne Cover.',
+			'icon' => 'share', 'keywords' => array( 'tiktok', 'instagram', 'social', 'video' ),
 			'render' => 'fs_render_instagram_slider', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Erfahrungen',
+			// Abruf je Link im Editor (inc/social-abruf.php, editor.js).
+			'abruf' => array( 'feld' => 'items', 'spalte' => 1, 'rest' => 'fahrschule/v1/social-abruf', 'knopf' => 'Beiträge aktualisieren' ),
 			'fields' => array(
 				'heading'      => $t( 'Folgen Sie uns', 'Überschrift', 'text' ),
-				'highlight'    => $t( '', 'Hervorgehobenes Wort', 'text' ),
-				'subtitle'     => $t( 'Einblicke in den Alltag der Fahrschule edi – Tipps und Neuigkeiten direkt in Ihrem Feed.', 'Untertitel', 'textarea' ),
-				// Profile aus den Stammdaten (inc/seo.php). Leerer @-Name = Knopf entfällt.
-				'instaHandle'  => $t( fs_social_profil( 'instagram' )['handle'], 'Instagram: @-Name (leer = kein Knopf)', 'text' ),
-				'instaUrl'     => $t( fs_social_profil( 'instagram' )['url'], 'Instagram: Profil-Link', 'url' ),
-				'tiktokHandle' => $t( fs_social_profil( 'tiktok' )['handle'], 'TikTok: @-Name (leer = kein Knopf)', 'text' ),
-				'tiktokUrl'    => $t( fs_social_profil( 'tiktok' )['url'], 'TikTok: Profil-Link', 'url' ),
-				// Kacheln: bewusst ohne Bildbeschreibung vorbelegt - eine Kachel
-				// erscheint erst, wenn Bild UND Beschreibung da sind.
+				// Profil aus den Stammdaten (inc/seo.php). Leerer @-Name = kein Knopf.
+				'tiktokHandle' => $t( fs_social_profil( 'tiktok' )['handle'], 'Profil: @-Name (leer = kein Knopf)', 'text' ),
+				'tiktokUrl'    => $t( fs_social_profil( 'tiktok' )['url'], 'Profil-Link', 'url' ),
+				// Nur der Link wird eingetragen; Titel, Bild-ID und Status füllt der
+				// Abruf (Spalten 3-5, im Editor nur als Statuszeile sichtbar).
 				'items'        => $rep(
-					array_map( static function ( $n ) { return array( 'instagram', sprintf( 'edi-social-%03d', $n ), '', '' ); }, range( 1, 6 ) ),
-					'Kachel',
-					array( 'Plattform (tiktok / instagram)', 'Bild: Medien-Slug, z. B. edi-social-001 (quadratisch, mind. 1080 px)', 'Link zum Beitrag (leer = Profil)', 'Bildbeschreibung (Pflicht – was ist auf dem Bild zu sehen?)' ),
-					array( array( 'tiktok', 'edi-logo', '', 'ZZPROBEZZ' ), 'ZZPROBEZZ' )
-				),
-				// Bis 3.0: einzelnes Instagram-Profil. Bleibt registriert, damit
-				// Gutenberg einen gespeicherten Wert beim Speichern nicht verwirft;
-				// im Editor ausgeblendet, beim Rendern Rückfall für instaUrl.
+					array_fill( 0, 3, array( 'tiktok', '', '', '', '' ) ),
+					'Video',
+					array( 'Plattform (tiktok / instagram)', 'Video-Link (z. B. https://www.tiktok.com/@edi_fahrschule/video/…)', 'Titel (automatisch)', 'Bild-ID (automatisch)', 'Status (automatisch)' ),
+					array( array( 'tiktok', 'https://www.tiktok.com/@edi_fahrschule/video/1', 'ZZPROBEZZ', '', 'ok' ), 'ZZPROBEZZ' )
+				) + array( 'auto_spalten' => array( 2, 3, 4 ) ),
+				// Bis 3.1: Untertitel, Hervorhebung, Instagram-Profil. Bleiben
+				// registriert, damit Gutenberg gespeicherte Werte nicht verwirft;
+				// im Editor ausgeblendet, beim Rendern nur Rückfall fürs Profil.
+				'highlight'    => $t( '', 'Hervorgehobenes Wort (alt)', 'text' ) + array( 'legacy' => true ),
+				'subtitle'     => $t( '', 'Untertitel (alt)', 'textarea' ) + array( 'legacy' => true ),
+				'instaHandle'  => $t( '', 'Instagram: @-Name (alt)', 'text' ) + array( 'legacy' => true ),
+				'instaUrl'     => $t( '', 'Instagram: Profil-Link (alt)', 'url' ) + array( 'legacy' => true ),
 				'url'          => $t( '', 'Instagram-URL (alt)', 'url' ) + array( 'legacy' => true ),
 			),
 		),

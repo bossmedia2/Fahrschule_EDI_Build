@@ -65,7 +65,19 @@ function wp_nonce_field($a='',$n='_wpnonce',$r=true,$e=true){ $h='<input type="h
 function wp_verify_nonce($n,$a){return $n==='stub'?1:false;} function wp_slash($s){return $s;} function _n($a,$b,$n,$d=null){return $n==1?$a:$b;} function wp_create_nonce($a=''){return 'stub';}
 function wp_safe_redirect($u,$s=302){return true;} function wp_mail(){return true;}
 function wp_remote_post($u,$a=[]){return ['response'=>['code'=>200],'body'=>''];}
-function is_wp_error($t){return false;}
+if(!class_exists('WP_Error')){ class WP_Error { public $c; public $m; public function __construct($c='',$m=''){ $this->c=$c; $this->m=$m; } public function get_error_message(){ return $this->m; } } }
+function is_wp_error($t){return $t instanceof WP_Error;}
+/* ---- Netz und Mediathek für den Social-Abruf (bin/checks/social.php) ----
+   Kein echter Abruf: __http bestimmt die Antwort, jede Anfrage wird notiert. */
+function wp_remote_get($u,$a=[]){ $GLOBALS['__http_calls'][]=$u; $h=$GLOBALS['__http']??null; return is_callable($h)?$h($u):new WP_Error('http','kein Netz im Test'); }
+function wp_remote_retrieve_response_code($r){ return is_array($r)?(int)($r['response']['code']??0):0; }
+function wp_remote_retrieve_body($r){ return is_array($r)?(string)($r['body']??''):''; }
+function download_url($u,$t=300){ $GLOBALS['__downloads'][]=$u; if(!empty($GLOBALS['__download_fail'])) return new WP_Error('dl','Zeitüberschreitung'); $f=tempnam(sys_get_temp_dir(),'fs'); file_put_contents($f,'x'); return $f; }
+function media_handle_sideload($file,$pid=0,$desc=null){ static $n=5000; $id=++$n; if(is_file($file['tmp_name'])) unlink($file['tmp_name']); $GLOBALS['__sideloads'][$id]=$file['name']; return $id; }
+function wp_delete_file($f){ if(is_file($f)) unlink($f); }
+function update_post_meta($id,$k,$v){ $GLOBALS['__meta'][$id][$k]=$v; return true; }
+function register_rest_route($ns,$r,$a){ $GLOBALS['__rest'][$ns.$r]=$a; return true; }
+function rest_ensure_response($x){ return $x; }
 function wp_get_attachment_url($id){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function wp_get_attachment_image_src($id,$s='full'){return ['/wp-content/uploads/stub-'.$id.'.jpg',1200,800];}
 function post_type_exists($t){ return isset($GLOBALS['__post_types'][$t]); }
@@ -85,6 +97,7 @@ $GLOBALS['wpdb']=new FS_Stub_WPDB();
    die LIKE-Klausel auf post_name wird ausgewertet - so prüft der Test auch
    das erzeugte SQL-Muster, nicht nur die PHP-Seite. */
 function get_posts($a=[]){
+  if(isset($a['meta_key'])){ $ids=[]; foreach(($GLOBALS['__meta']??[]) as $id=>$m) if(($m[$a['meta_key']]??null)===($a['meta_value']??null)) $ids[]=$id; return array_slice($ids,0,$a['numberposts']??10); }
   if(($a['post_type']??'')==='job_listing'){ $GLOBALS['__last_query']=$a; return $GLOBALS['__jobs']??[]; }
   $names=$GLOBALS['__attachments']??[]; if(!$names || ($a['post_type']??'')!=='attachment') return [];
   if(($a['suppress_filters']??true)===false){
