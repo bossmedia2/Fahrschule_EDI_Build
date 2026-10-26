@@ -160,9 +160,12 @@ function fahrschule_meta_description() {
 
 	// Auf ~160 Zeichen kürzen, ohne Wörter zu zerschneiden.
 	if ( mb_strlen( $desc ) > 160 ) {
+		// mb_substr/mb_strlen ersetzt WordPress ohne mbstring (compat.php),
+		// mb_strrpos nicht. Ein Leerzeichen ist immer eine UTF-8-Grenze -
+		// byteweise suchen und schneiden ist hier sicher.
 		$desc = mb_substr( $desc, 0, 157 );
-		$cut  = mb_strrpos( $desc, ' ' );
-		if ( $cut ) { $desc = mb_substr( $desc, 0, $cut ); }
+		$cut  = strrpos( $desc, ' ' );
+		if ( $cut ) { $desc = substr( $desc, 0, $cut ); }
 		$desc .= '…';
 	}
 	return $desc;

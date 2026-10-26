@@ -151,7 +151,11 @@ function is_author(){return false;} function is_attachment(){return false;} func
 function current_time($t='mysql',$g=0){return date('Y-m-d H:i:s');}
 function flush_rewrite_rules(){} function add_options_page(){} function register_setting(){}
 function settings_fields($g){} function submit_button($t=null){} function checked($a,$b=true,$e=true){}
-function mb_strrpos_stub(){}
+/* Wie wp-includes/compat.php: ohne mbstring ersetzt WordPress genau diese
+   beiden Funktionen - und keine weitere. Der Stub tut dasselbe, damit die
+   Prüfungen auf einem Rechner ohne mbstring das echte Verhalten zeigen. */
+if(!function_exists('mb_substr')){ function mb_substr($s,$start,$len=null,$enc=null){ preg_match_all('/./us',(string)$s,$m); return implode('',array_slice($m[0],$start,$len)); } }
+if(!function_exists('mb_strlen')){ function mb_strlen($s,$enc=null){ return preg_match_all('/./us',(string)$s); } }
 function number_format_i18n($n,$d=0){return number_format($n,$d,',','.');}
 /* ---- Block-Serialisierung wie WordPress (wp-includes/blocks.php) ----
    Gleiche Maskierung der Attribute, gleiche Kurzform für Kern-Blöcke,

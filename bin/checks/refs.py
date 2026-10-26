@@ -154,6 +154,27 @@ for p in php_files:
 if treffer: fail("unbelegte Behauptung im Theme: " + ", ".join(treffer))
 else:       ok("keine der früher entfernten unbelegten Behauptungen (10.000+, 5000+, „beste“, „Größte“ …)")
 
+# --- mbstring nie voraussetzen ------------------------------------------------
+# WordPress ersetzt ohne ext-mbstring nur mb_substr() und mb_strlen()
+# (wp-includes/compat.php). Jede andere mb_-Funktion lässt das Theme auf so
+# einem Hoster schon beim Laden der Blockkonfiguration abstürzen - erlaubt
+# nur mit function_exists()-Weiche in derselben Zeile (fs_lower/fs_upper).
+mb_bad = []
+for p in php_files:
+    rel = os.path.relpath(p, root)
+    if not (rel.startswith('fahrschule-edi') or rel.startswith('edi-integrationen')):
+        continue
+    for n, line in enumerate(rd(p).splitlines(), 1):
+        code = line.split('//')[0]
+        if code.lstrip().startswith('*'):
+            continue
+        for fn in re.findall(r'\bmb_([a-z_]+)\s*\(', code):
+            if fn in ('substr', 'strlen') or f"function_exists( 'mb_{fn}' )" in code:
+                continue
+            mb_bad.append(f"{rel}:{n} mb_{fn}()")
+if mb_bad: fail("mb_-Funktion ohne Rückfall (WordPress ersetzt nur mb_substr/mb_strlen): " + ", ".join(mb_bad))
+else:      ok("keine mb_-Funktion ohne Rückfall - Theme und Plugin laufen ohne ext-mbstring")
+
 print()
 if fails:
     print(f"REFERENZPRÜFUNG: {len(fails)} Fehler")

@@ -2164,12 +2164,14 @@ function fs_render_kurs_details( $a ) {
  */
 function fs_team_ansprechpartner( $lehrer_zeilen ) {
 	$lehrer = array();
-	foreach ( $lehrer_zeilen as $z ) { $lehrer[] = mb_strtolower( strtok( $z[0], ' ' ) ); }
+	// Vornamen als Schlüssel vergleichen: sanitize_title() ist UTF-8-fest und
+	// braucht kein mbstring (Ömer -> oemer).
+	foreach ( $lehrer_zeilen as $z ) { $lehrer[] = sanitize_title( strtok( $z[0], ' ' ) ); }
 	$rows = array();
 	foreach ( fahrschule_business_data()['locations'] as $loc ) {
 		$name = trim( (string) $loc['contact'] );
 		if ( '' === $name ) { continue; }
-		$vorname = mb_strtolower( strtok( $name, ' ' ) );
+		$vorname = sanitize_title( strtok( $name, ' ' ) );
 		if ( in_array( $vorname, $lehrer, true ) ) { continue; }
 		$rows[] = array( $name, '', $loc['city'], '', 'Ansprechperson vor Ort', 'Büro & Ansprechpartner' );
 	}
@@ -2255,8 +2257,8 @@ function fs_render_fahrlehrer_finder( $a ) {
 					$foto  = $slug ? fs_media_by_slug( 'edi-team-' . $slug ) : '';
 					$foto2 = $slug ? fs_media_by_slug( 'edi-team-' . $slug . '-b' ) : '';
 					// Fahrlehrerin ergibt sich aus der Rolle - keine eigene Spalte nötig.
-					$weiblich = ( false !== mb_stripos( $rolle, 'lehrerin' ) ) ? '1' : '0';
-					$initialen = mb_strtoupper( mb_substr( trim( $name ), 0, 1 ) );
+					$weiblich = ( false !== stripos( $rolle, 'lehrerin' ) ) ? '1' : '0';   // ASCII-Nadel: byteweise genügt
+					$initialen = preg_match( '/^./u', trim( $name ), $erst ) ? fs_upper( $erst[0] ) : '';
 					?>
 				<article class="fs-teamcard"
 					data-ort="<?php echo esc_attr( $ort ); ?>"

@@ -346,6 +346,21 @@ function fs_flaeche_anwenden( $html, $a ) {
 	return $hint . $out;
 }
 
+/*
+ * Groß-/Kleinschreibung ohne mbstring-Pflicht. WordPress ersetzt ohne die
+ * Erweiterung nur mb_substr() und mb_strlen() (wp-includes/compat.php) -
+ * jede andere mb_-Funktion ließe das Theme auf so einem Hoster abstürzen.
+ * strtolower() allein arbeitet byteweise und lässt Umlaute stehen, deshalb
+ * mbstring bevorzugen, aber nie voraussetzen. Für Schlüssel/Slugs statt
+ * dessen sanitize_title() nehmen.
+ */
+function fs_lower( $s ) {
+	return function_exists( 'mb_strtolower' ) ? mb_strtolower( (string) $s, 'UTF-8' ) : strtolower( (string) $s );
+}
+function fs_upper( $s ) {
+	return function_exists( 'mb_strtoupper' ) ? mb_strtoupper( (string) $s, 'UTF-8' ) : strtoupper( (string) $s );
+}
+
 /** "A, B und C" - Aufzählung für Fließtext. */
 function fs_aufzaehlung( $teile ) {
 	$teile = array_values( array_filter( array_map( 'trim', (array) $teile ), 'strlen' ) );
