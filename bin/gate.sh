@@ -93,13 +93,13 @@ if command -v php >/dev/null 2>&1; then
 fi
 need php "$php_ok" "PHP ≥ 8.0 (CLI)${phpver:+, gefunden $phpver}" "sudo apt install php-cli"
 if [ "$php_ok" -eq 0 ]; then
-	# mbstring: das Theme braucht es nicht (Rückfall, Schritt 2k beweist es).
+	# mbstring: das Theme braucht es nicht (Rückfall, Schritt 2l beweist es).
 	# Gemeldet wird es trotzdem - ein Hoster ohne mbstring ist ein Hinweis wert.
 	if php -r 'exit(extension_loaded("mbstring")?0:1);'; then
 		echo "  ok: PHP-Erweiterung mbstring"
 	else
 		HINWEISE=$((HINWEISE+1))
-		printf '  HINWEIS: PHP-Erweiterung mbstring fehlt – das Theme läuft ohne (Rückfall, Schritt 2k), die Kette auch.\n         nachrüsten: sudo apt install php%s-mbstring\n' "$phpver"
+		printf '  HINWEIS: PHP-Erweiterung mbstring fehlt – das Theme läuft ohne (Rückfall, Schritt 2l), die Kette auch.\n         nachrüsten: sudo apt install php%s-mbstring\n' "$phpver"
 	fi
 	php -r 'exit(function_exists("json_encode")?0:1);' || { echo "  FEHLT: PHP-JSON"; RES[php]=skip; WHY[php]="PHP-JSON fehlt"; }
 fi
@@ -178,11 +178,15 @@ if begin 2e "Struktur: Vorlagen, Startmuster, Hierarchie" php python; then
 	python3 -I "$ROOT/bin/checks/structure.py" "$ROOT"; finish $?
 fi
 
-if begin 2f "Formulare: Contact Form 7 + Begleit-Plugin" php; then
+if begin 2f "Vorlagen tragen nur den Rahmen (Seiteninhalt im Editor bearbeitbar)" python; then
+	python3 -I "$ROOT/bin/checks/vorlagen.py" "$ROOT"; finish $?
+fi
+
+if begin 2g "Formulare: Contact Form 7 + Begleit-Plugin" php; then
 	php "$ROOT/bin/checks/formulare.php" "$THEME" "$PLUGIN"; finish $?
 fi
 
-if begin 2g "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar" php; then
+if begin 2h "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar" php; then
 	out=$(php "$ROOT/bin/checks/emptiable.php" "$THEME" 2>&1); rc=$?
 	if [ "$rc" -eq 0 ]; then
 		echo "$out" | grep -E "^(Textfelder|  ok|Wiederholfelder|LEERBARKEIT)" | sed 's/^/  /'
@@ -194,15 +198,15 @@ if begin 2g "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar" php; t
 	finish "$rc"
 fi
 
-if begin 2h "Seitenanlage: zwei Aktivierungen, Eltern, Vorlage, Inhalt, Startseite" php; then
+if begin 2i "Seitenanlage: zwei Aktivierungen, Eltern, Vorlage, Inhalt, Startseite" php; then
 	php "$ROOT/bin/checks/seitenanlage.php" "$THEME"; finish $?
 fi
 
-if begin 2i "Hero: Video oder Standbild, reduzierte Bewegung, Editor-Vorschau" php; then
+if begin 2j "Hero: Video oder Standbild, reduzierte Bewegung, Editor-Vorschau" php; then
 	php "$ROOT/bin/checks/hero.php" "$THEME"; finish $?
 fi
 
-if begin 2j "Doku: Block- und Seitentabelle aktuell" php; then
+if begin 2k "Doku: Block- und Seitentabelle aktuell" php; then
 	out=$(php "$ROOT/bin/docs-tabellen.php" --pruefen 2>&1); rc=$?
 	echo "$out"
 	[ "$rc" -ne 0 ] && [ -z "$out" ] && echo "  FEHLER: docs-tabellen.php endete mit Code $rc ohne Ausgabe"
@@ -213,7 +217,7 @@ fi
 # Rendern noch einmal, alle mb_-Funktionen abgeschaltet (in PHP 8 existiert
 # eine abgeschaltete Funktion nicht). WordPress ersetzt dann nur mb_substr
 # und mb_strlen - genau das tut der Stub auch.
-if begin 2k "Theme ohne mbstring: alle Seiten rendern mit abgeschalteten mb_-Funktionen" php; then
+if begin 2l "Theme ohne mbstring: alle Seiten rendern mit abgeschalteten mb_-Funktionen" php; then
 	mbf=$(php -r 'echo implode(",", array_filter(get_defined_functions()["internal"], fn($f) => str_starts_with($f, "mb_")));')
 	mkdir -p "$WORK/ohne-mb"
 	out=$(FS_OUT="$WORK/ohne-mb" php -d "disable_functions=${mbf}" "$ROOT/bin/checks/smoke.php" "$THEME" 2>&1); rc=$?

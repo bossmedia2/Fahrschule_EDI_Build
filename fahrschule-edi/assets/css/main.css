@@ -796,6 +796,11 @@ body.fs-cookie-open .fs-tiktok { display: none; }
   padding: 8rem 0 3rem; text-align: center;
 }
 @media (min-width: 768px) { .fs-pagehero { padding: 9.5rem 0 4rem; } }
+/* Seit 3.2 steht der Seitenkopf im Seiteninhalt, die Brotkrumen (Vorlage)
+   davor. Die Brotkrumen halten schon Abstand zur fixierten Leiste - der
+   Seitenkopf braucht ihn dann nicht noch einmal. */
+.fs-crumbs + .wp-block-post-content > .fs-pagehero:first-child { padding-top: 3rem; }
+@media (min-width: 768px) { .fs-crumbs + .wp-block-post-content > .fs-pagehero:first-child { padding-top: 4rem; } }
 .fs-pagehero h1 {
   font-size: clamp(2.1rem, 5.5vw, 3.4rem); font-weight: 800;
   color: var(--c-heading); margin: .5rem 0 0;

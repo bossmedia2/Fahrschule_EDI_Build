@@ -62,7 +62,7 @@ function render_block($b){ $n=$b['blockName']; if(!isset($GLOBALS['__blocks'][$n
 function current_user_can($c){return !empty($GLOBALS['__can']);} function delete_option($k){unset($GLOBALS['__options'][$k]);return true;} function is_user_logged_in(){return false;}
 function has_site_icon(){return false;}
 function wp_nonce_field($a='',$n='_wpnonce',$r=true,$e=true){ $h='<input type="hidden" name="'.$n.'" value="stub">'; if($e) echo $h; return $h; }
-function wp_verify_nonce($n,$a){return 1;} function wp_create_nonce($a=''){return 'stub';}
+function wp_verify_nonce($n,$a){return $n==='stub'?1:false;} function wp_slash($s){return $s;} function _n($a,$b,$n,$d=null){return $n==1?$a:$b;} function wp_create_nonce($a=''){return 'stub';}
 function wp_safe_redirect($u,$s=302){return true;} function wp_mail(){return true;}
 function wp_remote_post($u,$a=[]){return ['response'=>['code'=>200],'body'=>''];}
 function is_wp_error($t){return false;}
@@ -129,6 +129,10 @@ function get_search_query(){return '';}
 function get_header(){} function get_footer(){}
 /* Seiten-Datenbank für bin/checks/seitenanlage.php: aus, solange __db_on
    nicht gesetzt ist - dann verhalten sich beide Funktionen wie bisher. */
+function fs_stub_db_post($id){ foreach(($GLOBALS['__db_pages']??[]) as $p) if($p->ID===(int)$id) return $p; return null; }
+function get_post($p=null){ return $p instanceof WP_Post ? $p : fs_stub_db_post($p); }
+function get_page_uri($p){ $p=get_post($p); foreach(($GLOBALS['__db_pages']??[]) as $path=>$q) if($q===$p) return $path; return ''; }
+function wp_update_post($a,$e=false){ $p=fs_stub_db_post($a['ID']??0); if(!$p) return 0; foreach($a as $k=>$v) if($k!=='ID') $p->$k=($k==='post_content'?wp_unslash($v):$v); $GLOBALS['__db_updates'][]=$a['ID']; return $a['ID']; }
 function get_page_by_path($p,$o='OBJECT',$t='page'){ return $GLOBALS['__db_pages'][trim((string)$p,'/')] ?? null; }
 function get_queried_object(){return $GLOBALS['__queried']??null;} function get_queried_object_id(){ $q=$GLOBALS['__queried']??null; return $q?$q->ID:0; }
 function get_term_link($t){return home_url('/term/');} function term_description($t=0){return '';}

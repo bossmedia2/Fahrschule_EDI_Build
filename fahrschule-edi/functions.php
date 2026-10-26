@@ -20,6 +20,7 @@ require_once FAHRSCHULE_DIR . '/inc/helpers.php';
 require_once FAHRSCHULE_DIR . '/inc/pdf-texts.php';   // Kundentexte (PDF) – einzige Quelle für Blöcke + Editor-Defaults
 require_once FAHRSCHULE_DIR . '/inc/media.php';
 require_once FAHRSCHULE_DIR . '/inc/pages.php';
+require_once FAHRSCHULE_DIR . '/inc/neu-aufbauen.php';   // Seite ausdrücklich aus Startmuster neu aufbauen
 require_once FAHRSCHULE_DIR . '/inc/render-callbacks.php';
 require_once FAHRSCHULE_DIR . '/inc/blocks-config.php';
 require_once FAHRSCHULE_DIR . '/inc/seo.php';

@@ -124,12 +124,13 @@ define("FAHRSCHULE_DIR",$argv[1]); define("FAHRSCHULE_URI","/u"); define("FAHRSC
 foreach(["helpers","pdf-texts","media","pages","seo","render-callbacks","blocks-config"] as $f) require $argv[1]."/inc/".$f.".php";
 $out=["pat"=>[],"folge"=>[]];
 foreach(glob($argv[1]."/patterns/*.php") as $p){ ob_start(); include $p; $out["pat"][basename($p)]=["src"=>file_get_contents($p),"html"=>ob_get_clean()]; }
-// Flächenfolge je Startmuster: Vorlage davor + Muster + Vorlage danach.
+// Flächenfolge je Startmuster (Seitenrahmen der Vorlage + Muster).
 $cfg=fahrschule_blocks_config();
 foreach(fahrschule_startmuster() as $k=>$m){
-  list($vor,$nach)=fahrschule_vorlage_flaechen($m[1],$cfg); $mitte=[];
-  foreach(fahrschule_rhythmus($m[3],$m[1]) as $b){ $f=fahrschule_block_flaeche($b[0],$b[1]??[],$cfg); if($f!=="") $mitte[]=$f; }
-  $out["folge"][$k]=array_merge($vor,$mitte,$nach);
+  // Seit 3.2 steht der Seitenrahmen mit im Muster: die Folge ist die des Markups.
+  preg_match_all('#<!--\s+wp:([a-z0-9-]+/[a-z0-9-]+)(?:\s+(\{.*?\}))?\s+/?-->#', fahrschule_startmuster_markup($k), $mm, PREG_SET_ORDER);
+  $folge=[]; foreach($mm as $b){ $f=fahrschule_block_flaeche($b[1], isset($b[2])?(array)json_decode($b[2],true):[], $cfg); if($f!=="") $folge[]=$f; }
+  $out["folge"][$k]=$folge;
 }
 echo json_encode($out);
 '''
@@ -171,9 +172,9 @@ else:
         if 'VVV' in s_:
             bad.append(f"{k}: {s_}")
     if bad:
-        fail("Startmuster mit dreimal Vollpink (mit Vorlage): " + "; ".join(bad))
+        fail("Startmuster mit dreimal Vollpink (samt Seitenrahmen): " + "; ".join(bad))
     else:
-        ok("Startmuster im Rhythmus, mit Vorlage: " + " · ".join(f"{k} {''.join(kurz[x] for x in v)}" for k, v in data['folge'].items()))
+        ok("Startmuster im Rhythmus, samt Seitenrahmen: " + " · ".join(f"{k} {''.join(kurz[x] for x in v)}" for k, v in data['folge'].items()))
 
 # --- 4) Hierarchie --------------------------------------------------------
 php = r'''

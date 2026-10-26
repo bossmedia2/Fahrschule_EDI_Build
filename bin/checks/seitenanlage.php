@@ -18,7 +18,7 @@ $GLOBALS['__theme']  = $argv[1] ?? dirname( __DIR__, 2 ) . '/fahrschule-edi';
 $GLOBALS['__blocks'] = array();
 require __DIR__ . '/wp-stub.php';
 define( 'FAHRSCHULE_DIR', $GLOBALS['__theme'] ); define( 'FAHRSCHULE_URI', '/u' ); define( 'FAHRSCHULE_VERSION', '1' );
-foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'blocks-config' ) as $f ) { require $GLOBALS['__theme'] . '/inc/' . $f . '.php'; }
+foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'blocks-config', 'neu-aufbauen' ) as $f ) { require $GLOBALS['__theme'] . '/inc/' . $f . '.php'; }
 
 $fails = array();
 function fail( $m ) { global $fails; $fails[] = $m; echo "  FEHLER: $m\n"; }
@@ -88,6 +88,42 @@ if ( $GLOBALS['__db_inserts'] || serialize( $GLOBALS['__db_pages'] ) !== $vorher
 } else {
 	ok( 'zweite Aktivierung: nichts angelegt, nichts geändert, kein Hinweis' );
 }
+
+// --- Seitenrahmen im Inhalt (seit 3.2) ---------------------------------------
+// Was früher die Vorlage brachte, steht jetzt im post_content jeder Seite.
+$bad = array();
+foreach ( $map as $key => $p ) {
+	$path = fahrschule_page_path( $key );
+	$post = $GLOBALS['__db_pages'][ '' === $path ? 'startseite' : $path ];
+	list( $vor, $nach ) = fahrschule_vorlage_rahmen( $p['template'] ?? 'page' );
+	$eigener_hero = ! empty( $p['blocks'] ) && in_array( $p['blocks'][0][0], array( 'fahrschule/video-hero', 'fahrschule/hero', 'fahrschule/location-hero', 'fahrschule/testimonials-hero' ), true );
+	foreach ( array_merge( $eigener_hero ? array() : $vor, $nach ) as $b ) {
+		if ( false === strpos( $post->post_content, '<!-- wp:' . $b[0] ) ) { $bad[] = "$key: {$b[0]} fehlt im Inhalt"; }
+	}
+	if ( $eigener_hero && false !== strpos( $post->post_content, 'wp:fahrschule/page-hero' ) ) { $bad[] = "$key: Seitenkopf trotz eigenem Hero"; }
+}
+$bad ? array_map( 'fail', $bad ) : ok( 'Seitenkopf, Handlungsaufruf & Co. stehen im Inhalt jeder Seite (nicht in der Vorlage); Seiten mit eigenem Hero ohne Seitenkopf' );
+
+// --- „Aus Startmuster neu aufbauen“: nur auf ausdrückliche Bestätigung -------
+$ziel = $GLOBALS['__db_pages']['pkw/klasse-b'];
+$soll = fahrschule_page_content( 'klasse-b' );
+$ziel->post_content = '<!-- wp:paragraph --><p>Redaktioneller Stand</p><!-- /wp:paragraph -->';
+$ids = (string) $ziel->ID;
+ob_start(); $_GET['ids'] = $ids; fahrschule_neuaufbau_bestaetigung(); $seite = ob_get_clean();
+$e = array();
+if ( false === strpos( $seite, 'Achtung' ) || false === strpos( $seite, 'Revision' ) ) { $e[] = 'Bestätigungsseite warnt nicht'; }
+if ( 'Redaktioneller Stand' !== strip_tags( $ziel->post_content ) ) { $e[] = 'schon das Anzeigen der Bestätigung hat ersetzt'; }
+if ( 0 !== fahrschule_neuaufbau_ausfuehren( array( 'ids' => $ids, '_wpnonce' => 'stub' ) ) || false === strpos( $ziel->post_content, 'Redaktioneller Stand' ) ) { $e[] = 'ohne Bestätigung ersetzt'; }
+if ( 0 !== fahrschule_neuaufbau_ausfuehren( array( 'ids' => $ids, 'bestaetigt' => '1', '_wpnonce' => 'falsch' ) ) || false === strpos( $ziel->post_content, 'Redaktioneller Stand' ) ) { $e[] = 'mit ungültiger Nonce ersetzt'; }
+$GLOBALS['__can'] = false;
+if ( 0 !== fahrschule_neuaufbau_ausfuehren( array( 'ids' => $ids, 'bestaetigt' => '1', '_wpnonce' => 'stub' ) ) ) { $e[] = 'ohne Berechtigung ersetzt'; }
+$GLOBALS['__can'] = true;
+if ( 1 !== fahrschule_neuaufbau_ausfuehren( array( 'ids' => $ids, 'bestaetigt' => '1', '_wpnonce' => 'stub' ) ) || $ziel->post_content !== $soll ) { $e[] = 'mit Bestätigung nicht auf den Ausgangsinhalt ersetzt'; }
+// Eine Seite außerhalb der Registry: Startmuster ihrer Vorlage.
+$frei = new WP_Post( array( 'ID' => 4242, 'post_type' => 'page', 'post_name' => 'fragen-lkw', 'post_title' => 'Fragen LKW', 'post_content' => 'alt' ) );
+$GLOBALS['__db_pages']['fragen-lkw'] = $frei; $GLOBALS['__meta'][4242]['_wp_page_template'] = 'page-faq';
+if ( fahrschule_neuaufbau_inhalt( $frei ) !== fahrschule_startmuster_markup( 'faq' ) ) { $e[] = 'freie Seite bekommt nicht das Startmuster ihrer Vorlage'; }
+$e ? array_map( 'fail', array_map( fn( $x ) => "Neu aufbauen: $x", $e ) ) : ok( 'Neu aufbauen: Bestätigung warnt und ändert nichts; ersetzt nur mit Bestätigung, gültiger Nonce und Berechtigung - Registry-Seite aus ihrem Stapel, freie Seite aus dem Startmuster ihrer Vorlage' );
 
 echo "\n";
 if ( $fails ) { echo 'SEITENANLAGE: ' . count( $fails ) . " Fehler\n"; exit( 1 ); }
