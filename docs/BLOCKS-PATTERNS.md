@@ -154,9 +154,9 @@ URL, Vorlage und der Inhalt, den die Seitenanlage schreibt.
 | Berufskraftfahrer | `/berufskraftfahrer/` | `page-beruf` | professional-drivers |
 | Fahrlehrerausbildung | `/fahrlehrerausbildung/` | `page-beruf` | instructor-training |
 | ASF & FES | `/asf-fes/` | `page-beruf` | seminars |
-| PKW | `/pkw/` | `page-bereich` | – (alles aus der Vorlage) |
-| Motorrad | `/motorrad/` | `page-bereich` | – (alles aus der Vorlage) |
-| LKW & Bus | `/lkw-bus/` | `page-bereich` | – (alles aus der Vorlage) |
+| PKW | `/pkw/` | `page-bereich` | Startmuster „Bereichsseite“: services |
+| Motorrad | `/motorrad/` | `page-bereich` | Startmuster „Bereichsseite“: services |
+| LKW & Bus | `/lkw-bus/` | `page-bereich` | Startmuster „Bereichsseite“: services |
 | Klasse BF17 | `/pkw/klasse-bf17/` | `page-kurs` | kurs-details |
 | Klasse B | `/pkw/klasse-b/` | `page-kurs` | kurs-details |
 | Klasse B197 | `/pkw/klasse-b197/` | `page-kurs` | kurs-details |

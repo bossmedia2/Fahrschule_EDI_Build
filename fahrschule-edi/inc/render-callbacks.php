@@ -2428,17 +2428,19 @@ function fs_render_fehlerseite( $a ) {
 			<?php echo fs_wrap( 'div', fs_el( 'span', $d['eyebrow'], 'class="fs-eyebrow"' )
 				. fs_el( 'h1', '', '', fs_highlight( $d['heading'], $d['highlight'] ) )
 				. fs_el( 'p', $d['text'] ), 'class="fs-head"' ); ?>
+			<?php /* Reihenfolge: Meldung, Suche, Wege zurück - wer sich vertippt
+			         hat, sucht zuerst; keine Stellenangebote o. Ä. auf der 404. */ ?>
+			<?php if ( '1' === (string) $d['suche'] ) : ?>
+			<div class="fs-center fs-mt-8"><?php echo get_search_form( array( 'echo' => false ) ); ?></div>
+			<?php endif; ?>
 			<?php if ( $links ) : ?>
-			<div class="fs-features">
+			<div class="fs-features fs-mt-8">
 				<?php foreach ( $links as $l ) : if ( '' === trim( $l[0] ) ) { continue; } ?>
 				<a class="fs-feature" href="<?php echo esc_url( fs_link( $l[1] ) ); ?>">
 					<?php echo fs_icon( $l[2] ? $l[2] : 'arrow-right', 22 ); ?><span><?php echo esc_html( $l[0] ); ?></span>
 				</a>
 				<?php endforeach; ?>
 			</div>
-			<?php endif; ?>
-			<?php if ( '1' === (string) $d['suche'] ) : ?>
-			<div class="fs-center fs-mt-8"><?php echo get_search_form( array( 'echo' => false ) ); ?></div>
 			<?php endif; ?>
 		</div>
 	</section>

@@ -121,21 +121,21 @@
   "customTemplates": [
     {
       "name": "page-uebersicht",
-      "title": "Übersicht / Landingpage",
+      "title": "Übersichtsseite",
       "postTypes": [
         "page"
       ]
     },
     {
       "name": "page-bereich",
-      "title": "Bereich (mit Klassen-Kacheln)",
+      "title": "Bereichsseite",
       "postTypes": [
         "page"
       ]
     },
     {
       "name": "page-kurs",
-      "title": "Kurs / Führerscheinklasse",
+      "title": "Kursseite (Führerscheinklasse)",
       "postTypes": [
         "page"
       ]
@@ -149,21 +149,21 @@
     },
     {
       "name": "page-standort",
-      "title": "Standort",
+      "title": "Standortseite",
       "postTypes": [
         "page"
       ]
     },
     {
       "name": "page-team",
-      "title": "Team",
+      "title": "Teamseite",
       "postTypes": [
         "page"
       ]
     },
     {
       "name": "page-kontakt",
-      "title": "Kontakt / Anmeldung",
+      "title": "Kontakt & Anmeldung",
       "postTypes": [
         "page"
       ]
@@ -184,7 +184,7 @@
     },
     {
       "name": "page-recht",
-      "title": "Rechtliches (Impressum, Datenschutz)",
+      "title": "Rechtstext",
       "postTypes": [
         "page"
       ]

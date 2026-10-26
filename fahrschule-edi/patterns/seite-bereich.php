@@ -1,12 +1,13 @@
 <?php
 /**
- * Title: Bereichsseite (Klassen-Übersicht)
+ * Title: Bereichsseite
  * Slug: fahrschule-edi/seite-bereich
- * Categories: fahrschule
+ * Categories: fahrschule-seiten
  * Block Types: core/post-content
  * Post Types: page
- * Description: Inhalt einer Bereichsseite (PKW, Motorrad …). Klassen-Kacheln und Handlungsaufruf liefert die Vorlage „Bereich“.
+ * Description: Inhalt einer Bereichsseite (PKW, Motorrad …). Klassen-Kacheln und Handlungsaufruf liefert die Vorlage. Passende Vorlage: „Bereichsseite“.
  */
-?>
-<!-- wp:fahrschule/services {"eyebrow":"Leistungen","heading":"Was Sie bei uns erwartet"} /-->
 
+// Inhalt aus fahrschule_startmuster() (inc/pages.php) - dieselbe Quelle wie die
+// Seitenanlage. Flächen im Rhythmus Vollpink, Vollpink, Hellpink.
+echo fahrschule_startmuster_markup( 'bereich' );

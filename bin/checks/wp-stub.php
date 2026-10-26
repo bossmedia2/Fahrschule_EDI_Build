@@ -59,7 +59,7 @@ function render_block($b){ $n=$b['blockName']; if(!isset($GLOBALS['__blocks'][$n
   $cb=$GLOBALS['__blocks'][$n]['render_callback']; $attrs=$b['attrs'];
   $defaults=[]; foreach(($GLOBALS['__blocks'][$n]['attributes']??[]) as $k=>$d){ $defaults[$k]=$d['default']; }
   return (string)call_user_func($cb, array_merge($defaults,$attrs)); }
-function current_user_can($c){return false;} function is_user_logged_in(){return false;}
+function current_user_can($c){return !empty($GLOBALS['__can']);} function delete_option($k){unset($GLOBALS['__options'][$k]);return true;} function is_user_logged_in(){return false;}
 function has_site_icon(){return false;}
 function wp_nonce_field($a='',$n='_wpnonce',$r=true,$e=true){ $h='<input type="hidden" name="'.$n.'" value="stub">'; if($e) echo $h; return $h; }
 function wp_verify_nonce($n,$a){return 1;} function wp_create_nonce($a=''){return 'stub';}
@@ -112,7 +112,7 @@ function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($
    aktiver Menuepunkt, "Stub-Titel" im Seitenkopf. Genau so blieb der
    unsichtbare aktive Flyout-Eintrag (Oktober 2026) dem Gate verborgen.
    fs_stub_set_page() setzt den Kontext, den WordPress fuer eine Seite haette. */
-if(!class_exists('WP_Post')){ class WP_Post { public $ID=0; public $post_name=''; public $post_title=''; public $post_type='page'; public $post_content='';
+if(!class_exists('WP_Post')){ class WP_Post { public $ID=0; public $post_parent=0; public $post_name=''; public $post_title=''; public $post_type='page'; public $post_content='';
   public function __construct($a=[]){ foreach($a as $k=>$v) $this->$k=$v; } } }
 function fs_stub_set_page($slug,$title,$front=false,$content=''){
   $GLOBALS['__is_front']=$front;
@@ -127,12 +127,22 @@ function get_search_form($e=true){$h='<form role="search" method="get" class="se
 function get_post_ancestors($p){ return []; }
 function get_search_query(){return '';}
 function get_header(){} function get_footer(){}
-function get_page_by_path($p,$o='OBJECT',$t='page'){return null;}
+/* Seiten-Datenbank für bin/checks/seitenanlage.php: aus, solange __db_on
+   nicht gesetzt ist - dann verhalten sich beide Funktionen wie bisher. */
+function get_page_by_path($p,$o='OBJECT',$t='page'){ return $GLOBALS['__db_pages'][trim((string)$p,'/')] ?? null; }
 function get_queried_object(){return $GLOBALS['__queried']??null;} function get_queried_object_id(){ $q=$GLOBALS['__queried']??null; return $q?$q->ID:0; }
 function get_term_link($t){return home_url('/term/');} function term_description($t=0){return '';}
 function get_previous_posts_page_link(){return home_url('/');}
 function wp_get_document_title(){return 'Fahrschule edi';}
-function wp_insert_post($a,$e=false){return 1;}
+function wp_insert_post($a,$e=false){
+  if(empty($GLOBALS['__db_on'])) return 1;
+  $id=1000+count($GLOBALS['__db_pages']??[])+1; $path=$a['post_name'];
+  if(!empty($a['post_parent'])) foreach($GLOBALS['__db_pages'] as $pp=>$po) if($po->ID===$a['post_parent']) $path=$pp.'/'.$a['post_name'];
+  $post=new WP_Post(['ID'=>$id,'post_name'=>$a['post_name'],'post_title'=>$a['post_title'],'post_content'=>$a['post_content']??'','post_parent'=>$a['post_parent']??0]);
+  $GLOBALS['__db_pages'][$path]=$post;
+  foreach(($a['meta_input']??[]) as $k=>$v) $GLOBALS['__meta'][$id][$k]=$v;
+  $GLOBALS['__db_inserts'][]=$path;
+  return $id; }
 function strip_shortcodes($s){return $s;} function excerpt_remove_blocks($s){return $s;}
 function is_front_page(){return (bool)($GLOBALS['__is_front']??false);} function is_home(){return false;}
 function is_singular($t=''){ $q=$GLOBALS['__queried']??null; if(!$q) return false; return $t==='' || $t===$q->post_type || (is_array($t)&&in_array($q->post_type,$t,true)); } function is_404(){return false;} function is_search(){return false;}

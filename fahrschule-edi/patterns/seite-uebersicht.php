@@ -1,14 +1,13 @@
 <?php
 /**
- * Title: Übersichtsseite / Landingpage
+ * Title: Übersichtsseite
  * Slug: fahrschule-edi/seite-uebersicht
- * Categories: fahrschule
+ * Categories: fahrschule-seiten
  * Block Types: core/post-content
  * Post Types: page
- * Description: Einstiegsseite mit Teasern in die Unterthemen und Leistungen. Den Abschluss-Banner liefert die Vorlage „Übersicht“.
+ * Description: Einstieg mit Kacheln in die Unterthemen, Leistungen und Bewertungen. Den Abschluss liefert die Vorlage. Passende Vorlage: „Übersichtsseite“.
  */
-?>
-<!-- wp:fahrschule/page-teasers {"eyebrow":"Überblick","heading":"Unsere Bereiche"} /-->
-<!-- wp:fahrschule/services {"eyebrow":"Leistungen","heading":"Was uns ausmacht"} /-->
-<!-- wp:fahrschule/testimonials /-->
 
+// Inhalt aus fahrschule_startmuster() (inc/pages.php) - dieselbe Quelle wie die
+// Seitenanlage. Flächen im Rhythmus Vollpink, Vollpink, Hellpink.
+echo fahrschule_startmuster_markup( 'uebersicht' );

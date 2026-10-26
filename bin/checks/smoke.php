@@ -79,6 +79,14 @@ foreach(['_404'=>'404','_suche'=>'search','_archiv'=>'archive','_beitrag'=>'sing
   foreach(array_unique($errs) as $e) echo "      -> $e\n";
   $pages[$key]=$html;
 }
+/* ---- 404: Meldung, dann Suche, dann Wege zurück - keine Stellen ---- */
+$h=$pages['_404']; $m=substr($h,(int)strpos($h,'<main'));
+$p1=strpos($m,'<h1'); $p2=strpos($m,'role="search"'); $p3=strpos($m,'class="fs-feature"');
+$e404=[];
+if($p1===false||$p2===false||$p3===false) $e404[]='Meldung, Suche oder Wege zurück fehlen';
+elseif(!($p1<$p2 && $p2<$p3)) $e404[]='Reihenfolge nicht Meldung -> Suche -> Wege zurück';
+if(preg_match('#fs-jobs|Offene Stellen|job_listing#',$m)) $e404[]='Stellenangebote auf der 404';
+echo "404: ".($e404?'!! '.implode(' | ',$e404):'ok: Meldung, Suche, Wege zurück - keine Stellenangebote')."\n";
 /* ---- Social-Feed: Prüfseite mit gemischten Kacheln ----
  * Bilder sind Theme-Dateien, damit sie ohne Mediathek auflösen. Neun Zeilen:
  * eine ohne Bild, eine ohne Beschreibung -> sieben Kacheln. */
@@ -121,6 +129,20 @@ file_put_contents($FS_OUT.'/pages.json', json_encode($pages));
 // Erwartete URL je Seite - die Browserprüfung vergleicht damit aria-current.
 $urls=[]; foreach($map as $key=>$pg){ $urls[$key]=fs_url($key); }
 file_put_contents($FS_OUT.'/urls.json', json_encode($urls));
+/* ---- Keine toten internen Links: jedes href auf die eigene Domain (oder /…)
+ * zeigt auf eine Registry-Seite, die Startseite, eine Stelle oder ein Asset. */
+$home=rtrim(home_url('/'),'/'); $known=array_flip($urls); $tot=[];
+foreach($pages as $key=>$h){
+  preg_match_all('#href="([^"]*)"#',$h,$hm);
+  foreach($hm[1] as $href){
+    $href=html_entity_decode(preg_replace('/[#?].*$/','',$href));
+    if($href===''||!(str_starts_with($href,$home)||str_starts_with($href,'/'))) continue;
+    $abs=str_starts_with($href,'/')?$home.$href:$href;
+    if(isset($known[$abs])||$abs===$home.'/'||preg_match('#/(job|wp-content|wp-admin|wp-json)/|\.(css|js|webp|jpg|png|svg|pdf)$#',$abs)) continue;
+    $tot[$abs][]=$key;
+  }
+}
+echo "Links: ".($tot?'!! tote interne Links: '.implode('; ',array_map(fn($u,$k)=>"$u (".implode(',',array_unique($k)).")",array_keys($tot),$tot)):'ok: alle internen Links zeigen auf vorhandene Seiten')."\n";
 echo "\nSEO smoke: ";
 $errs=[];
 if(function_exists('fahrschule_business_data')){ $bd=fahrschule_business_data(); echo count($bd)." business records; "; }

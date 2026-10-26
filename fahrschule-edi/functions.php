@@ -164,6 +164,8 @@ function fahrschule_register_blocks_and_patterns() {
 	// Pattern-Kategorie einmalig anlegen.
 	if ( function_exists( 'register_block_pattern_category' ) ) {
 		register_block_pattern_category( 'fahrschule', array( 'label' => __( 'Fahrschule edi', 'fahrschule-edi' ) ) );
+		// Startmuster für neue Seiten (patterns/seite-*.php) - eigene Kategorie.
+		register_block_pattern_category( 'fahrschule-seiten', array( 'label' => __( 'Fahrschule edi – Seiten', 'fahrschule-edi' ) ) );
 	}
 
 	$config = fahrschule_blocks_config();

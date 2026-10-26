@@ -42,8 +42,12 @@ $bloecke = implode( "\n", $z );
 $z = array( '| Seite | URL | Vorlage | Seiteninhalt (bei Anlage geschrieben) |', '|---|---|---|---|' );
 foreach ( fahrschule_page_map() as $key => $pg ) {
 	$path = fahrschule_page_path( $key );
+	$tpl  = $pg['template'] ?? 'page';
 	$inh  = array_map( function ( $b ) { return substr( $b[0], 11 ); }, $pg['blocks'] ?? array() );
-	$z[]  = '| ' . $cell( $pg['menu'] ) . ' | `/' . $path . ( $path ? '/' : '' ) . '` | `' . ( $pg['template'] ?? 'page' ) . '` | ' . $cell( $inh ? implode( ', ', $inh ) : '– (alles aus der Vorlage)' ) . ' |';
+	if ( ! $inh && '' !== ( $sm = fahrschule_startmuster_fuer( $tpl ) ) ) {
+		$inh = array( 'Startmuster „' . fahrschule_startmuster()[ $sm ][0] . '“: ' . implode( ', ', array_map( function ( $b ) { return substr( $b[0], 11 ); }, fahrschule_startmuster()[ $sm ][3] ) ) );
+	}
+	$z[]  = '| ' . $cell( $pg['menu'] ) . ' | `/' . $path . ( $path ? '/' : '' ) . '` | `' . $tpl . '` | ' . $cell( $inh ? implode( ', ', $inh ) : '– (alles aus der Vorlage)' ) . ' |';
 }
 $seiten = implode( "\n", $z );
 

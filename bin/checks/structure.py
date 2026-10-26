@@ -56,6 +56,17 @@ for n in pfiles:
     if n not in parts_decl: fail(f"parts/{n}.html fehlt in theme.json templateParts")
 if is_block and tfiles:
     ok(f"{len(tfiles)} Vorlagen, {len(custom)} davon auswählbar, {len(pfiles)} Parts - alle in theme.json")
+# Titel der auswählbaren Vorlagen wie im Briefing (Überarbeitung, Oktober 2026).
+TITEL = {'page-uebersicht': 'Übersichtsseite', 'page-bereich': 'Bereichsseite',
+         'page-kurs': 'Kursseite (Führerscheinklasse)', 'page-beruf': 'Beruf & Weiterbildung',
+         'page-standort': 'Standortseite', 'page-team': 'Teamseite', 'page-theorie': 'Theorieunterricht',
+         'page-faq': 'FAQ', 'page-kontakt': 'Kontakt & Anmeldung', 'page-recht': 'Rechtstext'}
+falsch = [f"{n}: „{custom[n]['title']}“ statt „{t}“" for n, t in TITEL.items() if n in custom and custom[n]['title'] != t]
+fehlt = [n for n in TITEL if n not in custom]
+if falsch or fehlt or len(custom) != 10:
+    fail(f"auswählbare Vorlagen: {len(custom)} statt 10; fehlend {fehlt}; Titel {falsch}")
+else:
+    ok("10 auswählbare Vorlagen mit den Titeln des Briefings")
 
 # --- 2) Registrierte Blöcke einsammeln (aus der Konfiguration) ------------
 cfg = rd(os.path.join(theme, 'inc/blocks-config.php'))
@@ -103,24 +114,44 @@ if files:
             ok(f"{len(files)} Vorlagen/Parts parsen, alle Blöcke registriert, Header und Footer je genau einmal")
 
 # --- 3) Start-Patterns ----------------------------------------------------
+# Die Muster sind PHP (Inhalt aus fahrschule_startmuster()) - geprüft wird,
+# was WordPress beim Einbinden der Datei tatsächlich ausgibt.
 pdir = os.path.join(theme, 'patterns')
-if not os.path.isdir(pdir):
-    fail("kein patterns/-Verzeichnis - der Muster-Dialog beim Seitenanlegen bleibt leer")
+php_pat = r'''
+$GLOBALS["__theme"]=$argv[1]; $GLOBALS["__blocks"]=[];
+require $argv[2]."/wp-stub.php";
+define("FAHRSCHULE_DIR",$argv[1]); define("FAHRSCHULE_URI","/u"); define("FAHRSCHULE_VERSION","1");
+foreach(["helpers","pdf-texts","media","pages","seo","render-callbacks","blocks-config"] as $f) require $argv[1]."/inc/".$f.".php";
+$out=["pat"=>[],"folge"=>[]];
+foreach(glob($argv[1]."/patterns/*.php") as $p){ ob_start(); include $p; $out["pat"][basename($p)]=["src"=>file_get_contents($p),"html"=>ob_get_clean()]; }
+// Flächenfolge je Startmuster: Vorlage davor + Muster + Vorlage danach.
+$cfg=fahrschule_blocks_config();
+foreach(fahrschule_startmuster() as $k=>$m){
+  list($vor,$nach)=fahrschule_vorlage_flaechen($m[1],$cfg); $mitte=[];
+  foreach(fahrschule_rhythmus($m[3],$m[1]) as $b){ $f=fahrschule_block_flaeche($b[0],$b[1]??[],$cfg); if($f!=="") $mitte[]=$f; }
+  $out["folge"][$k]=array_merge($vor,$mitte,$nach);
+}
+echo json_encode($out);
+'''
+res = subprocess.run(['php', '-r', php_pat, theme, os.path.join(root, 'bin/checks')], capture_output=True, text=True)
+if res.returncode != 0 or not res.stdout.startswith('{'):
+    fail("Patterns nicht ladbar: " + (res.stderr or res.stdout).strip()[:300])
 else:
-    pats = [f for f in sorted(os.listdir(pdir)) if f.endswith('.php')]
-    if not pats:
-        fail("patterns/ ist leer")
+    data = json.loads(res.stdout)
+    pats = data['pat']
     starters = 0
-    for f in pats:
-        src = rd(os.path.join(pdir, f))
-        head = src[:900]
-        for key in ('Title:', 'Slug:'):
+    for f, p in sorted(pats.items()):
+        head = p['src'][:900]
+        for key in ('Title:', 'Slug:', 'Categories:'):
             if key not in head:
                 fail(f"patterns/{f}: Kopfzeile '{key}' fehlt")
-        if 'Block Types:' in head and 'core/post-content' in head:
+        if 'Block Types:' in head and 'core/post-content' in head and 'Post Types: page' in head:
             starters += 1
-        # Block-Markup prüfen: Name bekannt, Attribut-JSON gültig
-        for m in re.finditer(r'<!--\s*wp:([a-z0-9-]+/[a-z0-9-]+)(\s+(\{.*?\}))?\s*/?-->', src, re.S):
+        if 'fahrschule-seiten' not in head:
+            fail(f"patterns/{f}: nicht in der Kategorie fahrschule-seiten")
+        if '<!-- wp:' not in p['html']:
+            fail(f"patterns/{f}: gibt kein Block-Markup aus")
+        for m in re.finditer(r'<!--\s*wp:([a-z0-9-]+/[a-z0-9-]+)(\s+(\{.*?\}))?\s*/?-->', p['html'], re.S):
             name, attrs = m.group(1), m.group(3)
             if name.startswith('fahrschule/') and name not in known:
                 fail(f"patterns/{f}: Block {name} ist nicht registriert")
@@ -129,11 +160,20 @@ else:
                     json.loads(attrs)
                 except Exception as e:
                     fail(f"patterns/{f}: Attribut-JSON von {name} ist ungültig ({e})")
-    if starters == 0:
-        fail("kein Pattern mit 'Block Types: core/post-content' - WordPress zeigt beim "
-             "Anlegen einer Seite dann keinen Muster-Dialog")
+    if starters != 11 or len(pats) != 11:
+        fail(f"{len(pats)} Patterns, {starters} als Startmuster - erwartet 11 (eins je Vorlage plus Landingpage)")
     else:
-        ok(f"{len(pats)} Patterns, davon {starters} als Startmuster für neue Seiten")
+        ok("11 Startmuster für neue Seiten (eins je auswählbarer Vorlage plus Landingpage), Kategorie fahrschule-seiten")
+    kurz = {'vollpink': 'V', 'hellpink': 'H', 'leiste': 'L', 'foto': 'F'}
+    bad = []
+    for k, seq in data['folge'].items():
+        s_ = ''.join(kurz[x] for x in seq)
+        if 'VVV' in s_:
+            bad.append(f"{k}: {s_}")
+    if bad:
+        fail("Startmuster mit dreimal Vollpink (mit Vorlage): " + "; ".join(bad))
+    else:
+        ok("Startmuster im Rhythmus, mit Vorlage: " + " · ".join(f"{k} {''.join(kurz[x] for x in v)}" for k, v in data['folge'].items()))
 
 # --- 4) Hierarchie --------------------------------------------------------
 php = r'''

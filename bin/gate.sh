@@ -72,7 +72,7 @@ done_step "$rc"
 
 step 2b "Smoke-Test: alle Blöcke und Seiten rendern"
 smoke=$(php "$ROOT/bin/checks/smoke.php" "$THEME" 2>&1); rc=$?
-echo "$smoke" | grep -E "^TOTAL|FATAL|EMPTY|notice/warning|^Galerie|^Social|^Hero|^Seitenanlage|^404|!! " | sed 's/^/  /'
+echo "$smoke" | grep -E "^TOTAL|FATAL|EMPTY|notice/warning|^Galerie|^Social|^Hero|^Links|^404|!! " | sed 's/^/  /'
 echo "$smoke" | grep -qE "FATAL|!! " && rc=1
 pages_ok=$(echo "$smoke" | grep -cE "^[a-z0-9-]+ +/.* OK$")
 echo "  ok: $pages_ok Seiten vollständig gerendert"
@@ -94,22 +94,21 @@ step 2g "Editierbarkeit: Felder leerbar, Wiederholfelder bearbeitbar"
 php "$ROOT/bin/checks/emptiable.php" "$THEME" 2>&1 | grep -E "^(Textfelder|  ok|  FEHLER|Wiederholfelder|LEERBARKEIT)" | sed 's/^/  /'
 done_step "${PIPESTATUS[0]}"
 
-step 2h "Doku: Block- und Seitentabelle aktuell"
+step 2h "Seitenanlage: zwei Aktivierungen, Eltern, Vorlage, Inhalt, Startseite"
+php "$ROOT/bin/checks/seitenanlage.php" "$THEME"; done_step $?
+
+step 2i "Doku: Block- und Seitentabelle aktuell"
 php "$ROOT/bin/docs-tabellen.php" --pruefen 2>/dev/null; done_step $?
 
 # --- 3 Farben ----------------------------------------------------------------
 step 3a "Farbkontexte: Tokens, kein Pink Tief, Hover nur aus Kontext"
 python3 -I "$ROOT/bin/checks/tokens.py" "$ROOT"; done_step $?
 
-if [ -f "$ROOT/bin/checks/kontrast.py" ]; then
-	step 3b "Kontrast rechnerisch je Fläche (WCAG AA)"
-	python3 -I "$ROOT/bin/checks/kontrast.py" "$ROOT"; done_step $?
-fi
+step 3b "Kontrast rechnerisch je Fläche (WCAG AA)"
+python3 -I "$ROOT/bin/checks/kontrast.py" "$ROOT"; done_step $?
 
-if [ -f "$ROOT/bin/checks/flaechen.py" ]; then
-	step 3c "Flächenfolge je Seite (nie dreimal Vollpink)"
-	python3 -I "$ROOT/bin/checks/flaechen.py" "$ROOT" "$WORK"; done_step $?
-fi
+step 3c "Flächenfolge je Seite (nie dreimal Vollpink)"
+python3 -I "$ROOT/bin/checks/flaechen.py" "$ROOT" "$WORK"; done_step $?
 
 # --- 4 Browser ---------------------------------------------------------------
 step 4 "Browser: 390/768/1024/1280/1512/1920 px, Menüs offen, Kontrast, Fokus"

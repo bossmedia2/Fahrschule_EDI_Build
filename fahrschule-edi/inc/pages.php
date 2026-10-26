@@ -646,6 +646,7 @@ function fs_breadcrumb_items() {
 function fahrschule_create_pages() {
 	$map = fahrschule_page_map();
 	$ids = array();
+	$neu = array();
 
 	// 1. Durchlauf: Elternseiten zuerst.
 	foreach ( array( false, true ) as $children_pass ) {
@@ -681,7 +682,10 @@ function fahrschule_create_pages() {
 				$args['post_parent'] = $ids[ $page['parent'] ];
 			}
 			$id = wp_insert_post( $args );
-			if ( ! is_wp_error( $id ) ) { $ids[ $key ] = $id; }
+			if ( ! is_wp_error( $id ) && $id ) {
+				$ids[ $key ] = $id;
+				$neu[]       = $title . ' (/' . fahrschule_page_path( $key ) . ( fahrschule_page_path( $key ) ? '/' : '' ) . ')';
+			}
 		}
 	}
 
@@ -692,9 +696,25 @@ function fahrschule_create_pages() {
 	}
 
 	update_option( 'fahrschule_content_version', FAHRSCHULE_CONTENT_VERSION );
+	// Einmal-Hinweis im Admin: welche Seiten gerade angelegt wurden. Bei der
+	// zweiten Aktivierung ist die Liste leer - dann kein Hinweis.
+	if ( $neu ) { update_option( 'fahrschule_neue_seiten', $neu, false ); }
 	flush_rewrite_rules();
 }
 add_action( 'after_switch_theme', 'fahrschule_create_pages' );
+
+/** Zeigt die bei der Aktivierung angelegten Seiten einmal an und vergisst sie dann. */
+function fahrschule_neue_seiten_hinweis() {
+	$neu = get_option( 'fahrschule_neue_seiten', array() );
+	if ( ! $neu || ! current_user_can( 'edit_pages' ) ) { return; }
+	delete_option( 'fahrschule_neue_seiten' );
+	printf(
+		'<div class="notice notice-success is-dismissible"><p><strong>Fahrschule edi:</strong> %d Seiten angelegt – mit Elternseite, Vorlage und Inhalt. Die Startseite ist gesetzt.</p><ul style="columns:2;list-style:disc;padding-left:1.25rem">%s</ul></div>',
+		count( $neu ),
+		implode( '', array_map( static function ( $t ) { return '<li>' . esc_html( $t ) . '</li>'; }, $neu ) )
+	);
+}
+add_action( 'admin_notices', 'fahrschule_neue_seiten_hinweis' );
 
 /**
  * Stand des ausgelieferten Seiteninhalts. Bis Theme 2.x lag der Inhalt nicht
@@ -702,24 +722,20 @@ add_action( 'after_switch_theme', 'fahrschule_create_pages' );
  * (post_content leer). Ab 3.0 rendert die Block-Vorlage post_content - leere
  * Seiten wären leer. Die Migration füllt sie einmalig.
  */
-define( 'FAHRSCHULE_CONTENT_VERSION', 3 );
+// 4 (Theme 3.1): Seiten ohne eigenen Stapel (Bereichsseiten) bekommen das
+// Startmuster ihrer Vorlage - ebenfalls nur, wenn sie noch leer sind.
+define( 'FAHRSCHULE_CONTENT_VERSION', 4 );
 
-/** Block-Markup des Registry-Stapels einer Seite (ohne Seitenkopf - den liefert die Vorlage). */
+/** Inhalt einer Registry-Seite: ihr eigener Block-Stapel, sonst das Startmuster ihrer Vorlage (ohne Seitenkopf - den liefert die Vorlage). */
 function fahrschule_page_content( $key ) {
 	$map = fahrschule_page_map();
-	if ( empty( $map[ $key ]['blocks'] ) ) { return ''; }
-	$blocks = array();
-	$tpl    = isset( $map[ $key ]['template'] ) ? $map[ $key ]['template'] : 'page';
-	foreach ( fahrschule_rhythmus( $map[ $key ]['blocks'], $tpl ) as $b ) {
-		$blocks[] = array(
-			'blockName'    => $b[0],
-			'attrs'        => isset( $b[1] ) ? $b[1] : array(),
-			'innerBlocks'  => array(),
-			'innerHTML'    => '',
-			'innerContent' => array(),
-		);
+	$tpl = isset( $map[ $key ]['template'] ) ? $map[ $key ]['template'] : 'page';
+	if ( ! empty( $map[ $key ]['blocks'] ) ) {
+		return fahrschule_stapel_markup( $map[ $key ]['blocks'], $tpl );
 	}
-	return serialize_blocks( $blocks );
+	// Ohne eigenen Stapel: das Startmuster der Vorlage (z. B. Bereichsseiten).
+	$muster = fahrschule_startmuster_fuer( $tpl );
+	return '' === $muster ? '' : fahrschule_startmuster_markup( $muster );
 }
 
 /*
@@ -793,6 +809,93 @@ function fahrschule_rhythmus( $blocks, $tpl ) {
 		$folge[ $pos ]              = 'hellpink';
 	}
 	return $blocks;
+}
+
+/*
+ * Startmuster: der Ausgangsinhalt je Seitenvorlage - EINE Quelle für den
+ * Muster-Dialog beim Anlegen einer Seite (patterns/seite-*.php) und für die
+ * Seitenanlage bei der Theme-Aktivierung (Seiten ohne eigenen Block-Stapel
+ * in der Registry). Überschriften sind Bedienertexte; Fakten kommen aus den
+ * Blöcken selbst (PDF-Texte, Stammdaten), nie aus dem Muster.
+ *
+ *   Schlüssel => [ Titel, Vorlage, Beschreibung, Block-Stapel ]
+ */
+function fahrschule_startmuster() {
+	return array(
+		'uebersicht'  => array( 'Übersichtsseite', 'page-uebersicht', 'Einstieg mit Kacheln in die Unterthemen, Leistungen und Bewertungen. Den Abschluss liefert die Vorlage.', array(
+			array( 'fahrschule/page-teasers', array( 'eyebrow' => 'Überblick', 'heading' => 'Unsere Bereiche' ) ),
+			array( 'fahrschule/services', array( 'eyebrow' => 'Leistungen', 'heading' => 'Was uns ausmacht' ) ),
+			array( 'fahrschule/testimonials', array() ),
+		) ),
+		'bereich'     => array( 'Bereichsseite', 'page-bereich', 'Inhalt einer Bereichsseite (PKW, Motorrad …). Klassen-Kacheln und Handlungsaufruf liefert die Vorlage.', array(
+			array( 'fahrschule/services', array( 'eyebrow' => 'Leistungen', 'heading' => 'Was Sie bei uns erwartet' ) ),
+		) ),
+		'kurs'        => array( 'Kursseite (Führerscheinklasse)', 'page-kurs', 'Kurzdaten und Texte einer Klasse (Felder leer – bitte mit belegten Angaben füllen) und Fragen. Geschwisterklassen und Anmeldung liefert die Vorlage.', array(
+			array( 'fahrschule/kurs-details', array( 'heading' => 'Das Wichtigste auf einen Blick', 'pruefung' => 'Theoretische und praktische Prüfung' ) ),
+			array( 'fahrschule/faq', array( 'eyebrow' => 'Häufige Fragen', 'heading' => 'Fragen zu dieser Klasse' ) ),
+		) ),
+		'beruf'       => array( 'Beruf & Weiterbildung', 'page-beruf', 'Fragen und Kontaktformular für eine Weiterbildung. Den Handlungsaufruf liefert die Vorlage.', array(
+			array( 'fahrschule/faq', array( 'eyebrow' => 'Häufige Fragen', 'heading' => 'Fragen zur Weiterbildung' ) ),
+			array( 'fahrschule/contact-form', array() ),
+		) ),
+		'standort'    => array( 'Standortseite', 'page-standort', 'Hero mit Adresse und Zeiten aus den Stammdaten der Stadt, Beschreibung, Preisrechner. Karte und Handlungsaufruf liefert die Vorlage.', array(
+			array( 'fahrschule/location-hero', array( 'city' => 'Duisburg' ) ),
+			array( 'fahrschule/location-content', array( 'city' => 'Duisburg' ) ),
+			array( 'fahrschule/location-calculator', array() ),
+		) ),
+		'team'        => array( 'Teamseite', 'page-team', 'Team nach Gruppen und der Fahrlehrer-Finder.', array(
+			array( 'fahrschule/about-team', array() ),
+			array( 'fahrschule/fahrlehrer-finder', array() ),
+		) ),
+		'theorie'     => array( 'Theorieunterricht', 'page-theorie', 'Wochenplan des Theorieunterrichts je Standort. Den Handlungsaufruf liefert die Vorlage.', array(
+			array( 'fahrschule/theory-schedule', array() ),
+		) ),
+		'faq'         => array( 'FAQ', 'page-faq', 'Häufige Fragen. Den Handlungsaufruf liefert die Vorlage.', array(
+			array( 'fahrschule/faq', array() ),
+		) ),
+		'kontakt'     => array( 'Kontakt & Anmeldung', 'page-kontakt', 'Kontaktformular. Die Standorte liefert die Vorlage.', array(
+			array( 'fahrschule/contact-form', array() ),
+		) ),
+		'recht'       => array( 'Rechtstext', 'page-recht', 'Impressum oder Datenschutz (Auswahl im Block).', array(
+			array( 'fahrschule/legal', array( 'kind' => 'impressum' ) ),
+		) ),
+		'landingpage' => array( 'Landingpage', 'page', 'Kampagnenseite: Vertrauensleiste, Führerscheinklassen, Bewertungen und Anmeldung.', array(
+			array( 'fahrschule/vertrauensleiste', array() ),
+			array( 'fahrschule/klassen-kacheln', array() ),
+			array( 'fahrschule/testimonials', array() ),
+			array( 'fahrschule/anmeldung', array() ),
+		) ),
+	);
+}
+
+/** Block-Markup eines Startmusters, Flächen im Rhythmus seiner Vorlage. */
+function fahrschule_startmuster_markup( $muster ) {
+	$m = fahrschule_startmuster();
+	if ( ! isset( $m[ $muster ] ) ) { return ''; }
+	return fahrschule_stapel_markup( $m[ $muster ][3], $m[ $muster ][1] );
+}
+
+/** Startmuster einer Vorlage ('' für Standard- und Startseite). */
+function fahrschule_startmuster_fuer( $tpl ) {
+	foreach ( fahrschule_startmuster() as $key => $m ) {
+		if ( 'page' !== $m[1] && $m[1] === $tpl ) { return $key; }
+	}
+	return '';
+}
+
+/** Block-Stapel ([name, attrs]) als gespeichertes Block-Markup. */
+function fahrschule_stapel_markup( $stapel, $tpl ) {
+	$blocks = array();
+	foreach ( fahrschule_rhythmus( $stapel, $tpl ) as $b ) {
+		$blocks[] = array(
+			'blockName'    => $b[0],
+			'attrs'        => isset( $b[1] ) ? $b[1] : array(),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '',
+			'innerContent' => array(),
+		);
+	}
+	return serialize_blocks( $blocks );
 }
 
 /** _wp_page_template für eine Registry-Seite; leer für Standard und Startseite. */
