@@ -15,10 +15,16 @@ daten direkt aus dem Theme. Geprüft wird:
    (inc/pdf-texts.php), Stammdaten (inc/seo.php), sichtbarer Seite und
    JSON-LD überein; Öffnungszeiten zwischen Text und Schema.
 """
-import html, json, os, re, subprocess, sys
+import html, json, os, pathlib, re, subprocess, sys, tempfile
 
-root = sys.argv[1]
-out = sys.argv[2]
+# Pfade am eigenen Ort verankert. Ohne Ausgabeverzeichnis (Aufruf allein)
+# rendert das Skript die Seiten selbst über smoke.php in ein Temp-Verzeichnis.
+root = sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parents[2])
+out = sys.argv[2] if len(sys.argv) > 2 else None
+if out is None:
+    out = tempfile.mkdtemp(prefix='fs-startseite-')
+    subprocess.run(['php', os.path.join(root, 'bin/checks/smoke.php'), os.path.join(root, 'fahrschule-edi')],
+                   env={**os.environ, 'FS_OUT': out}, capture_output=True)
 theme = os.path.join(root, 'fahrschule-edi')
 fails = []
 def fail(m): fails.append(m); print("  FEHLER: " + m)

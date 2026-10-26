@@ -28,10 +28,25 @@ function loadPlaywright() {
 }
 const { chromium } = loadPlaywright();
 
-const dir = process.argv[2];
-if (!dir) { console.error('Aufruf: browser.mjs <verzeichnis-mit-html>'); process.exit(2); }
+/* Verzeichnis mit den gerenderten Seiten. Ohne Argument (Aufruf allein)
+   rendert das Skript selbst: smoke.php und mkpages.php in ein Temp-Verzeichnis,
+   Pfade am eigenen Ort verankert. */
+let dir = process.argv[2];
+if (!dir) {
+  const { mkdtempSync } = await import('node:fs');
+  const { execFileSync } = await import('node:child_process');
+  const { tmpdir } = await import('node:os');
+  const here = new URL('.', import.meta.url).pathname;
+  const theme = new URL('../../fahrschule-edi', import.meta.url).pathname;
+  dir = mkdtempSync(tmpdir() + '/fs-browser-');
+  const env = { ...process.env, FS_OUT: dir };
+  try { execFileSync('php', [here + 'smoke.php', theme], { env, stdio: 'ignore' }); } catch { /* Smoke meldet selbst */ }
+  execFileSync('php', [here + 'mkpages.php', theme], { env, stdio: 'inherit' });
+}
 
-const WIDTHS = [360, 390, 414, 600, 640, 768, 900, 1024, 1100, 1179, 1239, 1240, 1280, 1366, 1440, 1920];
+const WIDTHS = [360, 390, 414, 600, 640, 768, 900, 1024, 1100, 1179, 1239, 1240, 1280, 1366, 1440, 1512, 1920];
+// Seitenbreiten des Briefings: jede Seite wird bei allen sechs gemessen.
+const SIX    = [390, 768, 1024, 1280, 1512, 1920];
 const ZOOM   = [960, 720, 640, 512];           // 1920/1440/1280/1024 bei 200%
 let fails = [];
 const fail = m => { fails.push(m); console.log('  FEHLER: ' + m); };
@@ -177,17 +192,25 @@ const collect = async (state) => {
   for (const x of r.u) seen.set('U' + state + x.sel + x.r, { ...x, state, kind: 'Bedienelement' });
 };
 
-// 3a) Seiteninhalt: jede Seite, Leiste oben und gescrollt.
-await page.setViewportSize({ width: 1440, height: 1000 });
-for (const f of pages) {
-  await page.goto('file://' + dir + '/' + f);
-  await page.addStyleTag({ content: NOANIM });
-  await page.waitForTimeout(40);
-  await collect('oben');
-  await page.evaluate(() => { const n = document.querySelector('.fs-nav'); if (n) n.classList.add('is-scrolled'); });
-  await page.waitForTimeout(30);
-  await collect('gescrollt');
+// 3a) Seiteninhalt: jede Seite bei allen sechs Breiten, Leiste oben und gescrollt.
+const overflow = [];
+for (const w of SIX) {
+  await page.setViewportSize({ width: w, height: 1000 });
+  for (const f of pages) {
+    await page.goto('file://' + dir + '/' + f);
+    await page.addStyleTag({ content: NOANIM });
+    await page.waitForTimeout(30);
+    const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (ov > 0) overflow.push(`${f} @${w}px: ${ov}px horizontaler Überlauf`);
+    await collect(`oben @${w}px`);
+    await page.evaluate(() => { const n = document.querySelector('.fs-nav'); if (n) n.classList.add('is-scrolled'); });
+    await page.waitForTimeout(20);
+    await collect(`gescrollt @${w}px`);
+  }
 }
+if (overflow.length) for (const x of overflow.slice(0, 10)) fail(x);
+else ok(`kein horizontaler Überlauf: ${pages.length} Seiten bei ${SIX.join('/')}px`);
+await page.setViewportSize({ width: 1512, height: 1000 });
 
 /* 3b) Aufgeklappte Menüs - auf JEDER Seite.
  * Diese Zustände hatten bis Oktober 2026 kein Prüfschritt erfasst, und genau
@@ -235,7 +258,7 @@ const checkCovered = async (f, w) => {
 for (const f of pages) {
   await page.goto('file://' + dir + '/' + f);
   await page.addStyleTag({ content: NOANIM });
-  await checkCovered(f, 1440);
+  await checkCovered(f, 1512);
   await checkAria(f, '.fs-nav');
   await checkAria(f, '.fs-drawer');
   for (const bar of ['oben', 'gescrollt']) {
@@ -308,14 +331,14 @@ for (const f of pages) {
   }
 }
 if (covered.length) for (const x of covered) fail('verdeckt von der Leiste: ' + x);
-else ok(`Brotkrumen und Seitentitel auf ${pages.length} Seiten unterhalb der fixierten Leiste (390 und 1440px)`);
+else ok(`Brotkrumen und Seitentitel auf ${pages.length} Seiten unterhalb der fixierten Leiste (390 und 1512px)`);
 if (drawerTab.length) for (const x of drawerTab.slice(0, 5)) fail(x);
 else ok(`geschlossenes Schubfach auf ${pages.length} Seiten nicht per Tab erreichbar`);
 if (!drawerActiveSeen) fail('kein einziger aktiver Eintrag im Schubfach gefunden');
 else ok(`Schubfach: ${drawerActiveSeen} Seiten mit sichtbarem aktivem Eintrag, Flyout: ${activeSeen} Zustände mit aktivem Eintrag gemessen`);
 await page.setViewportSize({ width: 1440, height: 1000 });
 
-if (!seen.size) ok(`keine Kontrastverstöße auf ${pages.length} Seiten – Leiste oben und gescrollt, Flyout und Schubfach je Seite geöffnet`);
+if (!seen.size) ok(`keine Kontrastverstöße auf ${pages.length} Seiten bei ${SIX.length} Breiten – Leiste oben und gescrollt, Flyout und Schubfach je Seite geöffnet`);
 for (const [, v] of [...seen].sort((a, b) => a[1].r - b[1].r)) {
   if (v.kind === 'Text') fail(`${v.r}:1 (nötig ${v.need}:1) [${v.state}] ${v.sel} "${v.txt}" – ${v.color} auf ${v.bg}`);
   else                   fail(`${v.r}:1 (nötig 3:1) [${v.state}] ${v.sel} – Füllung ${v.fill}, Rand ${v.border} auf ${v.bg}`);

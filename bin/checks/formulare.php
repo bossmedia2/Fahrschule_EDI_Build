@@ -7,13 +7,14 @@
  * Form-Tags, Submission). Die Formular-Tags werden mit dem Muster aus
  * WPCF7_FormTagsManager zerlegt, damit ein Tippfehler im Formulartext auffällt.
  *
- * Aufruf: php formulare.php <theme-dir> <plugin-dir>
+ * Aufruf: php formulare.php [<theme-dir> <plugin-dir>]  (Vorgabe: neben bin/)
  */
 error_reporting( E_ALL );
-$GLOBALS['__theme'] = $argv[1];
+$GLOBALS['__theme'] = $argv[1] ?? dirname( __DIR__, 2 ) . '/fahrschule-edi';
+$plugin_dir         = $argv[2] ?? dirname( __DIR__, 2 ) . '/edi-integrationen';
 require __DIR__ . '/wp-stub.php';
-define( 'FAHRSCHULE_DIR', $argv[1] ); define( 'FAHRSCHULE_URI', '/u' ); define( 'FAHRSCHULE_VERSION', '1' );
-foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'forms' ) as $f ) { require $argv[1] . '/inc/' . $f . '.php'; }
+define( 'FAHRSCHULE_DIR', $GLOBALS['__theme'] ); define( 'FAHRSCHULE_URI', '/u' ); define( 'FAHRSCHULE_VERSION', '1' );
+foreach ( array( 'helpers', 'pdf-texts', 'media', 'pages', 'seo', 'render-callbacks', 'forms' ) as $f ) { require $GLOBALS['__theme'] . '/inc/' . $f . '.php'; }
 
 $fails = array();
 function fail( $m ) { global $fails; $fails[] = $m; echo "  FEHLER: $m\n"; }
@@ -53,7 +54,7 @@ function wpcf7_contact_form( $id ) { return WPCF7_ContactForm::$alle[ $id ] ?? n
 $GLOBALS['__tags'] = array();
 function wpcf7_add_form_tag( $t, $cb ) { $GLOBALS['__tags'][ $t ] = $cb; }
 function register_activation_hook( $f, $cb ) {}
-require $argv[2] . '/inc/formulare.php';
+require $plugin_dir . '/inc/formulare.php';
 foreach ( $GLOBALS['__actions']['wpcf7_init'] ?? array() as $cb ) { $cb(); }
 
 /* ---- 3) Anlage: vier Formulare, zweiter Lauf legt nichts an -------------- */
@@ -167,7 +168,7 @@ if ( ( $tmp['map-pin'] ?? '' ) !== 'Essen' ) { fail( 'Stelle: Eckdaten ohne Ort'
 $GLOBALS['__terms_db'] = array();
 if ( ! function_exists( 'term_exists' ) ) { function term_exists( $s, $t ) { return isset( $GLOBALS['__terms_db'][ $t ][ $s ] ); } }
 if ( ! function_exists( 'wp_insert_term' ) ) { function wp_insert_term( $n, $t, $a ) { $GLOBALS['__terms_db'][ $t ][ $a['slug'] ] = $n; $GLOBALS['__ins'] = ( $GLOBALS['__ins'] ?? 0 ) + 1; return array(); } }
-require $argv[2] . '/inc/stellen.php';
+require $plugin_dir . '/inc/stellen.php';
 edi_stellen_einrichten(); edi_stellen_einrichten();
 $kats = $GLOBALS['__terms_db']['job_listing_category'] ?? array();
 if ( 3 !== ( $GLOBALS['__ins'] ?? 0 ) || ! in_array( 'Büro & Ansprechpartner', $kats, true ) || 1 !== get_option( 'job_manager_enable_categories' ) ) {

@@ -6,9 +6,10 @@ ein Block ohne Render-Funktion, ein Icon-Name mit Tippfehler (rendert ein
 leeres <svg>), ein Bildpfad ins Leere, eine CSS-Klasse ohne Regel, eine
 animation: auf nicht existierende @keyframes - und Blau/Teal im Produktionscode.
 """
-import os, re, sys, colorsys
+import pathlib, os, re, sys, colorsys
 
-root = sys.argv[1] if len(sys.argv) > 1 else '.'
+# Pfade am eigenen Ort verankert: läuft aus jedem Verzeichnis.
+root = sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parents[2])
 theme = os.path.join(root, 'fahrschule-edi')
 rd = lambda p: open(p, encoding='utf-8', errors='replace').read()
 fails = []

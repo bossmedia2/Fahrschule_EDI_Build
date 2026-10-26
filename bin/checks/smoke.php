@@ -2,7 +2,8 @@
 // Ausgabeverzeichnis; ohne FS_OUT ins Temp-Verzeichnis, nie in den Wurzelordner.
 $FS_OUT = getenv('FS_OUT') ?: sys_get_temp_dir();
 error_reporting(E_ALL); ini_set('display_errors','stderr');
-$GLOBALS['__theme'] = $argv[1];
+// Theme-Pfad am eigenen Ort verankert: läuft aus jedem Verzeichnis.
+$GLOBALS['__theme'] = $argv[1] ?? dirname(__DIR__, 2).'/fahrschule-edi';
 $GLOBALS['__blocks']=[]; $GLOBALS['__patterns']=[];
 $errs=[];
 set_error_handler(function($no,$str,$f,$l) use (&$errs){ $errs[]=sprintf("[%s] %s  (%s:%d)", $no===E_USER_WARNING?'WARN':'PHP', $str, basename($f), $l); return true; });

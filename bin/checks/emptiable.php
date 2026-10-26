@@ -1,12 +1,12 @@
 <?php
 error_reporting(E_ALL); ini_set('display_errors','stderr');
-$GLOBALS['__theme']=$argv[1];
+$GLOBALS['__theme']=$argv[1] ?? dirname(__DIR__, 2).'/fahrschule-edi';  // aus jedem Verzeichnis lauffähig
 /* Prüft, ob sich jedes Feld mit Vorgabe leeren lässt, ohne eine leere Hülle
    zu hinterlassen - der Fehler, der im Oktober 2026 97 von 136 Feldern betraf
    und weder vom Lint noch vom Smoke-Test gesehen wurde. */ $GLOBALS['__blocks']=[];
 require __DIR__.'/wp-stub.php';
-define('FAHRSCHULE_DIR',$argv[1]); define('FAHRSCHULE_URI','/u'); define('FAHRSCHULE_VERSION','1');
-foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config','seo'] as $f) require $argv[1].'/inc/'.$f.'.php';
+define('FAHRSCHULE_DIR',$GLOBALS['__theme']); define('FAHRSCHULE_URI','/u'); define('FAHRSCHULE_VERSION','1');
+foreach(['helpers','pdf-texts','media','pages','render-callbacks','blocks-config','seo'] as $f) require $GLOBALS['__theme'].'/inc/'.$f.'.php';
 // Eine Beispielstelle, damit die Felder des Stellen-Blocks etwas bewirken können.
 $GLOBALS['__post_types']['job_listing']=true;
 $GLOBALS['__jobs']=[new WP_Post(['ID'=>901,'post_type'=>'job_listing','post_name'=>'beispiel','post_title'=>'Beispielstelle'])];

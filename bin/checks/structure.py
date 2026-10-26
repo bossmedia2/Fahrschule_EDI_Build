@@ -6,9 +6,10 @@ Backend zu: eine Vorlage ohne Datei erscheint nicht im Auswahlfeld, ein
 Pattern mit kaputtem Block-Markup legt den Muster-Dialog lahm, und eine
 Klassenseite ohne gültigen Bereich erzeugt eine Brotkrume ins Leere.
 """
-import json, os, re, subprocess, sys
+import pathlib, json, os, re, subprocess, sys
 
-root = sys.argv[1] if len(sys.argv) > 1 else '.'
+# Pfade am eigenen Ort verankert: läuft aus jedem Verzeichnis.
+root = sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parents[2])
 theme = os.path.join(root, 'fahrschule-edi')
 rd = lambda p: open(p, encoding='utf-8', errors='replace').read()
 fails = []

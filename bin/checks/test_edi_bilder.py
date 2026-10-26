@@ -11,10 +11,15 @@ iStock-Bilder, FFs edi 4 und der fremde Ordner "Umbenannt ".
 
 Das Skript läuft zweimal. Erwartet: gleiche Zuordnung, keine neuen Dateien
 im zweiten Lauf, nichts außerhalb von umbenannt/ angefasst.
+
+MANUELL, nicht Teil von bin/gate.sh: python3 bin/checks/test_edi_bilder.py
+(das Bild-Skript ist ein einmaliges Werkzeug für den Bildordner, kein Teil
+von Theme oder Plugin).
 """
 import csv, hashlib, os, subprocess, sys, tempfile, unicodedata
 
-ROOT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else '.')
+import pathlib
+ROOT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else pathlib.Path(__file__).resolve().parents[2])
 SKRIPT = os.path.join(ROOT, 'bin', 'edi-bilder.py')
 fails = []
 

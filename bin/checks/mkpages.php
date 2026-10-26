@@ -2,10 +2,18 @@
 /**
  * Baut aus den vom Smoke-Test gerenderten Seiten (pages.json) statische
  * HTML-Dateien, damit die Browserprüfung an einem echten Dokument misst.
- * Erwartet FS_OUT = Arbeitsverzeichnis.
+ * Arbeitsverzeichnis aus FS_OUT. Ohne FS_OUT (Aufruf allein) wird ein
+ * Temp-Verzeichnis angelegt und der Smoke-Test dorthin ausgeführt.
  */
+$theme = $argv[1] ?? dirname( __DIR__, 2 ) . '/fahrschule-edi';
 $out   = getenv( 'FS_OUT' );
-$theme = $argv[1];
+if ( ! $out ) {
+	$out = sys_get_temp_dir() . '/fs-mkpages-' . getmypid();
+	@mkdir( $out, 0777, true );
+	putenv( 'FS_OUT=' . $out );
+	exec( 'php ' . escapeshellarg( __DIR__ . '/smoke.php' ) . ' ' . escapeshellarg( $theme ) . ' >/dev/null 2>&1' );
+	echo "Seiten in $out\n";
+}
 $pages = json_decode( file_get_contents( $out . '/pages.json' ), true );
 
 @mkdir( $out . '/assets/images', 0777, true );

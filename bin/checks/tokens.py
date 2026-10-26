@@ -14,9 +14,10 @@ Gemeldet wird eine Farbdeklaration mit Rohfarbe, wenn
   - er den Container selbst trifft und die Schriftfarbe setzt.
 Der Hintergrund des Containers selbst ist erlaubt - er definiert die Fläche.
 """
-import os, re, sys
+import pathlib, os, re, sys
 
-root = sys.argv[1] if len(sys.argv) > 1 else '.'
+# Pfade am eigenen Ort verankert: läuft aus jedem Verzeichnis.
+root = sys.argv[1] if len(sys.argv) > 1 else str(pathlib.Path(__file__).resolve().parents[2])
 css_path = os.path.join(root, 'fahrschule-edi/assets/css/main.css')
 css = open(css_path, encoding='utf-8').read()
 
