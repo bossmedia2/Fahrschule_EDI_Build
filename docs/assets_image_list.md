@@ -34,7 +34,7 @@ erst lokal umbenennen, dann einmal importieren, sonst hängt WordPress `-1` an.
 | Räumlichkeiten | `edi-raum-<name>` | `edi-raum-klassenraum` |
 | Hero | `edi-hero-<nr>` | `edi-hero-1` |
 | Galerie | `edi-galerie-<nnn>` oder `edi-galerie-<kategorie>-<nnn>` | `edi-galerie-012`, `edi-galerie-fuhrpark-012` |
-| Social-Feed-Kachel | `edi-social-<nnn>` | `edi-social-001` – quadratisch, mind. 1080 px |
+| Social-Feed-Cover | `edi-tiktok-<video-id>` | legt der Abruf selbst an – nicht hochladen |
 | Teilen-Vorschau | `edi-og.jpg` | 1200×630 |
 
 **Kursbilder laufen automatisch.** Der Teil nach `edi-kurs-` ist exakt der
@@ -52,18 +52,10 @@ Porträt erschiene dann still als Wechselbild. `-b` erzeugt WordPress nie.
 Kategorien, die tatsächlich Bilder haben. Unkategorisierte Bilder stehen
 unter „Alle“.
 
-**Social-Feed** (Block „Social-Feed (Instagram/TikTok)“, Seite Erfahrungen):
-- **Kachel:** Jede Kachel ist eine Zeile im Wiederholfeld mit Plattform
-  (`tiktok`/`instagram`), Bild-Slug, Link zum Beitrag und
-  **Bildbeschreibung**.
-- **Ohne Beschreibung keine Kachel:** Ohne Beschreibung erscheint die Kachel
-  nicht, denn das Bild bräuchte sonst einen Alt-Text. Die Beschreibung sagt,
-  was auf dem Bild zu sehen ist, nicht „Beitrag 3“.
-- **Coverbild selbst hochladen:** Das Coverbild eines TikToks oder
-  Instagram-Beitrags lädt jemand selbst hoch. Die Website ruft nichts bei
-  TikTok oder Instagram ab und bettet nichts ein; ein Klick öffnet den
-  Beitrag in einem neuen Tab.
-- **Quadratisch:** Hochkant-Cover werden mittig auf 1:1 zugeschnitten.
+**Social-Feed** (Block „Social-Feed (TikTok per Link)“, Seite Erfahrungen):
+nichts hochladen. Den Video-Link einfügen und speichern – Titel und Cover
+holt der Editor von TikTok, das Cover landet als `edi-tiktok-<video-id>.jpg`
+in der Mediathek. Instagram-Links ergeben eine Kachel ohne Cover.
 
 ---
 

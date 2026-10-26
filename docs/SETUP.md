@@ -1,11 +1,28 @@
 # Einrichtung und Live-Checkliste
 
-Abschnitt 0 beschreibt die Einrichtung von Theme 3.1 (Block-Theme). Die
+Abschnitt 0 beschreibt die Einrichtung von Theme 3.2 (Block-Theme). Die
 Abschnitte 1–9 sind die manuelle Checkliste für die Live-Instanz.
 
 ---
 
-## 0. Einrichtung Theme 3.1
+## 0. Einrichtung Theme 3.2
+
+### 0.0 Prüfkette auf dem eigenen Rechner
+
+`bin/gate.sh` (aus jedem Verzeichnis) prüft in Schritt 0, was die Kette
+braucht, und nennt für alles Fehlende den Befehl:
+
+| fehlt | nachrüsten | sonst |
+|---|---|---|
+| PHP ≥ 8.0 | `sudo apt install php-cli` | PHP-Schritte übersprungen |
+| mbstring | `sudo apt install php8.3-mbstring` (Version wie `php -v`) | nur Hinweis – Theme läuft ohne |
+| Python 3 | `sudo apt install python3` | Python-Schritte übersprungen |
+| Node.js | nodejs.org (LTS) | JS-Syntax und Browser übersprungen |
+| zip, unzip, bc | `sudo apt install zip unzip bc` | Build übersprungen |
+| Playwright | `npm i -D playwright && npx playwright install chromium` | Browser übersprungen |
+
+`bin/gate.sh --schnell` lässt den Browser bewusst aus. Exit-Code ≠ 0 nur bei
+echten Fehlern; was übersprungen wurde, steht am Ende als Liste.
 
 ### 0.1 Plugins (nicht im Theme-ZIP)
 
@@ -90,13 +107,18 @@ manuell, nicht im Gate: `python3 bin/checks/test_edi_bilder.py`.
   - [ ] Absatz zu Bewerbungsdaten ergänzen.
 - [ ] **Einwilligungen** für Fotos mit Minderjährigen (Bild-Briefing).
 - [ ] **Vollständige Namen** der Fahrlehrer, Standort von Abdullah und Mesut.
-- [ ] **Social-Feed** (Erfahrungen): je Kachel ein Coverbild (`edi-social-<nnn>`,
-      quadratisch; ein Galeriebild `edi-galerie-…` geht auch) hochladen und im
-      Block eine Bildbeschreibung eintragen – ohne beides erscheint die Kachel
-      nicht. Die Beschreibung ist Alt-Text und erscheint als Overlay bei Maus
-      bzw. Tastatur. Ist keine Kachel gefüllt, entfällt die ganze Sektion.
-      Pflegt niemand den Feed, Sektion entfernen – der schwebende
-      TikTok-Knopf bleibt.
+- [ ] **Social-Feed** (Erfahrungen): im Block unter „Video“ drei TikTok-Links
+      einfügen (`https://www.tiktok.com/@edi_fahrschule/video/…`) und
+      speichern. Titel und Cover kommen von selbst; die Statuszeile je Link
+      zeigt „✓ Titel“ oder den Grund, warum er nicht gelesen wurde (privat,
+      gelöscht, Rate-Limit). „Beiträge aktualisieren“ liest alle neu ein.
+      Ein Profil, das die neuesten Videos selbst liefert, gibt es bei TikTok
+      nicht – „die neuesten drei“ sind die drei zuletzt eingefügten Links.
+      Ohne Link entfällt die Sektion; der schwebende TikTok-Knopf bleibt.
+- [ ] **Datenschutzerklärung – Social-Feed:** Beim Seitenaufruf geht keine
+      Anfrage an TikTok (Cover liegen in der Mediathek); erst der Klick führt
+      zu TikTok. Beim Speichern im Editor ruft der Server TikToks
+      oEmbed-Schnittstelle ab – ohne Besucherdaten.
 
 ---
 
@@ -269,13 +291,11 @@ Startseite, Unterseite und Editor-Vorgabe zugleich.
 Bis 2.x rendert das Theme leere Seiten zur Laufzeit aus der Registry. Ab 3.0
 rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 
-- [ ] Theme 3.1.0 einspielen und einmal das Backend aufrufen. Die Migration
+- [ ] Theme 3.2.0 einspielen und einmal das Backend aufrufen. Die Migration
       (`fahrschule_migrate_content()`) füllt jede Registry-Seite mit **leerem**
       Inhalt und setzt ihre Vorlage. Seiten **mit** Inhalt bleiben unangetastet.
-- [ ] Unter **Seiten** jede Seite mit eigenem Inhalt öffnen. Die Vorlage liefert
-      jetzt Seitenkopf, Brotkrumen und je nach Typ Handlungsaufruf,
-      Bereichskacheln oder Standorte. Stehen diese Blöcke zusätzlich im
-      Inhalt, erscheinen sie doppelt – dann im Inhalt entfernen.
+- [ ] Unter **Seiten** jede Seite mit eigenem Inhalt öffnen. Seit 3.2 steht
+      alles außer den Brotkrumen im Inhalt (siehe 8.2).
 - [ ] Jeder Seite die passende Vorlage geben (Seite → Vorlage); welche, steht in
       `docs/BLOCKS-PATTERNS.md`, Abschnitt 4.
 - [ ] *Design → Editor* öffnen: Header, Footer und je eine Vorlage ansehen.
@@ -297,9 +317,27 @@ rendert die Block-Vorlage den Seiteninhalt (`post_content`).
       (Inhaltsstand 4) mit dem Startmuster.
 - [ ] Startseite: Hero-Video und Standbild hochladen (0.3).
 
+### 8.2 Update auf 3.2: Unterseiten ganz bearbeitbar
+
+Seit 3.2 tragen die Vorlagen nur noch den Rahmen (Header, Brotkrumen,
+Inhalt, Footer). Seitenkopf, Handlungsaufruf, Klassenkacheln, Standorte und
+Karte stehen im Seiteninhalt – auf neuen Installationen von selbst.
+Bestehende Seiten zeigen nach dem Update **nur ihren bisherigen Inhalt**,
+ohne Seitenkopf und Handlungsaufruf.
+
+- [ ] *Seiten* → alle Seiten auswählen → Sammelaktion „Aus Startmuster neu
+      aufbauen“ → die Bestätigungsseite nennt jede Seite und warnt → „Seiten
+      jetzt ersetzen“. Die vorige Fassung bleibt als Revision.
+- [ ] Seiten mit redaktioneller Arbeit vorher einzeln prüfen: der Neuaufbau
+      ersetzt den ganzen Inhalt. Alternativ dort Seitenkopf und
+      Handlungsaufruf von Hand einfügen (Blöcke „Seitenkopf“, „CTA“).
+- [ ] *Design → Editor → Vorlagen*: Vorlagen mit Hinweis „angepasst“
+      zurücksetzen – sonst gilt die alte Vorlage mit ihren Abschnitten weiter
+      und Seitenkopf/CTA erscheinen doppelt.
+
 ## 9. Cache leeren
 
-- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.1.0`
+- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.2.0`
       ausgeliefert (Browser laden die geänderte `main.css` damit automatisch), ein
       Page-Cache würde aber weiter das alte HTML zeigen.
 
@@ -316,7 +354,7 @@ rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 | 5 | `readme.html` löschen, `Options -Indexes`, `.md`-Dateien schützen | ⬜ Nein – erfordert Server-Zugriff |
 | 6 | `DISABLE_WP_CRON` + echter Server-Cronjob | ⬜ Nein – erfordert Server-Zugriff |
 | 7 | „Discourage indexing" in Produktion ausgeschaltet prüfen | ⬜ Nein – erfordert Live-Zugriff |
-| 8 | Theme 3.1.0 einspielen, Migration auslösen, Seiten mit eigenem Inhalt auf Doppelungen und Flächen prüfen, 404-Vorlage zurücksetzen | ⬜ Nein – erfordert Live-Zugriff |
+| 8 | Theme 3.2.0 einspielen, Seiten aus Startmuster neu aufbauen (Sammelaktion), angepasste Vorlagen (404 u. a.) zurücksetzen, Flächen prüfen | ⬜ Nein – erfordert Live-Zugriff |
 | 9 | Page-Cache/CDN leeren | ⬜ Nein – erfordert Live-Zugriff |
 
 Theme-seitig bereits umgesetzt (siehe `inc/security.php`): XML-RPC deaktiviert,

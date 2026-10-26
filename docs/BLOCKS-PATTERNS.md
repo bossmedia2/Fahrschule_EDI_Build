@@ -1,6 +1,6 @@
 # Fahrschule edi – Blöcke, Vorlagen, Seiten
 
-Stand Theme 3.1.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
+Stand Theme 3.2.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
 **assets_image_list.md** (Bilder, Bild-Skript), **SETUP.md** (Einrichtung).
 
 Die beiden Tabellen unten erzeugt `php bin/docs-tabellen.php` aus dem Code;
@@ -16,52 +16,65 @@ Footer und jede Vorlage lassen sich unter *Design → Editor* bearbeiten.
 | Ebene | Ort | Inhalt |
 |---|---|---|
 | Parts | `parts/header.html`, `parts/footer.html` | Navigation · Footer, TikTok-Badge, Cookie-Banner |
-| Vorlagen | `templates/*.html` | Seitenkopf, Brotkrumen, Seiteninhalt, feste Zusatzblöcke |
+| Vorlagen | `templates/*.html` | nur Rahmen: Brotkrumen und Seiteninhalt |
 | Seiteninhalt | `post_content` jeder Seite | was die Redaktion pflegt |
 | Blöcke | `inc/blocks-config.php` → `functions.php` | 49 dynamische Blöcke aus **einem** Array, per `foreach` registriert |
 
-**Wer liefert was.** Die Vorlage liefert, was auf allen Seiten ihres Typs
-gleich ist: Seitenkopf, Brotkrumen, Handlungsaufruf, Bereichskacheln. Was
-die Seite individuell macht, steht in ihrem Inhalt. Beides steht nie
-doppelt da.
+**Wer liefert was (seit 3.2).** Die Vorlage ist nur der Rahmen: Header,
+Brotkrumen, Seiteninhalt, Footer. Alles Seitenspezifische steht im
+Seiteninhalt (`post_content`): Seitenkopf, sämtliche Abschnitte, der
+Handlungsaufruf. Deshalb ist im Seiten-Editor die ganze Seite sichtbar, und
+jeder Abschnitt lässt sich verschieben, löschen und bearbeiten – nur für
+diese Seite. `bin/checks/vorlagen.py` bricht den Gate, sobald wieder ein
+Inhaltsblock in einer Seitenvorlage steht.
 
 **Auswählbare Vorlagen** (Seite → Vorlage), eingetragen in `theme.json` →
-`customTemplates`:
+`customTemplates`. Sie sind als Rahmen gleich. Die Vorlage bestimmt, welcher
+**Seitenrahmen** beim Anlegen und beim Neuaufbau um den Inhalt gesetzt wird
+(`fahrschule_vorlage_rahmen()`, `inc/pages.php`):
 
-| Vorlage | ergänzt nach dem Inhalt | für |
+| Vorlage | Seitenrahmen im Inhalt (davor · danach) | für |
 |---|---|---|
-| Übersichtsseite (`page-uebersicht`) | Handlungsaufruf | Führerscheinklassen, Leistungen, Standorte, Über uns |
-| Bereichsseite (`page-bereich`) | Kacheln aller Unterseiten des Bereichs (Hellpink) + Handlungsaufruf | PKW, Motorrad, LKW & Bus |
-| Kursseite (Führerscheinklasse) (`page-kurs`) | Geschwisterklassen (Hellpink) + Handlungsaufruf | die 15 Klassenseiten |
-| Beruf & Weiterbildung (`page-beruf`) | Handlungsaufruf | Berufskraftfahrer, Fahrlehrerausbildung, ASF & FES |
-| Standortseite (`page-standort`) | Karte (Zwei-Klick, Hellpink) + Handlungsaufruf | Duisburg, Essen, Gelsenkirchen |
-| Teamseite (`page-team`) | – | Team |
-| Kontakt & Anmeldung (`page-kontakt`) | Standorte kompakt (Hellpink) | Kontakt, Anmeldung |
-| FAQ (`page-faq`) | Handlungsaufruf | FAQ |
-| Theorieunterricht (`page-theorie`) | Handlungsaufruf | Theorieunterricht |
-| Rechtstext (`page-recht`) | – | Impressum, Datenschutz |
+| Übersichtsseite (`page-uebersicht`) | Seitenkopf · Handlungsaufruf | Führerscheinklassen, Leistungen, Standorte, Über uns |
+| Bereichsseite (`page-bereich`) | Seitenkopf · Kacheln aller Unterseiten (Hellpink), Handlungsaufruf | PKW, Motorrad, LKW & Bus |
+| Kursseite (Führerscheinklasse) (`page-kurs`) | Seitenkopf · Geschwisterklassen (Hellpink), Handlungsaufruf | die 15 Klassenseiten |
+| Beruf & Weiterbildung (`page-beruf`) | Seitenkopf · Handlungsaufruf | Berufskraftfahrer, Fahrlehrerausbildung, ASF & FES |
+| Standortseite (`page-standort`) | – (Standort-Hero im Inhalt) · Karte (Zwei-Klick, Hellpink), Handlungsaufruf | Duisburg, Essen, Gelsenkirchen |
+| Teamseite (`page-team`) | Seitenkopf · – | Team |
+| Kontakt & Anmeldung (`page-kontakt`) | Seitenkopf · Standorte kompakt (Hellpink) | Kontakt, Anmeldung |
+| FAQ (`page-faq`) | Seitenkopf · Handlungsaufruf | FAQ |
+| Theorieunterricht (`page-theorie`) | Seitenkopf · Handlungsaufruf | Theorieunterricht |
+| Rechtstext (`page-recht`) | Seitenkopf · – | Impressum, Datenschutz |
 
 Dazu die Vorlagen ohne Auswahl: `front-page`, `page` (Standard), `404`,
 `search`, `archive`, `single`, `index`, `single-job_listing`,
 `archive-job_listing`.
 
-**Seitenkopf.** `fahrschule/page-hero` steht in den Vorlagen und tritt
-zurück, wenn der Seiteninhalt einen eigenen Hero mitbringt (Standort,
-Erfahrungen). Titel und Einleitung kommen aus der Registry
+**Seitenkopf.** `fahrschule/page-hero` steht im Seiteninhalt, als erster
+Abschnitt nach den Brotkrumen. Seiten mit eigenem Hero (Standort,
+Erfahrungen) bekommen keinen. Titel und Einleitung kommen aus der Registry
 (`inc/pages.php`), sonst aus dem Seitentitel.
 
 **Seiteninhalt bei der Anlage.** `fahrschule_create_pages()` legt beim
 Aktivieren alle Registry-Seiten an, Elternseiten zuerst:
 
-- `post_content` ist der Block-Stapel der Seite aus der Registry; hat die
-  Seite keinen eigenen (Bereichsseiten), das **Startmuster ihrer Vorlage**.
+- `post_content` ist der Seitenrahmen der Vorlage um den Block-Stapel der
+  Seite aus der Registry; hat die Seite keinen eigenen (Bereichsseiten), das
+  **Startmuster ihrer Vorlage** (es enthält den Rahmen schon).
 - Die Vorlage wird gesetzt (`_wp_page_template`, Registry-Schlüssel
   `template`), die Startseite als `page_on_front`.
 - Ein Einmal-Hinweis im Admin listet die angelegten Seiten.
 - Eine zweite Aktivierung ändert nichts: vorhandene Seiten bleiben, wie sie
   sind.
 
-Danach gehört der Inhalt dem Editor, die Registry schreibt nie darüber. Die
+Danach gehört der Inhalt dem Editor, die Registry schreibt nie darüber.
+
+**Aus Startmuster neu aufbauen.** Für Seiten aus älteren Installationen
+(Inhalt dünn, Seitenkopf und Handlungsaufruf standen bis 3.1 in der Vorlage):
+Seitenliste → Zeilenaktion oder Sammelaktion „Aus Startmuster neu aufbauen“.
+Eine Bestätigungsseite warnt und nennt die Seiten; erst ihr Knopf ersetzt den
+Inhalt (`inc/neu-aufbauen.php`). Die vorige Fassung bleibt als Revision.
+Quelle wie bei der Anlage. Automatisch passiert das nie. Die
 Migration (`fahrschule_migrate_content()`, Inhaltsstand 4) füllt nur Seiten
 bestehender Installationen, deren Inhalt noch leer ist.
 
@@ -249,19 +262,31 @@ Unterseite hat, steht dort voll und auf der Startseite als Anriss: Label,
 ## 6. Prüfkette
 
 `bin/gate.sh` ist der einzige Einstieg; er läuft aus jedem Verzeichnis und
-druckt am Ende eine Tabelle (Schritt, Ergebnis, Dauer). Ein Fehler bricht
-nicht ab, macht aber den Exit-Code ungleich 0. `--schnell` überspringt nur
-den Browser.
+druckt am Ende eine Tabelle (Schritt, Ergebnis, Dauer). Jeder Schritt ist
+**ok**, **übersprungen** (mit Grund) oder **FEHLER**; nur Fehler machen den
+Exit-Code ungleich 0, übersprungene Schritte stehen am Ende als Liste.
+`--schnell` überspringt den Browser.
 
+0. Voraussetzungen: PHP ≥ 8.0, Python, Node, zip/unzip/bc, Playwright
+   (Paket und Chromium getrennt). Was fehlt, steht mit dem Befehl zum
+   Nachrüsten da; die abhängigen Schritte laufen nicht und gelten als
+   übersprungen. Fehlendes mbstring ist ein Hinweis – das Theme braucht es
+   nicht. Folgeschritte eines Fehlers ebenso: Startseite, Flächenfolge und
+   Browser brauchen die Seiten aus dem Smoke-Test.
 1. Syntax: `php -l`, `node --check`.
 2. Inhalt und Struktur:
    - kein `editor_script`, Bild-Skript nicht in der Kette;
    - Smoke-Test: alle Blöcke und jede Seite über ihre Block-Vorlage
      (`bin/checks/fse.php` bildet `template-canvas` nach), 404-Folge,
      keine toten internen Links;
-   - Startseite/NAP, Referenzen, Struktur (Vorlagen, 11 Startmuster),
-     Formulare, Editierbarkeit;
-   - Seitenanlage (zwei Aktivierungen), Hero (Video/Standbild), Doku-Tabellen.
+   - Startseite/NAP, Referenzen (auch: keine `mb_`-Funktion ohne Rückfall,
+     Netzabrufe nur in `fs_social_abruf()`), Struktur (Vorlagen, 11
+     Startmuster), Vorlagen nur Rahmen, Formulare, Editierbarkeit;
+   - Seitenanlage (zwei Aktivierungen, Rahmen im Inhalt, Neuaufbau nur auf
+     Bestätigung), Hero (Video/Standbild), Social-Feed (Abruf nachgebaut),
+     Doku-Tabellen;
+   - Theme ohne mbstring: alle Seiten noch einmal mit abgeschalteten
+     `mb_`-Funktionen.
 3. Farben: Kontext-Tokens (kein Pink Tief, Hover nur aus `--c-*`), Kontrast
    rechnerisch je Fläche, Flächenfolge je Seite.
 4. Browser bei 390, 768, 1024, 1280, 1512 und 1920 px: Überlauf, Kontrast in

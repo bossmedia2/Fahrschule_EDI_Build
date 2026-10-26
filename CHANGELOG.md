@@ -1,5 +1,43 @@
 # Änderungsverlauf
 
+## 3.2.0 – Theme (Oktober 2026)
+
+**Portabilität: läuft ohne ext-mbstring**
+- `mb_strtolower`, `mb_stripos`, `mb_strtoupper` und `mb_strrpos` ersetzt.
+  WordPress liefert ohne mbstring nur `mb_substr`/`mb_strlen` nach; das Theme
+  stürzte sonst beim Laden der Blockkonfiguration ab.
+- Neu `fs_lower()`/`fs_upper()` mit Rückfall.
+- `refs.py` sperrt `mb_`-Funktionen ohne Weiche.
+
+**Prüfkette**
+- Schritt 0 prüft die Voraussetzungen: PHP, Python, Node, zip/unzip/bc und
+  Playwright (Paket bzw. Browser). Er nennt jeweils den Befehl zum
+  Nachrüsten.
+- Drei Zustände (ok, übersprungen, FEHLER); erklärte Abhängigkeiten
+  (2c/3c/4 hängen an 2b); Exit-Code nur bei Fehlern.
+- Neuer Schritt „Theme ohne mbstring“.
+- Smoke meldet „x von 40 Seiten gerendert“. Editierbarkeit und Doku nennen
+  erwartet und vorgefunden. Ohne `pages.json` erscheint eine Zeile statt
+  eines Stacktrace.
+
+**Unterseiten ganz bearbeitbar**
+- `templates/page*.html` tragen nur Header, Brotkrumen, Seiteninhalt und
+  Footer.
+- `fahrschule_vorlage_rahmen()` setzt Seitenkopf, Handlungsaufruf,
+  Klassenkacheln, Standorte und Karte in den Inhalt.
+- Neu `inc/neu-aufbauen.php`: Zeilen- und Sammelaktion „Aus Startmuster neu
+  aufbauen“ mit Bestätigungsseite.
+- Neue Prüfung `vorlagen.py`.
+
+**Social-Feed: Link einfügen, fertig**
+- TikTok-Links werden per oEmbed beim Speichern im Editor eingelesen: Titel
+  und Cover. Das Cover kommt in die Mediathek. Der Abruf steckt nur in
+  `fs_social_abruf()` (`inc/social-abruf.php`).
+- Raster mit Cover 3:4, Titel auf zwei Zeilen und Marken-Kachel als
+  Rückfall. Das Karussell ist entfernt.
+- Kein Abruf beim Seitenaufruf.
+- Neue Prüfung `social.php`.
+
 ## 3.1.0 – Theme (Oktober 2026): Überarbeitung
 
 **Pink im Fokus**

@@ -10,16 +10,43 @@ er auf die drei bestehenden Fachdokumente:
 - **BLOCKS-PATTERNS.md** – jeder Block einzeln mit Feldern, Icons, Zielseite
 - **SEO-UND-AUDIT.md** – der ursprüngliche Code-Audit und die SEO-Grundlagen im Detail
 
-Stand: Theme 3.1.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung der
-Überarbeitung (3.1) und der Runde 4 (3.0) in Abschnitt 0; die Abschnitte 1–3
+Stand: Theme 3.2.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung von 3.2,
+der Überarbeitung (3.1) und der Runde 4 (3.0) in Abschnitt 0; die Abschnitte 1–3
 beschreiben die Komponenten im heutigen Zustand, Änderungsverlauf in
 `CHANGELOG.md`.
 
 ---
 
-## 0. Stand 3.1 auf einen Blick
+## 0. Stand 3.2 auf einen Blick
 
-**Neu in 3.1 (Überarbeitung):**
+**Neu in 3.2:**
+
+- **Läuft ohne mbstring:** `fs_team_ansprechpartner()` rief `mb_strtolower()`
+  – WordPress ersetzt ohne die Erweiterung nur `mb_substr`/`mb_strlen`, das
+  Theme stürzte auf solchen Hostern beim Laden ab. Behoben (`sanitize_title`,
+  `fs_lower`/`fs_upper` mit Rückfall); der Gate rendert jede Seite zusätzlich
+  mit abgeschalteten `mb_`-Funktionen, `refs.py` sperrt neue.
+- **Gate ehrlich:**
+  - Schritt 0 prüft die Voraussetzungen und nennt die Befehle zum
+    Nachrüsten.
+  - Jeder Schritt ist ok, übersprungen oder FEHLER; Folgeschritte eines
+    Fehlers laufen nicht.
+  - Kein Schritt scheitert mehr ohne Ausgabe.
+  - Hintergrund: 3.1 wurde als „grün“ gemeldet, war aber auf einem Rechner
+    ohne mbstring neunmal rot. Der Lauf ohne mbstring und ohne Playwright
+    ist jetzt Teil der Abnahme.
+- **Unterseiten ganz bearbeitbar:**
+  - Die Vorlagen sind nur noch Rahmen; Seitenkopf, Abschnitte und
+    Handlungsaufruf stehen im Seiteninhalt.
+  - Bestehende Seiten: Sammelaktion „Aus Startmuster neu aufbauen“,
+    ausdrücklich und mit Warnung.
+- **Social-Feed per Link:**
+  - TikTok-Link einfügen; Titel und Cover holt der Editor beim Speichern
+    (oEmbed), das Cover liegt in der Mediathek.
+  - Beim Seitenaufruf keine Anfrage an TikTok.
+  - Instagram ergibt eine Kachel ohne Cover.
+
+**Aus 3.1 (Überarbeitung):**
 
 - **Pink im Fokus:**
   - kein „Pink Tief“ (`#6d0d45`) mehr, nur noch als Schattenfarbe;
