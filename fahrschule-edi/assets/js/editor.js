@@ -27,7 +27,74 @@
 	var ServerSideRender   = wp.serverSideRender;
 	var __                 = wp.i18n.__;
 
+	var MediaUpload        = wp.blockEditor.MediaUpload;
+	var MediaUploadCheck   = wp.blockEditor.MediaUploadCheck;
+	var useRef             = wp.element.useRef;
+	var useEffect          = wp.element.useEffect;
+
 	var blocks = window.FahrschuleBlocks || [];
+
+	/* Spalte eines Wiederholfelds: Zeichenkette (bis 3.3) = Textfeld. */
+	function spalte( c ) { return 'string' === typeof c ? { label: c, type: 'text' } : c; }
+	function istId( v ) { return /^\d+$/.test( String( v || '' ) ); }
+	var GROSS = 5 * 1024 * 1024;   // Hinweis ab 5 MB je Video
+	function mb( bytes ) { return ( bytes / 1048576 ).toFixed( 1 ).replace( '.', ',' ) + ' MB'; }
+
+	/*
+	 * Zelle vom Typ image/video: Mediathek-Auswahl. Upload und Auswahl sind in
+	 * WordPress dasselbe - die Mediathek bringt den Reiter „Dateien hochladen“
+	 * mit. Die Zelle hält die Attachment-ID (übersteht Domain-, HTTPS- und
+	 * Systemwechsel). Alte Werte (Slug, URL) bleiben stehen, bis jemand ersetzt.
+	 * Nach „Entfernen“ geht der Fokus auf „Auswählen“ zurück.
+	 */
+	function MediaZelle( p ) {
+		var knopf   = useRef( null );
+		var vorher  = useRef( p.value );
+		useEffect( function () {
+			if ( vorher.current && ! p.value && knopf.current ) { knopf.current.focus(); }
+			vorher.current = p.value;
+		}, [ p.value ] );
+		var wort  = 'video' === p.typ ? __( 'Video', 'fahrschule-edi' ) : __( 'Bild', 'fahrschule-edi' );
+		var m     = p.media;
+		var info  = null;
+		if ( p.value && ! istId( p.value ) ) {
+			info = el( 'code', { style: { display: 'block', fontSize: '11px', wordBreak: 'break-all' } }, __( 'Alter Wert (bleibt gültig): ', 'fahrschule-edi' ) + p.value );
+		} else if ( p.value && ! m ) {
+			info = el( 'span', { style: { fontSize: '12px' } }, __( 'Wird geladen …', 'fahrschule-edi' ) );
+		} else if ( p.value && 'image' === p.typ ) {
+			var sizes = m.media_details && m.media_details.sizes;
+			info = el( 'img', { src: sizes && sizes.thumbnail ? sizes.thumbnail.source_url : m.source_url, alt: '', style: { width: '64px', height: '64px', objectFit: 'cover', display: 'block' } } );
+		} else if ( p.value ) {
+			var datei = String( m.source_url || '' ).split( '/' ).pop();
+			var bytes = m.media_details && m.media_details.filesize;
+			info = el( 'span', { style: { display: 'block', fontSize: '12px' } }, datei,
+				bytes > GROSS ? el( 'strong', { style: { display: 'block', color: '#a00' } }, __( 'Groß: ', 'fahrschule-edi' ) + mb( bytes ) + __( ' – bitte aufbereiten (siehe Redaktionsdokument).', 'fahrschule-edi' ) ) : null );
+		}
+		return el( 'div', { style: { marginBottom: '12px' } },
+			el( 'span', { style: { display: 'block', fontSize: '11px', fontWeight: 500, textTransform: 'uppercase', marginBottom: '6px' } }, p.label ),
+			info,
+			el( 'div', { style: { display: 'flex', gap: '8px', marginTop: '6px' } },
+				el( MediaUploadCheck, null,
+					el( MediaUpload, {
+						allowedTypes: [ p.typ ],
+						value: istId( p.value ) ? parseInt( p.value, 10 ) : undefined,
+						onSelect: function ( media ) { p.onChange( String( media.id ) ); },
+						render: function ( o ) {
+							return el( Button, {
+								ref: knopf, variant: 'secondary', isSmall: true, onClick: o.open,
+								'aria-label': wort + ' ' + __( 'für Zeile', 'fahrschule-edi' ) + ' ' + p.zeile + ' ' + ( p.value ? __( 'ersetzen', 'fahrschule-edi' ) : __( 'auswählen', 'fahrschule-edi' ) )
+							}, p.value ? __( 'Ersetzen', 'fahrschule-edi' ) : __( 'Auswählen', 'fahrschule-edi' ) );
+						}
+					} )
+				),
+				p.value ? el( Button, {
+					variant: 'link', isDestructive: true, isSmall: true,
+					'aria-label': wort + ' ' + __( 'aus Zeile', 'fahrschule-edi' ) + ' ' + p.zeile + ' ' + __( 'entfernen', 'fahrschule-edi' ),
+					onClick: function () { p.onChange( '' ); }
+				}, __( 'Entfernen', 'fahrschule-edi' ) ) : null
+			)
+		);
+	}
 
 	blocks.forEach( function ( block ) {
 
@@ -53,6 +120,21 @@
 			edit: function ( props ) {
 				var attrs   = props.attributes;
 				var setAttr = props.setAttributes;
+
+				// Medien der Mediathek-Spalten aus dem Datenspeicher (cached sich selbst).
+				var ids = [];
+				( block.fields || [] ).forEach( function ( f ) {
+					if ( 'repeater' !== f.control || ! Array.isArray( attrs[ f.key ] ) ) { return; }
+					( f.columns || [] ).map( spalte ).forEach( function ( c, ci ) {
+						if ( 'text' === c.type ) { return; }
+						attrs[ f.key ].forEach( function ( row ) { if ( Array.isArray( row ) && istId( row[ ci ] ) ) { ids.push( parseInt( row[ ci ], 10 ) ); } } );
+					} );
+				} );
+				var medien = wp.data.useSelect( function ( select ) {
+					var out = {};
+					ids.forEach( function ( id ) { out[ id ] = select( 'core' ).getMedia( id ); } );
+					return out;
+				}, [ ids.join( ',' ) ] );
 
 				/*
 				 * Ein Feld auf die Vorgabe zurücksetzen heißt: das Attribut
@@ -102,17 +184,28 @@
 				 * der Spaltenreihenfolge aus der Blockkonfiguration.
 				 */
 				function repeaterControl( f ) {
-					var cols = f.columns || [];
+					var cols = ( f.columns || [] ).map( spalte );
 					var rows = Array.isArray( attrs[ f.key ] ) ? attrs[ f.key ] : [];
 
 					function write( next ) { var u = {}; u[ f.key ] = next; setAttr( u ); }
 					function clone() { return rows.map( function ( r ) { return Array.isArray( r ) ? r.slice() : [ r ]; } ); }
 
 					var rowEls = rows.map( function ( row, i ) {
-						var cells = cols.map( function ( colLabel, c ) {
+						var cells = cols.map( function ( col, c ) {
+							if ( 'text' !== col.type ) {
+								return el( MediaZelle, {
+									key:      f.key + '-' + i + '-' + c,
+									label:    col.label,
+									typ:      col.type,
+									zeile:    i + 1,
+									value:    row[ c ] === undefined ? '' : String( row[ c ] ),
+									media:    istId( row[ c ] ) ? medien[ parseInt( row[ c ], 10 ) ] : null,
+									onChange: function ( v ) { var n = clone(); n[ i ][ c ] = v; write( n ); }
+								} );
+							}
 							return el( TextControl, {
 								key:      f.key + '-' + i + '-' + c,
-								label:    colLabel,
+								label:    col.label,
 								value:    row[ c ] === undefined ? '' : row[ c ],
 								onChange: function ( v ) { var n = clone(); n[ i ][ c ] = v; write( n ); }
 							} );

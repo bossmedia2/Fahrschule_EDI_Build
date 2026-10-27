@@ -56,13 +56,22 @@ function fahrschule_blocks_config() {
 	 * die bisher fest in den Render-Callbacks standen und im Editor
 	 * unerreichbar waren.
 	 *
-	 * $columns – Spaltenbeschriftungen, in der Reihenfolge der Zeilenwerte
+	 * $columns – Spalten in der Reihenfolge der Zeilenwerte: Beschriftung als
+	 *            Zeichenkette (Textfeld) oder array( 'label', 'type' ) mit
+	 *            type text | image | video (Mediathek, Zelle = Attachment-ID)
 	 * $rows    – Vorgabezeilen; jede Zeile ist eine Liste in Spaltenreihenfolge
 	 */
 	// $probe (nur für die Prüfkette): gültige Testzeile und der Text, der dann
 	// in der Ausgabe stehen muss - für Spalten, die Schlüssel statt freien
 	// Text enthalten (eine Fantasie-Seite würde zu Recht nicht angezeigt).
 	$rep = function ( $rows, $label, $columns, $probe = null ) {
+		/* Spaltentypen: Eine Spalte ist eine Zeichenkette (= Textfeld, wie bis
+		   3.3) oder array( 'label' => …, 'type' => text|image|video ). image
+		   und video öffnen im Editor die Mediathek; die Zelle hält dann die
+		   Attachment-ID. Bestehende Aufrufe bleiben gültig. */
+		$columns = array_map( function ( $c ) {
+			return is_array( $c ) ? $c + array( 'type' => 'text' ) : array( 'label' => $c, 'type' => 'text' );
+		}, $columns );
 		return array(
 			'default' => $rows,
 			'label'   => $label,
@@ -293,7 +302,7 @@ function fahrschule_blocks_config() {
 		   Block steht. Inhaltlich: EIN TikTok-Video im Embed Player (Iframe),
 		   erst nach Einwilligung - davor ein Platzhalter. */
 		'fahrschule/instagram-slider' => array(
-			'title' => 'TikTok-Video (Player)', 'description' => 'Ein von Hand gewähltes TikTok-Video im Embed Player von TikTok (isoliertes Iframe, kein Skript in der Seite). Ohne Einwilligung steht nur ein Platzhalter mit „Video laden“ im HTML; das Iframe lädt erst danach.',
+			'title' => 'TikTok-Player (ein Video)', 'description' => 'Bettet ein einzelnes TikTok-Video ein. Lädt erst nach Einwilligung, Inhalt liegt bei TikTok.',
 			'icon' => 'video-alt3', 'keywords' => array( 'tiktok', 'video', 'social', 'player' ),
 			'render' => 'fs_render_instagram_slider', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Erfahrungen',
 			'fields' => array(
@@ -312,6 +321,31 @@ function fahrschule_blocks_config() {
 				'instaHandle'  => $t( '', 'Instagram: @-Name (alt)', 'text' ) + array( 'legacy' => true ),
 				'instaUrl'     => $t( '', 'Instagram: Profil-Link (alt)', 'url' ) + array( 'legacy' => true ),
 				'url'          => $t( '', 'Instagram-URL (alt)', 'url' ) + array( 'legacy' => true ),
+			),
+		),
+		/* Social-Raster: bis zu sechs EIGENE Videodateien aus der Mediathek.
+		   Spielt sofort, ohne Einwilligung - nichts kommt von Dritten. Der
+		   TikTok-Player oben bleibt daneben bestehen; die Redaktion wählt je
+		   Seite. Video und Standbild sind Mediathek-Spalten (Attachment-ID). */
+		'fahrschule/social-raster' => array(
+			'title' => 'Social-Raster (eigene Videos)', 'description' => 'Bis zu sechs eigene Videodateien aus der Mediathek. Spielt sofort, ohne Einwilligung.',
+			'icon' => 'format-video', 'keywords' => array( 'video', 'social', 'raster', 'tiktok', 'reels' ),
+			'render' => 'fs_render_social_raster', 'pattern' => true, 'may_be_empty' => true, 'page' => 'Erfahrungen',
+			'fields' => array(
+				'heading'     => $t( '', 'Überschrift (leer = ausblenden)', 'text' ),
+				// Profil aus den Stammdaten (inc/seo.php), wie beim Player.
+				'profilLabel' => $t( fs_social_profil( 'tiktok' )['handle'], 'Profil-Knopf: Beschriftung, z. B. das Handle (leer = kein Knopf)', 'text' ),
+				'profilUrl'   => $t( fs_social_profil( 'tiktok' )['url'], 'Profil-Knopf: Link', 'url' ),
+				'items'       => $rep(
+					array_fill( 0, 6, array( '', '', '' ) ),
+					'Kachel',
+					array(
+						array( 'label' => 'Video (Pflicht – ohne Video erscheint die Kachel nicht)', 'type' => 'video' ),
+						array( 'label' => 'Standbild (dringend empfohlen – leer lädt jede Kachel zusätzlich das erste Videobild)', 'type' => 'image' ),
+						'Titel (kurz, höchstens zwei Zeilen – zugleich Name für Screenreader)',
+					),
+					array( array( '901', '', 'ZZPROBEZZ' ), 'ZZPROBEZZ' )
+				),
 			),
 		),
 		'fahrschule/faq' => array(

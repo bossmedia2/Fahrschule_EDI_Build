@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'FAHRSCHULE_VERSION', '3.3.0' ); // bei Änderungen an assets/css|js erhöhen (Cache-Busting über ?ver=)
+define( 'FAHRSCHULE_VERSION', '3.4.0' ); // bei Änderungen an assets/css|js erhöhen (Cache-Busting über ?ver=)
 define( 'FAHRSCHULE_DIR', get_template_directory() );
 define( 'FAHRSCHULE_URI', get_template_directory_uri() );
 
@@ -72,7 +72,7 @@ function fahrschule_register_assets() {
 	wp_register_script(
 		'fahrschule-editor',
 		FAHRSCHULE_URI . '/assets/js/editor.js',
-		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n', 'wp-data' ),
+		array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n', 'wp-data', 'wp-core-data' ),
 		FAHRSCHULE_VERSION,
 		true
 	);

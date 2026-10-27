@@ -1,6 +1,6 @@
 # Fahrschule edi – Blöcke, Vorlagen, Seiten
 
-Stand Theme 3.3.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
+Stand Theme 3.4.0. Ergänzend: **FARBSYSTEM.md** (Farben, Kontraste),
 **assets_image_list.md** (Bilder, Bild-Skript), **SETUP.md** (Einrichtung).
 
 Die beiden Tabellen unten erzeugt `php bin/docs-tabellen.php` aus dem Code;
@@ -98,6 +98,31 @@ Markup aus.
 | Rechtstext | `page-recht` | legal |
 | Landingpage | `page` (Standard) | vertrauensleiste, klassen-kacheln, testimonials, anmeldung |
 
+**Zwei Social-Blöcke – die Redaktion wählt je Seite:**
+
+| Block | Titel im Inserter | was er tut |
+|---|---|---|
+| `instagram-slider` | TikTok-Player (ein Video) | Bettet ein einzelnes TikTok-Video ein. Lädt erst nach Einwilligung, Inhalt liegt bei TikTok. |
+| `social-raster` | Social-Raster (eigene Videos) | Bis zu sechs eigene Videodateien aus der Mediathek. Spielt sofort, ohne Einwilligung. |
+
+**Social-Raster.** Felder: Überschrift, Profil-Knopf (Beschriftung und
+Link), Fläche, Kacheln (Wiederholfeld, höchstens sechs) mit den Spalten
+Video (Pflicht), Standbild (dringend empfohlen) und Titel.
+
+- Raster: 3 Spalten ab 1024 px, 2 ab 640 px, darunter 1; Kachel 9:16.
+- Zeilen ohne Video fallen weg, die übrigen rücken auf; die siebte wird
+  ignoriert. Ohne gepflegte Zeile entfällt der Abschnitt.
+- Je Kachel `<video controls playsinline>` mit dem Titel als `aria-label`
+  („Video N“ ohne Titel). Mit Standbild `preload="none"` und `poster`, ohne
+  Standbild `preload="metadata"` (erstes Bild statt schwarzem Kasten). Kein
+  autoplay, kein loop, kein Link um die Kachel.
+- Der Titel steht unter dem Bild auf der Abschnittsfläche (Kontrast wie
+  Fließtext). Startet eine Kachel, pausieren die anderen (`frontend.js`);
+  ohne Skript spielt jede Kachel trotzdem.
+- Editor: dieselbe Ausgabe; zusätzlich nennt ein Hinweis Zeilen ohne
+  Video, überzählige Zeilen und Videos über 5 MB (mit Größe). Er blockiert
+  nichts.
+
 **Fläche je Abschnitt.** Jeder Inhaltsblock hat das Feld „Fläche“:
 Vollpink (Vorgabe) · Hellpink · Leiste (nur schmale Bänder) · Foto (mit
 Medien-Slug im Feld darunter). Das Feld setzt nur den Farbkontext, siehe
@@ -116,6 +141,17 @@ Footer, Badges, Brotkrumen, Stellen-Einzelansicht, die Heroes.
 - **Listen sind Wiederholfelder:** Hinzufügen, Löschen, Sortieren. Sie werden
   als `array` registriert; ab 3.0 auch im Editor-Skript, vorher verwarf der
   Editor gespeicherte Listen beim Neuladen.
+- **Spaltentypen (seit 3.4):** Eine Spalte ist eine Zeichenkette (= Textfeld,
+  wie bisher) oder `array( 'label' => …, 'type' => 'image' | 'video' )`.
+  Medienspalten öffnen die Mediathek (Upload über deren Reiter „Dateien
+  hochladen“), auf Bilder bzw. Videos begrenzt; die Zelle hält die
+  **Attachment-ID**, nicht die URL. Leere Zelle: „Auswählen“; gefüllte:
+  Vorschau bzw. Dateiname, „Ersetzen“, „Entfernen“ (danach Fokus zurück auf
+  „Auswählen“). Aufgelöst wird über `fs_media_wert()` – ID, URL und alter
+  Datei-Slug gelten gleichermaßen; nichts wird beim Speichern umgeschrieben.
+  Bisher nutzt nur das Social-Raster Medienspalten. Weitere Blöcke (Logos,
+  Teamfotos …) einzeln umstellen: eine Spalte von `'Logo'` auf
+  `array( 'label' => 'Logo', 'type' => 'image' )`.
 - **Leere Kontaktfelder bedeuten „aus den Stammdaten“:** Standort-Hero und
   Karte holen Adresse, Telefon, E-Mail und Öffnungszeiten über die Stadt.
   Ins Seitenmarkup wird keine Kopie geschrieben.
@@ -151,7 +187,8 @@ gibt der Block nichts aus, etwa die Galerie ohne Bilder.
 | `team-spirit` | Team Spirit | Wert (Liste) · Badge · Überschrift · Hervorgehobenes Wort · Text · Zitat · Zitat-Autor · Video-URL · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /ueber-uns/team |
 | `fleet-facilities` | Flotte & Einrichtungen | Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /moderne-ausbildung |
 | `testimonials` | Testimonials | Eyebrow · Überschrift · Untertitel · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | / |
-| `instagram-slider` | TikTok-Video (Player) | TikTok-Video-URL (z. B. https://www.tiktok.com/@edi_fahrschule/video/…) · Überschrift (leer = ausblenden) · Profil-Link für den Knopf (leer = ausblenden) · Kachel (alt) (Liste) · TikTok: @-Name (alt) · TikTok: Profil-Link (alt) · Hervorgehobenes Wort (alt) · Untertitel (alt) · Instagram: @-Name (alt) · Instagram: Profil-Link (alt) · Instagram-URL (alt) · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | ja | /ueber-uns/erfahrungen |
+| `instagram-slider` | TikTok-Player (ein Video) | TikTok-Video-URL (z. B. https://www.tiktok.com/@edi_fahrschule/video/…) · Überschrift (leer = ausblenden) · Profil-Link für den Knopf (leer = ausblenden) · Kachel (alt) (Liste) · TikTok: @-Name (alt) · TikTok: Profil-Link (alt) · Hervorgehobenes Wort (alt) · Untertitel (alt) · Instagram: @-Name (alt) · Instagram: Profil-Link (alt) · Instagram-URL (alt) · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | ja | /ueber-uns/erfahrungen |
+| `social-raster` | Social-Raster (eigene Videos) | Überschrift (leer = ausblenden) · Profil-Knopf: Beschriftung, z. B. das Handle (leer = kein Knopf) · Profil-Knopf: Link · Kachel (Liste) · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | ja | nur als Pattern/Block einfügbar |
 | `faq` | FAQ | Eyebrow · Überschrift · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /faq, /preise |
 | `cta` | CTA / Kontakt | Kennzahl (Liste) · Überschrift · Hervorgehobenes Wort · Lead-Text · Telefon · E-Mail · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /kontakt |
 | `about-intro` | Über uns – Intro | Eyebrow · Überschrift · Hervorgehobenes Wort · Absatz 1 · Absatz 2 · Absatz 3 · Abschnittskopf (Label + Überschrift) anzeigen · Fläche · Bild für Fläche „Foto“ (Medien-Slug, z. B. edi-galerie-001) | nein | /ueber-uns |
@@ -285,14 +322,18 @@ Exit-Code ungleich 0, übersprungene Schritte stehen am Ende als Liste.
    - Seitenanlage (zwei Aktivierungen, Rahmen im Inhalt, Neuaufbau nur auf
      Bestätigung), Hero (Video/Standbild), TikTok-Player (Iframe nur mit
      Zustimmung, sonst Platzhalter),
-     Doku-Tabellen;
+     Social-Raster (Spaltentypen, 0/1/3/6/7 Zeilen, Markup je Kachel, alte
+     Werte), Editor (Mediathek-Spalten: Typ, ID, Fokus; übrige Wiederholer
+     unverändert), Doku-Tabellen;
    - Theme ohne mbstring: alle Seiten noch einmal mit abgeschalteten
      `mb_`-Funktionen.
 3. Farben: Kontext-Tokens (kein Pink Tief, Hover nur aus `--c-*`), Kontrast
    rechnerisch je Fläche, Flächenfolge je Seite.
 4. Browser bei 390, 768, 1024, 1280, 1512 und 1920 px: Überlauf, Kontrast in
    allen Zuständen inkl. offener Menüs, Fokusring, TikTok-Player (vor dem
-   Klick keine Anfrage, danach genau eine), keine Abrufe bei Dritten.
+   Klick keine Anfrage, danach genau eine), Social-Raster (Spalten je Breite,
+   kein Video vor dem Abspielen, Tastatur, eine Kachel zugleich, ohne
+   JavaScript), keine Abrufe bei Dritten.
 5. Tailwind: entfällt (keine Quelle; das CSS ist handgeschrieben).
 6. Build: Theme- und Plugin-ZIP, Theme unter 2 MB.
 

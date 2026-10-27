@@ -1,11 +1,11 @@
 # Einrichtung und Live-Checkliste
 
-Abschnitt 0 beschreibt die Einrichtung von Theme 3.3 (Block-Theme). Die
+Abschnitt 0 beschreibt die Einrichtung von Theme 3.4 (Block-Theme). Die
 Abschnitte 1–9 sind die manuelle Checkliste für die Live-Instanz.
 
 ---
 
-## 0. Einrichtung Theme 3.3
+## 0. Einrichtung Theme 3.4
 
 ### 0.0 Prüfkette auf dem eigenen Rechner
 
@@ -120,6 +120,25 @@ manuell, nicht im Gate: `python3 bin/checks/test_edi_bilder.py`.
       HTML; „Video laden“ gilt für die Sitzung, „Alle akzeptieren“ bis zum
       Widerruf. Die Formulierung ist ein Entwurf nach TikToks eigenen
       Angaben, keine Rechtsberatung.
+- [ ] **Social-Raster** (Alternative zum Player, je Seite wählbar): im Block
+      „Social-Raster (eigene Videos)“ je Kachel Video und Standbild über
+      „Auswählen“ aus der Mediathek wählen (dort auch hochladen) und einen
+      kurzen Titel eintragen. Ein Hinweis im Editor meldet Videos über 5 MB.
+      **Aufbereitung der Videodateien** (Format, Größe, Standbild, Rechte- und
+      Einwilligungsprüfung der gezeigten Personen) steht im
+      Redaktionsdokument, nicht hier.
+- [ ] **Offen – Untertitel für das Social-Raster:** Videos mit gesprochenem
+      Inhalt brauchen nach WCAG Untertitel. Noch nicht umgesetzt: WordPress
+      lässt `.vtt`-Dateien ohne `upload_mimes`-Filter nicht in die Mediathek,
+      und es gibt noch keine Untertiteldateien. Bis dahin nur Videos ohne
+      gesprochenen Inhalt verwenden, Aussagen als Text ins Bild. Sobald Videos
+      mit Sprache kommen: `upload_mimes` um `vtt` erweitern und eine vierte
+      Spalte nach demselben Muster (Typ wie Video/Bild) ergänzen, ausgegeben
+      als `<track kind="captions">`.
+- **Standbilder im Social-Raster laden sofort:** Ein `poster` kennt kein
+  `loading="lazy"`; sechs Standbilder lädt der Browser also beim Aufruf.
+  Deshalb Standbilder klein halten (Redaktionsdokument). Die Videos selbst
+  laden erst beim Abspielen.
 - **Betrieb:** TikTok begrenzt die Nutzung des Players je Domain. Mit einem
   Player ist das unkritisch; fällt er doch aus, zeigt das Iframe TikToks
   eigene Meldung – daran lässt sich von außen nichts ändern.
@@ -295,7 +314,7 @@ Startseite, Unterseite und Editor-Vorgabe zugleich.
 Bis 2.x rendert das Theme leere Seiten zur Laufzeit aus der Registry. Ab 3.0
 rendert die Block-Vorlage den Seiteninhalt (`post_content`).
 
-- [ ] Theme 3.3.0 einspielen und einmal das Backend aufrufen. Die Migration
+- [ ] Theme 3.4.0 einspielen und einmal das Backend aufrufen. Die Migration
       (`fahrschule_migrate_content()`) füllt jede Registry-Seite mit **leerem**
       Inhalt und setzt ihre Vorlage. Seiten **mit** Inhalt bleiben unangetastet.
 - [ ] Unter **Seiten** jede Seite mit eigenem Inhalt öffnen. Seit 3.2 steht
@@ -341,7 +360,7 @@ ohne Seitenkopf und Handlungsaufruf.
 
 ## 9. Cache leeren
 
-- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.3.0`
+- [ ] Page-Cache/CDN nach dem Update leeren. CSS/JS werden jetzt mit `?ver=3.4.0`
       ausgeliefert (Browser laden die geänderte `main.css` damit automatisch), ein
       Page-Cache würde aber weiter das alte HTML zeigen.
 
@@ -358,7 +377,7 @@ ohne Seitenkopf und Handlungsaufruf.
 | 5 | `readme.html` löschen, `Options -Indexes`, `.md`-Dateien schützen | ⬜ Nein – erfordert Server-Zugriff |
 | 6 | `DISABLE_WP_CRON` + echter Server-Cronjob | ⬜ Nein – erfordert Server-Zugriff |
 | 7 | „Discourage indexing" in Produktion ausgeschaltet prüfen | ⬜ Nein – erfordert Live-Zugriff |
-| 8 | Theme 3.3.0 einspielen, Seiten aus Startmuster neu aufbauen (Sammelaktion), angepasste Vorlagen (404 u. a.) zurücksetzen, Flächen prüfen | ⬜ Nein – erfordert Live-Zugriff |
+| 8 | Theme 3.4.0 einspielen, Seiten aus Startmuster neu aufbauen (Sammelaktion), angepasste Vorlagen (404 u. a.) zurücksetzen, Flächen prüfen | ⬜ Nein – erfordert Live-Zugriff |
 | 9 | Page-Cache/CDN leeren | ⬜ Nein – erfordert Live-Zugriff |
 
 Theme-seitig bereits umgesetzt (siehe `inc/security.php`): XML-RPC deaktiviert,

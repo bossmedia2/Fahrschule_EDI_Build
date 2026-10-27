@@ -449,6 +449,80 @@ if (pages.includes('_social.html')) {
   fremd.length = vorher;   // die gewollte Anfrage zählt nicht als Abruf ohne Einwilligung
 }
 
+// ---------- 4c) Social-Raster (Prüfseite _raster, fünf Kacheln) ---------
+// Laden: nur Standbilder, kein Video vor dem Abspielen. Raster 3/2/1.
+// Bedienung: <video> per Tab, Leertaste startet, eine Kachel pausiert die
+// andere; ohne JavaScript spielt die Kachel trotzdem.
+if (pages.includes('_raster.html')) {
+  console.log('\nSocial-Raster');
+  const rbad = [];
+  for (const [w, soll] of [[1280, 3], [1024, 3], [800, 2], [640, 2], [390, 1]]) {
+    await page.setViewportSize({ width: w, height: 900 });
+    await page.goto('file://' + dir + '/_raster.html');
+    const g = await page.evaluate(() => {
+      const k = [...document.querySelectorAll('.fs-raster__kachel')].map(e => e.getBoundingClientRect());
+      const r = [...document.querySelectorAll('.fs-raster__rahmen')].map(e => e.getBoundingClientRect());
+      return { cols: new Set(k.map(x => Math.round(x.left))).size, ratio: r.every(x => Math.abs(x.height / x.width - 16 / 9) < 0.02),
+               ov: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+    });
+    if (g.cols !== soll) rbad.push(`${w}px: ${g.cols} Spalten statt ${soll}`);
+    if (!g.ratio) rbad.push(`${w}px: Kachel nicht 9:16`);
+    if (g.ov > 0) rbad.push(`${w}px: ${g.ov}px horizontaler Überlauf`);
+  }
+  // Laden: alle Anfragen der Seite mitschreiben (auch lokale).
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const anfragen = [];
+  const mit = r => anfragen.push(r.url());
+  page.on('request', mit);
+  await page.goto('file://' + dir + '/_raster.html');
+  await page.waitForTimeout(500);
+  const videoVorher = anfragen.filter(u => /\.(webm|mp4)(\?|$)/.test(u));
+  const lade = await page.evaluate(() => [...document.querySelectorAll('.fs-raster video')].map(v => ({ pre: v.preload, rs: v.readyState, label: v.getAttribute('aria-label') || '', poster: v.hasAttribute('poster') })));
+  const poster = await page.evaluate(() => [...document.querySelectorAll('.fs-raster video')].filter(v => v.preload === 'none').every(v => v.poster));
+  // preload=metadata (Kachel ohne Standbild) darf den Dateikopf holen - sonst nichts.
+  const zuViel = videoVorher.length > lade.filter(v => v.pre === 'metadata').length;
+  if (zuViel) rbad.push(`vor dem Abspielen ${videoVorher.length} Video-Anfragen (erlaubt: ${lade.filter(v => v.pre === 'metadata').length} für Kacheln ohne Standbild)`);
+  if (lade.some(v => v.pre === 'none' && v.rs > 0)) rbad.push('ein Video mit preload=none hat schon geladen');
+  if (lade.some(v => !v.label.trim())) rbad.push('<video> ohne aria-label');
+  if (!poster) rbad.push('Kachel mit preload=none ohne poster');
+  const sonst = anfragen.filter(u => !/\.(webm|mp4|jpg|jpeg|png|webp|svg|css|js|html|woff2?)(\?|$)/.test(u) && !u.startsWith('data:'));
+  if (sonst.length) rbad.push('weitere Anfragen: ' + sonst.slice(0, 3).join(' '));
+  if (await page.locator('.fs-raster a').count()) rbad.push('Link in einer Kachel');
+  // Tastatur: Tab erreicht das erste Video, Leertaste startet es.
+  let fokus = false;
+  await page.focus('body');
+  for (let t = 0; t < 80 && !fokus; t++) {
+    await page.keyboard.press('Tab');
+    fokus = await page.evaluate(() => document.activeElement && document.activeElement.matches('.fs-raster video'));
+  }
+  if (!fokus) rbad.push('<video> per Tab nicht erreichbar');
+  else {
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(600);
+    const laeuft = await page.evaluate(() => !document.querySelector('.fs-raster video').paused);
+    if (!laeuft) rbad.push('Leertaste startet das Video nicht');
+    // Eine zweite Kachel starten: die erste pausiert.
+    await page.evaluate(() => document.querySelectorAll('.fs-raster video')[1].play());
+    await page.waitForTimeout(600);
+    const st = await page.evaluate(() => [...document.querySelectorAll('.fs-raster video')].map(v => v.paused));
+    if (!st[0] || st[1]) rbad.push(`zweite Kachel gestartet: erste pausiert ${st[0]}, zweite läuft ${!st[1]}`);
+  }
+  page.off('request', mit);
+  // Ohne JavaScript: spielt trotzdem (native Steuerelemente).
+  const ctx = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1280, height: 900 } });
+  const p2 = await ctx.newPage();
+  await p2.route(/^(?!file:|data:|blob:|about:)/, r => { fremd.push(r.request().url()); r.abort(); });
+  await p2.goto('file://' + dir + '/_raster.html');
+  await p2.focus('.fs-raster video');
+  await p2.keyboard.press('Space');
+  await p2.waitForTimeout(600);
+  const ohneJs = await p2.evaluate(() => !document.querySelector('.fs-raster video').paused);
+  if (!ohneJs) rbad.push('ohne JavaScript startet die Kachel nicht');
+  await ctx.close();
+  for (const x of rbad) fail('Social-Raster: ' + x);
+  if (!rbad.length) ok(`Social-Raster: 3/2/1 Spalten bei 1280-1024/800-640/390px, Kacheln 9:16; vor dem Abspielen kein Video geladen (nur Dateikopf der Kachel ohne Standbild), Standbilder als poster; Tab + Leertaste startet, zweite Kachel pausiert die erste, ohne JavaScript spielt sie trotzdem`);
+}
+
 // ---------- 5) Keine Drittanbieter-Abrufe ohne Einwilligung -------------
 console.log('\nDrittanbieter (harte Regel 6)');
 if (fremd.length) for (const u of [...new Set(fremd)].slice(0, 10)) fail('Abruf ohne Einwilligung: ' + u);

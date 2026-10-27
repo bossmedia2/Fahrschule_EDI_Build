@@ -101,7 +101,17 @@ function fs_media( $key, $fallback = '' ) {
 	if ( ! isset( $map[ $key ] ) || '' === $map[ $key ] ) {
 		return $fallback;
 	}
-	$value = $map[ $key ];
+	return fs_media_wert( $map[ $key ], $fallback );
+}
+
+/**
+ * Einen Medienwert auflösen - aus der Medienliste oder aus einer Zelle eines
+ * Wiederholfelds: Attachment-ID (Mediathek-Auswahl, seit 3.4), URL bzw.
+ * absoluter Pfad, oder Datei-Slug (Mediathek, dann Theme). Gespeicherte
+ * Werte werden nie umgeschrieben - alle drei Formen lösen weiter auf.
+ */
+function fs_media_wert( $value, $fallback = '' ) {
+	if ( '' === $value || null === $value ) { return $fallback; }
 
 	// Ausdrückliche Attachment-ID.
 	if ( is_numeric( $value ) ) {

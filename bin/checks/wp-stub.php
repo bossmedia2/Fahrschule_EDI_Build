@@ -51,7 +51,7 @@ function body_class($c=''){echo 'class="fahrschule-theme '.esc_attr(is_array($c)
 function post_class($c=''){echo 'class="post page"';}
 function wp_head(){} function wp_footer(){} function wp_body_open(){}
 function wp_enqueue_style(){} function wp_enqueue_script(){} function wp_register_style(){} function wp_register_script(){}
-function wp_localize_script(){} function wp_add_inline_script(){}
+function wp_localize_script($h='',$n='',$d=null){ $GLOBALS['__localized'][$n]=$d; return true; } function wp_add_inline_script(){}
 function register_block_type($n,$a=[]){ $GLOBALS['__blocks'][$n]=$a; return true; }
 function register_block_pattern($n,$a=[]){ $GLOBALS['__patterns'][$n]=$a; return true; }
 function register_block_pattern_category($n,$a=[]){ return true; }
@@ -117,6 +117,7 @@ function get_posts($a=[]){
   $out=[]; foreach(array_slice($names,0,$a['posts_per_page']??10) as $i=>$nm){ $out[]=new WP_Post(['ID'=>1000+$i,'post_name'=>$nm,'post_type'=>'attachment']); }
   return $out;
 }
+function wp_get_attachment_metadata($id){ return $GLOBALS['__att_meta'][$id] ?? array(); }
 function wp_get_attachment_image_url($id,$s='full'){return '/wp-content/uploads/stub-'.$id.'.jpg';}
 function get_post_meta($id,$k='',$single=false){ $v=$GLOBALS['__meta'][$id][$k]??null; return $single?($v??''):($v===null?[]:[$v]); }
 function get_post_thumbnail_id($p=null){return 0;} function has_post_thumbnail($p=null){return false;}

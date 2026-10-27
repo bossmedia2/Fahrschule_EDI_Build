@@ -10,14 +10,23 @@ er auf die drei bestehenden Fachdokumente:
 - **BLOCKS-PATTERNS.md** – jeder Block einzeln mit Feldern, Icons, Zielseite
 - **SEO-UND-AUDIT.md** – der ursprüngliche Code-Audit und die SEO-Grundlagen im Detail
 
-Stand: Theme 3.3.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung von 3.3/3.2,
+Stand: Theme 3.4.0 / Plugin 2.0.0 (Oktober 2026). Kurzfassung von 3.4/3.3/3.2,
 der Überarbeitung (3.1) und der Runde 4 (3.0) in Abschnitt 0; die Abschnitte 1–3
 beschreiben die Komponenten im heutigen Zustand, Änderungsverlauf in
 `CHANGELOG.md`.
 
 ---
 
-## 0. Stand 3.3 auf einen Blick
+## 0. Stand 3.4 auf einen Blick
+
+**Neu in 3.4:**
+
+- **Wiederholer mit Spaltentypen:** Spalten können Bild oder Video sein und
+  öffnen dann die Mediathek; die Zelle hält die Attachment-ID. Alle
+  bisherigen Wiederholer sind unverändert Textspalten.
+- **Social-Raster (eigene Videos):** zweiter Social-Block neben dem
+  TikTok-Player, bis zu sechs Videos aus der Mediathek, ohne Einwilligung,
+  Videos laden erst beim Abspielen.
 
 **Neu in 3.2 und 3.3:**
 

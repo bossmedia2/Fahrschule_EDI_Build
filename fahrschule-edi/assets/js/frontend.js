@@ -302,6 +302,16 @@
 			} );
 		}
 
+		/* ---------- Social-Raster: nur ein Video zugleich ----------
+		 * Reine Verbesserung: Ohne Skript spielt jede Kachel trotzdem (native
+		 * Steuerelemente), schlimmstenfalls zwei gleichzeitig. */
+		var rasterVideos = [].slice.call( document.querySelectorAll( '.fs-raster video' ) );
+		rasterVideos.forEach( function ( v ) {
+			on( v, 'play', function () {
+				rasterVideos.forEach( function ( o ) { if ( o !== v && ! o.paused ) { o.pause(); } } );
+			} );
+		} );
+
 		/* ---------- Fahrlehrer-Finder ----------
 		 * Ohne JavaScript bleiben schlicht alle Karten sichtbar - die
 		 * Filterleiste ist dann wirkungslos, aber nichts ist unerreichbar. */

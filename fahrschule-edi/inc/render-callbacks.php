@@ -630,6 +630,93 @@ function fs_social_profil( $plattform ) {
 }
 
 /* -------------------------------------------------------------------------
+ * SOCIAL-RASTER: bis zu sechs eigene Videos aus der Mediathek
+ *
+ * Neben dem TikTok-Player der zweite Social-Block. Nichts kommt von Dritten,
+ * also keine Einwilligung. Laden: preload="none" - der Browser holt nur das
+ * Standbild (loading="lazy"), das Video erst beim Abspielen. Ohne Standbild
+ * preload="metadata", damit statt eines schwarzen Kastens das erste Bild
+ * steht. Native Steuerelemente (Tastatur, Screenreader), playsinline (iOS
+ * bleibt in der Kachel), kein autoplay, kein loop. Die Kachel ist kein Link.
+ *
+ * Das Standbild ist das poster-Attribut. Es lädt sofort (für poster gibt es
+ * kein loading="lazy"); ein <img loading="lazy"> hinter dem Video taugt
+ * nicht als Ersatz - Chrome malt über ein Video ohne poster eine graue
+ * Fläche.
+ * ---------------------------------------------------------------------- */
+function fs_render_social_raster( $a ) {
+	$d = fs_attrs( $a, array(
+		'heading'     => '',
+		'profilLabel' => '',
+		'profilUrl'   => '',
+		'items'       => array(),
+	) );
+	$max      = 6;
+	$kacheln  = array();
+	$hinweise = array();
+	// Zeilennummern wie im Editor: leere Zeilen zählen mit (fs_rows ließe sie weg).
+	$zeilen = is_array( $d['items'] ) ? array_values( $d['items'] ) : fs_rows( $d['items'], 3 );
+	foreach ( $zeilen as $i => $z ) {
+		$z  = array_slice( array_pad( array_map( 'trim', array_map( 'strval', array_values( (array) $z ) ) ), 3, '' ), 0, 3 );
+		$nr = $i + 1;
+		// Zelle: Attachment-ID (Mediathek-Auswahl), alter Slug oder URL.
+		$video = fs_media_wert( $z[0] );
+		if ( '' === $video ) {
+			if ( '' !== $z[0] || '' !== $z[1] || '' !== $z[2] ) {
+				$hinweise[] = sprintf( 'Zeile %d: %s – erscheint nicht.', $nr, '' === $z[0] ? 'ohne Video' : 'Video „' . $z[0] . '“ nicht gefunden' );
+			}
+			continue;
+		}
+		if ( count( $kacheln ) >= $max ) {
+			$hinweise[] = sprintf( 'Zeile %d: mehr als sechs Kacheln – wird ignoriert.', $nr );
+			continue;
+		}
+		if ( preg_match( '/^\d+$/', $z[0] ) ) {
+			$meta = wp_get_attachment_metadata( (int) $z[0] );
+			if ( ! empty( $meta['filesize'] ) && $meta['filesize'] > 5 * 1048576 ) {
+				$hinweise[] = sprintf( 'Zeile %d: Video ist %s MB groß – bitte aufbereiten (Redaktionsdokument).', $nr, number_format( $meta['filesize'] / 1048576, 1, ',', '' ) );
+			}
+		}
+		$kacheln[] = array( 'video' => $video, 'bild' => fs_media_wert( $z[1] ), 'titel' => $z[2] );
+	}
+	$hinweis = $hinweise ? fs_editor_hint( 'Social-Raster:', implode( ' · ', $hinweise ) ) : '';
+	if ( ! $kacheln ) {
+		return $hinweis ? $hinweis : fs_editor_hint( 'Social-Raster:', 'Erscheint, sobald eine Zeile ein Video aus der Mediathek hat (bis zu sechs).' );
+	}
+	$profil    = trim( (string) $d['profilUrl'] );
+	$label     = trim( (string) $d['profilLabel'] );
+	$profil_pf = false !== strpos( $profil, 'instagram.com' ) ? 'instagram' : ( false !== strpos( $profil, 'tiktok.com' ) ? 'tiktok' : '' );
+
+	ob_start(); ?>
+	<section class="fs-section fs-surface-brand">
+		<div class="fs-container fs-wide" style="margin-inline:auto;">
+			<?php echo $hinweis; ?>
+			<?php if ( fs_has( $d, 'heading' ) || ( '' !== $label && '' !== $profil ) ) : ?>
+			<div class="fs-social__kopf">
+				<?php echo fs_el( 'h2', $d['heading'], 'class="fs-social__titel"' ); ?>
+				<?php if ( '' !== $label && '' !== $profil ) : ?>
+				<a class="fs-btn fs-btn--primary" href="<?php echo esc_url( $profil ); ?>" target="_blank" rel="noopener noreferrer"><?php echo $profil_pf ? fs_icon( $profil_pf, 18 ) : ''; ?> <?php echo esc_html( $label ); ?></a>
+				<?php endif; ?>
+			</div>
+			<?php endif; ?>
+			<ul class="fs-raster" role="list">
+				<?php foreach ( $kacheln as $n => $k ) :
+					$name = '' !== $k['titel'] ? $k['titel'] : 'Video ' . ( $n + 1 ); ?>
+				<li class="fs-raster__kachel"><figure class="fs-raster__figur">
+					<div class="fs-raster__rahmen">
+						<video class="fs-raster__video" src="<?php echo esc_url( $k['video'] ); ?>" controls playsinline preload="<?php echo '' !== $k['bild'] ? 'none' : 'metadata'; ?>"<?php echo '' !== $k['bild'] ? ' poster="' . esc_url( $k['bild'] ) . '"' : ''; ?> aria-label="<?php echo esc_attr( $name ); ?>"></video>
+					</div>
+					<?php echo fs_el( 'figcaption', $k['titel'], 'class="fs-raster__titel"' ); ?>
+				</figure></li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+	</section>
+	<?php
+	return ob_get_clean();
+}
+
+/* -------------------------------------------------------------------------
  * FAQ
  * ---------------------------------------------------------------------- */
 function fs_render_faq( $a ) {

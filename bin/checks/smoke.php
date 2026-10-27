@@ -109,6 +109,16 @@ echo "\nSocial-Feed (Prüfseite): ".($serr? "!! ".implode(' | ',$serr)."\n" : "o
 fs_stub_set_page('social','TikTok-Video (Prüfseite)',false,'');
 $pages['_social']=fs_fse_render_template($GLOBALS['__theme'],'page',serialize_blocks([['blockName'=>'fahrschule/instagram-slider','attrs'=>$tt,'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]]));
 
+/* ---- Social-Raster: Prüfseite mit fünf Kacheln (drei plus zwei) ----
+ * Uploads der eigenen Domain; mkpages.php stellt sie aus bin/checks/fixtures
+ * lokal bereit. Die fünfte Kachel ohne Standbild (preload=metadata). */
+$up = 'https://fahrschule-edi.de/wp-content/uploads/';
+$raster_rows = [];
+for($i=1;$i<=4;$i++) $raster_rows[] = [$up.'raster-clip.webm', $up.'raster-standbild.jpg', "Fahrstunde $i"];
+$raster_rows[] = [$up.'raster-clip.webm', '', 'Ohne Standbild'];
+fs_stub_set_page('raster','Social-Raster (Prüfseite)',false,'');
+$pages['_raster']=fs_fse_render_template($GLOBALS['__theme'],'page',serialize_blocks([['blockName'=>'fahrschule/social-raster','attrs'=>['items'=>$raster_rows,'heading'=>'Einblicke'],'innerBlocks'=>[],'innerHTML'=>'','innerContent'=>[]]]));
+echo "Social-Raster (Prüfseite): ".(substr_count($pages['_raster'],'class="fs-raster__kachel"')===5 ? "ok: 5 Kacheln\n" : "!! ".substr_count($pages['_raster'],'class="fs-raster__kachel"')." statt 5 Kacheln\n");
 file_put_contents($FS_OUT.'/pages.json', json_encode($pages));
 // Erwartete URL je Seite - die Browserprüfung vergleicht damit aria-current.
 $urls=[]; foreach($map as $key=>$pg){ $urls[$key]=fs_url($key); }

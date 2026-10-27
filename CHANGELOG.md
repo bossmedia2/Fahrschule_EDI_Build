@@ -1,5 +1,37 @@
 # Änderungsverlauf
 
+## 3.4.0 – Theme (Oktober 2026)
+
+**Wiederholer mit Spaltentypen**
+- Eine Spalte ist eine Zeichenkette (Textfeld) oder ein Array aus `label`
+  und `type`, wobei `type` `text`, `image` oder `video` sein kann.
+  Bestehende Aufrufe bleiben unverändert.
+- `editor.js`: Medienspalten öffnen die Mediathek, begrenzt per
+  `allowedTypes`, und speichern die Attachment-ID.
+  - Vorschau über den Datenspeicher; „Auswählen“, „Ersetzen“, „Entfernen“
+    mit sprechender Beschriftung.
+  - Nach „Entfernen“ geht der Fokus zurück auf „Auswählen“.
+  - Größenhinweis ab 5 MB.
+- `fs_media_wert()` löst ID, URL und Datei-Slug auf; `fs_media()` nutzt es.
+
+**Social-Raster (eigene Videos)**
+- Neuer Block `fahrschule/social-raster` mit höchstens sechs Kacheln
+  (Video, Standbild, Titel), Raster 3/2/1, Kachel 9:16.
+- Laden: `preload="none"` mit `poster`; ohne Standbild `metadata`.
+- Bedienung: native Steuerelemente und `playsinline`, kein autoplay und kein
+  loop. Startet eine Kachel, pausieren die anderen.
+- Editor-Hinweise für Zeilen ohne Video, für überzählige Zeilen und für
+  große Videos.
+- Player-Block heißt im Inserter jetzt „TikTok-Player (ein Video)“.
+
+**Prüfungen**
+- `raster.php`: Spaltentypen, 0/1/3/6/7 Zeilen, Markup je Kachel, alte
+  Werte, Fläche, Editor-Hinweise.
+- `editor.mjs`: `editor.js` mit nachgebautem `wp` – Mediathek-Typen, ID statt
+  URL, Fokus; übrige Wiederholer unverändert.
+- Browser: Spalten je Breite; kein Video vor dem Abspielen; Tastatur; eine
+  Kachel zugleich; ohne JavaScript.
+
 ## 3.3.0 – Theme (Oktober 2026)
 
 **TikTok: ein Video im Embed Player statt Social-Raster**

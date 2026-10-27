@@ -20,6 +20,10 @@ $pages = json_decode( file_get_contents( $out . '/pages.json' ), true );
 foreach ( glob( $theme . '/assets/images/*' ) as $img ) {
 	copy( $img, $out . '/assets/images/' . basename( $img ) );
 }
+// Testvideos fürs Social-Raster (bin/checks/fixtures): stehen im Seiten-
+// HTML als Uploads der eigenen Domain und werden hier lokal bereitgestellt.
+@mkdir( $out . '/uploads', 0777, true );
+foreach ( glob( __DIR__ . '/fixtures/*' ) as $fx ) { copy( $fx, $out . '/uploads/' . basename( $fx ) ); }
 copy( $theme . '/assets/css/main.css', $out . '/main.css' );
 copy( $theme . '/assets/js/frontend.js', $out . '/frontend.js' );
 
@@ -35,6 +39,7 @@ $tpl = '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'
 foreach ( $pages as $key => $html ) {
 	// Theme-URL auf den lokalen Pfad biegen, damit Bilder wirklich laden.
 	$html = str_replace( '/wp-content/themes/fahrschule-edi/assets/', 'assets/', $html );
+	$html = str_replace( 'https://fahrschule-edi.de/wp-content/uploads/', 'uploads/', $html );
 	// Die Block-Vorlage bringt <main> selbst mit. WordPress setzt dort die
 	// Sprungmarke für den Skip-Link (the_block_template_skip_link) - hier
 	// dasselbe, damit der Link aus dem Seitenrahmen ein Ziel hat.
